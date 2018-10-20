@@ -8,7 +8,7 @@
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
-    <oExt>*.obj; *.o</oExt>
+    <oExt>*.obj</oExt>
     <lExt>*.lib</lExt>
     <tExt>*.txt; *.h; *.inc</tExt>
     <pExt>*.plm</pExt>
@@ -258,7 +258,7 @@
 
   <Group>
     <GroupName>Drivers</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -2638,7 +2638,7 @@
 
   <Group>
     <GroupName>AT</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -2694,7 +2694,7 @@
 
   <Group>
     <GroupName>SAL</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
