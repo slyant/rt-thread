@@ -925,6 +925,21 @@
               <FileType>1</FileType>
               <FilePath>packages\at_device-latest\at_socket_air800.c</FilePath>
             </File>
+            <File>
+              <FileName>at_socket_ec20.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\packages\at_device-latest\at_socket_ec20.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_socket_esp8266.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\packages\at_device-latest\at_socket_esp8266.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_socket_m26.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\packages\at_device-latest\at_socket_m26.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
