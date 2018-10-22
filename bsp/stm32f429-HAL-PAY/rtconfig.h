@@ -142,7 +142,6 @@
 #define AT_CLIENT_NUM_MAX 1
 #define AT_USING_SOCKET
 #define AT_USING_CLI
-#define AT_PRINT_RAW_CMD
 #define AT_SW_VERSION_NUM 0x10200
 
 /* VBUS(Virtual Software BUS) */
@@ -155,6 +154,11 @@
 
 /* IoT - internet of things */
 
+#define PKG_USING_WEBCLIENT
+#define WEBCLIENT_USING_TLS
+#define PKG_USING_WEBCLIENT_LATEST_VERSION
+#define PKG_USING_CJSON
+#define PKG_USING_CJSON_V102
 
 /* Wi-Fi */
 
@@ -163,6 +167,11 @@
 
 /* Wiced WiFi */
 
+#define PKG_USING_NETUTILS
+#define PKG_NETUTILS_NTP
+#define NETUTILS_NTP_TIMEZONE 8
+#define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"
+#define PKG_USING_NETUTILS_LATEST_VERSION
 #define PKG_USING_AT_DEVICE
 #define PKG_AT_INIT_BY_THREAD
 #define AT_DEVICE_AIR800
@@ -177,6 +186,15 @@
 
 /* security packages */
 
+#define PKG_USING_MBEDTLS
+
+/* Select Root Certificate */
+
+#define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
+#define MBEDTLS_AES_ROM_TABLES
+#define MBEDTLS_ECP_WINDOW_SIZE 2
+#define MBEDTLS_SSL_MAX_CONTENT_LEN 3584
+#define PKG_USING_MBEDTLS_V260
 
 /* language packages */
 
