@@ -168,6 +168,7 @@
 /* Wiced WiFi */
 
 #define PKG_USING_NETUTILS
+#define PKG_NETUTILS_IPERF
 #define PKG_NETUTILS_NTP
 #define NETUTILS_NTP_TIMEZONE 8
 #define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"

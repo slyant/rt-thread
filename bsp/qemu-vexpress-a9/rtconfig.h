@@ -201,6 +201,11 @@
 
 /* IoT - internet of things */
 
+#define PKG_USING_WEBCLIENT
+#define WEBCLIENT_USING_TLS
+#define PKG_USING_WEBCLIENT_LATEST_VERSION
+#define PKG_USING_CJSON
+#define PKG_USING_CJSON_V102
 
 /* Wi-Fi */
 
@@ -211,6 +216,7 @@
 
 #define PKG_USING_NETUTILS
 #define PKG_NETUTILS_PING
+#define PKG_NETUTILS_IPERF
 #define PKG_NETUTILS_NTP
 #define NETUTILS_NTP_TIMEZONE 8
 #define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"
@@ -221,6 +227,15 @@
 
 /* security packages */
 
+#define PKG_USING_MBEDTLS
+
+/* Select Root Certificate */
+
+#define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
+#define MBEDTLS_AES_ROM_TABLES
+#define MBEDTLS_ECP_WINDOW_SIZE 2
+#define MBEDTLS_SSL_MAX_CONTENT_LEN 3584
+#define PKG_USING_MBEDTLS_V260
 
 /* language packages */
 
