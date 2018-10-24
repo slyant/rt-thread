@@ -37,7 +37,7 @@ static void weather_data_parse(char* data)
    for(index=0;index<list_size;index++)
    {
 	   weatheritem = cJSON_GetArrayItem(list, index);	   
-	   rt_kprintf("\nData:\t%s", cJSON_item_get_string(weatheritem, "date"));
+	   rt_kprintf("\ndate:\t%s", cJSON_item_get_string(weatheritem, "date"));
 	   rt_kprintf("\ntype:\t%s", cJSON_item_get_string(weatheritem, "type"));
 	   rt_kprintf("\nwendu:\t%s-%s", cJSON_item_get_string(weatheritem, "low"), cJSON_item_get_string(weatheritem, "high"));
 	   rt_kprintf("\nfengxiang:%s %s", cJSON_item_get_string(weatheritem, "fengxiang"), cJSON_item_get_string(weatheritem, "fengli"));
