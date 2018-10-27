@@ -8,7 +8,7 @@
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
-    <oExt>*.obj; *.o</oExt>
+    <oExt>*.obj</oExt>
     <lExt>*.lib</lExt>
     <tExt>*.txt; *.h; *.inc</tExt>
     <pExt>*.plm</pExt>
@@ -182,7 +182,7 @@
 
   <Group>
     <GroupName>Applications</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1469,8 +1469,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>packages\at_device-latest\at_socket_air800.c</PathWithFileName>
-      <FilenameWithoutPath>at_socket_air800.c</FilenameWithoutPath>
+      <PathWithFileName>packages\at_device-latest\at_device.c</PathWithFileName>
+      <FilenameWithoutPath>at_device.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1481,8 +1481,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\packages\at_device-latest\at_device_sample.c</PathWithFileName>
-      <FilenameWithoutPath>at_device_sample.c</FilenameWithoutPath>
+      <PathWithFileName>packages\at_device-latest\at_socket_air800.c</PathWithFileName>
+      <FilenameWithoutPath>at_socket_air800.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1493,8 +1493,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\packages\at_device-latest\at_device.c</PathWithFileName>
-      <FilenameWithoutPath>at_device.c</FilenameWithoutPath>
+      <PathWithFileName>packages\at_device-latest\at_air800_sample.c</PathWithFileName>
+      <FilenameWithoutPath>at_air800_sample.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -2538,7 +2538,7 @@
 
   <Group>
     <GroupName>Weather</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -3754,7 +3754,7 @@
       <GroupNumber>19</GroupNumber>
       <FileNumber>286</FileNumber>
       <FileType>1</FileType>
-      <tvExp>1</tvExp>
+      <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\components\net\at\at_socket\at_socket.c</PathWithFileName>
@@ -3766,7 +3766,7 @@
 
   <Group>
     <GroupName>SAL</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
