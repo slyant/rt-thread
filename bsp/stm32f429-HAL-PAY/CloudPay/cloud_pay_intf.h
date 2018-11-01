@@ -11,7 +11,7 @@ extern "C" {
 	/**
 	*	调用交易接口失败后，可以调用这个接口获取具体的错误描述信息
 	*/
-	const char* error_utf8();
+	const char* error_utf8(void);
 
 	/**
 	*    初始化接口 再其他接口之前调用
@@ -25,7 +25,7 @@ extern "C" {
 	/**
 	*    结束接口
 	**/
-	int cloud_pay_api_fini();
+	int cloud_pay_api_fini(void);
 
 
 	/**

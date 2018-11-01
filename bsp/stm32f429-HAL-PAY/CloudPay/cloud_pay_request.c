@@ -2,44 +2,61 @@
 #include <qr_client.h>
 #include <cloud_pay_intf.h>
 
+#define DBG_ENABLE
+#define DBG_COLOR
+#define DBG_SECTION_NAME	"cloud_pay"
+#define DBG_LEVEL           DBG_INFO
+#include <rtdbg.h>
+
 #define QR_DEVICE_NAME	"uart1"
 #define QR_BUFFER_SIZE	30
 #define QR_MQ_MAX_MSGS	2
 
-#define PRIORITY 7        
-#define STACK_SIZE 20480
-#define TIMESLICE 10
+#define PRIORITY	7
+#define STACK_SIZE	20480
+#define TIMESLICE	10
 
-const char *g_private_key =
+const char* TRADE_NO_HEAD = "sz0100mpp3";
+const char* MCH_ID = "sz01Kb5mGP6pdxtj7C53";
+const char* SUB_MCH_ID = "sz01mYMssPJx5r5U4K8K";
+const char* SHOP_ID = "sz011MYZ6vv7mZGfyEFP";
+const char* DEVICE_ID = "1001";
+const char* STAFF_ID = "1000";
+const char* AUTHEN_KEY = "JIEcmop4533i8dcmdfddjnnRlpppce02";
+const char* PRIVATE_KEY = 
 "-----BEGIN PRIVATE KEY-----\n"
-"MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDksI6notjNH6zk\n"
-"awRweJSk71hSlut4gh1DKYrEUy5ncAK7Xl3dDIJYrtJTQyRZPq6ZdmPWFaChjjBJ\n"
-"+3TGjL6gStzPoowFQenlmhxTI3LUIWLKnPPZVxb47NHtuMUDkwzgzVi8OiJ2D9LU\n"
-"E8p7qSKFnKOGzL4GDrMTpxc3pFQGWppDBoSrK6t2ELdU4pWAgpTh/yB+0+2JiI76\n"
-"OoSjthrhQxrhNiaoccjpw/fbtWvD8O6KsEN7Xh4uRugnE0C3PjdqcfiYZ8LtgE9d\n"
-"EJc/703bm+yeppPLFoImBssZXkXqwbE5sNa/GxZWgp9SHrCrPVJ4plH1pz74uj2I\n"
-"zvqurStzAgMBAAECggEAZnaS3BozICjOiqNGYGwuUX3pqUt0YlCN8t8kjRUl5/OA\n"
-"TdoYnSdzKW/eza56FUBn81tfnPagu3HdQfCX4DQEXwZby+4s5Vgkh5qWkUuDMfdp\n"
-"b5WGDj2ejdZxspzELPdQYFKxLNixQwuQ7zOU1/YugQXvIMEQbN9eLfKCDQykFxnd\n"
-"R8HDQpinMkcF1y6UpyYxHYYlEQq9qYMufqKxepqYDsw5Etx/ZFKS1hvOJjIe16jf\n"
-"SijPijg6p+zZAnh+W9saKcOBZcFSL2jCt3MspiGQZ4+m7jTPHMAmRo47VLv1wNaP\n"
-"TTaCjzV7l7TwZ6jgBh9hdKz/yvUiBD5UwwcoJoszrQKBgQD1Tp8/LemyiRh+I1C6\n"
-"s50TsfH60UBF7Qc5gy+gGnxiUOSf42JVfZ5cowDy+f08crPn8DSV/AhjjGmGuhdX\n"
-"5Tv+OQosgajwDQ2JCfDSQrhD+8KsNdXhTMAFydFPMC1XhybCAVz6DhUGaE1SbZWN\n"
-"VhB0ek8U1ZcPy2fEr3x32YCwjQKBgQDuqIBfDXavX9BgF8pXj8usoi0TwqIXKO2Q\n"
-"FqfaDLf8nZnbiqqrNrWPtduiCbQhZ6NhEHeS8yw0bzT+6jAGTXgONoETFYgakvge\n"
-"v5A3pBKjqynVwVj4ZpY+FoBrOo1c4MD3g1vl4g82vQcoYkpcOVshUxMLYQPnn2Oz\n"
-"C3q8W9RL/wKBgAfotgeyckN4WhrPBq5OVjUpWpTspDbc8ouvKBzwXaxJ0WU6TpRV\n"
-"DYMNGl27I6gMRrKmsvtW+epDv69BVrlVwb5rlmFi+NBsi1Asyt/smMZQWrF0tuWh\n"
-"tNs6642zDvMwf1Zn9th1FcZ0HHIY6GZ7LOKkguI4FLvEoh7cTZYLpDONAoGBAOpf\n" 
-"P/IY3r1Lcu9rbaKf7H0UpwAI2/Wyk9o05ZIVe3nxq+8WNpT9nUAMcCypKuTDSodA\n"
-"DK2bcYXs0Dam9ZK68XPDwu5i7s5qFpDbv11lG4jvxp3MyvrmhBVlM6gaUEktz1ND\n"
-"BTS01AwFhsn5/Nyk1wHa+5DpLVSCCv8B/v6Lj+kxAoGAKLrI9x30by2YJ0FHSbMR\n"
-"befGgKLIpPTm7sku3Zeu4ocfdi072/hsk10wyZjzyUqXnsOQhnO+y89xSE5tDCDm\n"
-"A1ftqnGX/VQSD55YhWEEZL26B3GxSlh899YSj2cejzzlHK0NTGSs0PIXZSwwugcY\n"
-"RqJsXJrTJL98uAwI0CKbmlI=\n"
-"-----END PRIVATE KEY-----";
+"MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDKv/ktN9dsscql\n"
+"30XBnAipTVw3eSK8eXLSyU6HvKBe7Yioto/dOCf2Cj8/gMKx0YIkndcbfLnP5rMM\n"
+"12T165z/docJO2wpvytqHO304Ro1e8IBMBShpMEdeK7wXnhaYwnVI28Hvhi2Y7r9\n"
+"/MjqlAK0u9255Sw1MuF+1mUdcJ/HiF+QwNXLUDTNap+0m96U8UOpvtgwG1CsSk5l\n"
+"BH0TGCCQU3ZOqt+a2WJbPVDWMqz1kqzM8H0txPkHSgH+h2fjwAd/pVc3AbGcqHOo\n"
+"RoVP3LSqzXO9Uz/rx/XlrDYs1IftjqNiVBlZveBsWhs7g3C8tPv5LvHKl20Op6dy\n"
+"eyjc4T87AgMBAAECggEBAJPAKIbiTdQBEIumVMBNxCYUoSIv3bd5zcp8NwVF2Zyz\n"
+"/0XrnJV6yexL9WGCpN9OrUef2tVGJGa0WUD/aqyn4gZsyuVYb29QyAORR3uP2zik\n"
+"knGpJy/Qz4Z5nwq93XkI+W5gXxZGWt33eZqD76q65+nrih5hOsEd7iQvewpkO5v8\n"
+"oNMYrsPIEO26AM6fuNHIyHpeFiUXqsZPrCfIsNyo73iXjSLfjKSTmLo3KsoGT4iN\n"
+"0Bucv49HQaSlglqBcxY0Jdg5iHDbHBW2xHoWUW7U115ZTkNGuzAknWjOvOvDN7A9\n"
+"EwTv9t5uo5t2SqLpqZysm5Nh1mcyI89x3CSPh2D4DzkCgYEA/G9YYdssAGCog69J\n"
+"1KTE3mt48wpYrGIbFYKu1JXmPxJ1gpYJH236K+FpE838AW4e2KtUa0TLbm0xgJtB\n"
+"3zg2KQAu9mH0++Vd1pqaaZvCI0ePjHBiauKC9wxXUocSe0TC0kCFxxnqAjh4G96J\n"
+"BK1geCdNnh7cYWpxdE4qblWLvk0CgYEAzZz/GnT8PYcT0XTWab/3KrVkCHRZD8uE\n"
+"+nCun8K8AiCb/CUvEiCd+3oHJ8W2u+qGJtqLVZf/ns+Cf7ncsetFR3cx5GW6/6Ed\n"
+"7fC3pAOHyubvIEWAMeBYV9Do7LQgyhUpAOAuN5XYmzGVc+IVDeqDyRyfCa7j6XYd\n"
+"iLzEkxiUB6cCgYBEoZkr8cTCzYTDWLMAB1QnDJ0zpsp5A6tNa9xQm/ifiUs9l8Ef\n"
+"NG1h5MUGx2gOk3v7eIlZKLkOas2co5mDMOs4tn4OKo/KtI+QuzPkJp7frKMQkbWQ\n"
+"TclBla9gFq0lqoo1U6mLejYvKF8vZI9oICMsR7NInCdarO/vqRjMKqH1uQKBgG1a\n"
+"TRaeFzUF7RVd5VbywJqXRC926ZML85paaZUQNXuQKkWM5R7n9/2yJbISZiBFF7n8\n"
+"S1RndYzZ4hbaG7UIYp0imIdXT3/7CXbtqk1xjzvrXEw2inp8TZ/OvMJ+/l1bqaYM\n"
+"lKf9aukHEuxB1l7DVfmU3kSBHjehGQ4LDyUIUlpLAoGAJ0f6MbP9TxxJ5rNyGxwZ\n"
+"S4Dz2IduaUFzaqmpXSNuavY9RS8YKiojb8MGJdKbh5rOTYLbnod2x7g0vDkjXT18\n"
+"eiSYKVZXDEx4nN9W6/VLwzu4Da4eyfQiy1WljQPXeomXZPK19/0F5hxz1u3w4yRR\n"
+"5T5LYsRmlsgVUgQlt17qBa4=\n"
+"-----END PRIVATE KEY-----\n";
 
+static char* errmsg_utf8_to_ansi(const char* in)
+{
+	return (char*)in;
+}
 static int self_http_post(const char *url, const char *request, char *response, size_t *length)
 {
 	return 0;
@@ -64,7 +81,7 @@ static int self_pf_fini()
 //	ERR_free_strings();
 	return 0;
 }
-static int self_pf_init() 
+static int self_pf_init()
 {
 	//openssl初始化
 	//OpenSSL_add_all_algorithms();
@@ -96,14 +113,14 @@ static int cloud_pay_init(void)
 	ops.pf_sign_2_base64 = self_compute_sign_2_base64;
 	ops.pf_http_post = self_http_post;
 	
-	rt_memcpy(account.out_mch_id,		 "sz013NzuonO6CMJd0rCB", rt_strlen("sz013NzuonO6CMJd0rCB") + 1);
-	rt_memcpy(account.out_sub_mch_id,  "sz01ELTR281OFpmdAp6J", rt_strlen("sz01ELTR281OFpmdAp6J") + 1);
-	rt_memcpy(account.out_shop_id,     "sz019xAikh2E0VfLwLfi", rt_strlen("sz019xAikh2E0VfLwLfi") + 1);
-	rt_memcpy(account.device_id,       "5973", rt_strlen("5973") + 1);
-	rt_memcpy(account.staff_id,        "17352", rt_strlen("17352") + 1);
+	rt_memcpy(account.out_mch_id,		MCH_ID, rt_strlen(MCH_ID) + 1);
+	rt_memcpy(account.out_sub_mch_id,	SUB_MCH_ID, rt_strlen(SUB_MCH_ID) + 1);
+	rt_memcpy(account.out_shop_id,		SHOP_ID, rt_strlen(SHOP_ID) + 1);
+	rt_memcpy(account.device_id,		DEVICE_ID, rt_strlen(DEVICE_ID) + 1);
+	rt_memcpy(account.staff_id,			STAFF_ID, rt_strlen(STAFF_ID) + 1);
 
-	rt_memcpy(key.authen_key, "lSCp1M5grGWFD7rJzaZaqixsvOhORp2P", rt_strlen("lSCp1M5grGWFD7rJzaZaqixsvOhORp2P") + 1);
-	rt_memcpy(key.private_key, g_private_key, rt_strlen(g_private_key ) + 1);
+	rt_memcpy(key.authen_key, AUTHEN_KEY, rt_strlen(AUTHEN_KEY) + 1);
+	rt_memcpy(key.private_key, PRIVATE_KEY, rt_strlen(PRIVATE_KEY ) + 1);
 
 	rt_memcpy(terminal.sdk_version,      "1.1", rt_strlen("1.1")+1);
 	rt_memcpy(terminal.machine_no,       "01-01-01-01-01-01", rt_strlen("01-01-01-01-01-01") + 1);
@@ -111,41 +128,227 @@ static int cloud_pay_init(void)
 	terminal.terminal_type=     2;    // 1 windows 2 linux 3 android
 	terminal.sub_terminal_type= 900;  // 机具的类型. 找云支付分配， 可以统计某个机具的交易量
 
-	return cloud_pay_api_init(&account, &key, &terminal, &ops);
+	if(cloud_pay_api_init(&account, &key, &terminal, &ops)==RT_EOK)
+	{
+		LOG_I("cloud pay init success!");
+		return RT_EOK;
+	}
+	else
+	{
+		LOG_E("cloud pay init failed!");
+		return -RT_ERROR;
+	}
 }
 static int cloud_pay_request(char* pay_code)
 {
-	rt_err_t result = RT_EOK;
+	rt_err_t ret = RT_EOK;
+	char* author_code = pay_code;
+	char out_trade_no[64]; //云支付订单前缀
+	rt_sprintf(out_trade_no,"%s%04d%02d%02d%02d%02d%02d",TRADE_NO_HEAD, 2018,11,1,11,20,25);
+
+	char out_refund_no_1[64];
+	rt_snprintf(out_refund_no_1, sizeof(out_refund_no_1) - 1, "%s%s", out_trade_no, "01");
+
+	char out_refund_no_2[64];
+	rt_snprintf(out_refund_no_2, sizeof(out_refund_no_2) - 1, "%s%s", out_trade_no, "02");
+
+//	char url[64] = "https://139.199.232.94:4455";
+//	ret = ping(url);
+//	printf("ping ret = %d\n", ret);
+
+//	RT_ASSERT(ret == 0);
+
+//	//可选择
+//	set_url(url);
+
+	int state = 0;
 	
-	return result;	
+	if(ret == 0)
+	{
+		MicroPayRequest request;
+		MicroPayResponse response;
+		
+		rt_memset(&request, 0, sizeof(request));
+		rt_memcpy(request.out_trade_no, out_trade_no, rt_strlen(out_trade_no) + 1);
+		rt_memcpy(request.author_code, author_code, rt_strlen(author_code) +1);
+		rt_memcpy(request.nonce_str, "nonce_str", rt_strlen("nonce_str") + 1); //真实请填真正的随机数
+		rt_memcpy(request.body, "test", rt_strlen("test") + 1);
+		request.total_fee = 2;
+		request.pay_platform= 1;
+		
+		ret = micro_pay(&request, &response);
+		rt_kprintf("ret = %d, %s\n", ret, errmsg_utf8_to_ansi(error_utf8()));
+		
+		if (ret == 0) 
+		{
+			state = response.order.state;
+			RT_ASSERT(state == KCloudPaySdkLocalStateUserPaying || 
+				   state == KCloudPaySdkLocalStateSuccess    || 
+				   state == KCloudPaySdkLocalStateRefund); //已经退过款
+			if (ret == 0) 
+			{
+				RT_ASSERT(state == KCloudPaySdkLocalStateSuccess || state == KCloudPaySdkLocalStateUserPaying || state == KCloudPaySdkLocalStateRefund);
+				RT_ASSERT(response.order.pay_platform == 1);
+				RT_ASSERT(response.order.total_fee == 2);
+				RT_ASSERT(0 == rt_strcmp(response.order.out_trade_no,out_trade_no));
+				RT_ASSERT(rt_strlen(response.order.transaction_id) > 0);
+			}
+		}
+		else if (ret == CLOUD_PAY_API_ERROR_SYSTEM_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT)
+		{
+			//结果未知 需要重试
+		}
+
+		else
+		{
+			//支付失败
+		}
+		
+	}
+
+	while (ret == 0 && state == KCloudPaySdkLocalStateUserPaying) //用户支付中状态 需要继续查单 可以查询1分钟没有结果就提示去手机端管理系统查询订单支付结果
+	{
+		QueryOrderRequest request;
+		QueryOrderResponse response;
+		
+		rt_memset(&request, 0, sizeof(request));
+		rt_memcpy(request.out_trade_no, out_trade_no, rt_strlen(out_trade_no) + 1);
+		rt_memcpy(request.nonce_str, "nonce_str", rt_strlen("nonce_str") + 1);
+		ret = query_order(&request, &response);
+		rt_kprintf("query order ret = %d\n", ret);
+
+		RT_ASSERT(ret == 0);
+		
+		if (ret == 0) 
+		{
+			state = response.order.state;
+			RT_ASSERT(state == KCloudPaySdkLocalStateUserPaying || state == KCloudPaySdkLocalStateSuccess);
+
+			if (state == KCloudPaySdkLocalStateSuccess)
+			{
+				RT_ASSERT(state == KCloudPaySdkLocalStateSuccess);
+				RT_ASSERT(response.order.pay_platform == 1);
+				RT_ASSERT(response.order.total_fee == 2);
+				RT_ASSERT(0 == rt_strcmp(response.order.out_trade_no, out_trade_no));
+				RT_ASSERT(rt_strlen(response.order.transaction_id) > 0);
+			}
+		}
+		else if (ret == CLOUD_PAY_API_ERROR_SYSTEM_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT)
+		{			
+			//结果未知 需要重试
+		}
+		else if (ret == CLOUD_PAY_API_ERROR_ORDER_DONTEXIST)
+		{
+			//订单不存在
+		}
+		else
+		{
+			//查询失败
+		}
+		rt_thread_mdelay(2000);
+	}
+
+	if (ret == 0)
+	{
+		RefundRequest request;
+		rt_memset(&request, 0, sizeof(request));
+		rt_memcpy(request.out_trade_no, out_trade_no, rt_strlen(out_trade_no) + 1);
+		rt_memcpy(request.out_refund_no, out_refund_no_1, rt_strlen(out_refund_no_1) + 1);
+		rt_memcpy(request.nonce_str, "nonce_str", rt_strlen("nonce_str") + 1);
+		request.total_fee = 2;
+		request.refund_fee = 1;
+		request.pay_platform = 1;
+	
+		ret = refund(&request);
+		rt_kprintf("refund ret1 = %d, %s\n", ret, errmsg_utf8_to_ansi(error_utf8()));
+		RT_ASSERT(ret == 0);
+
+		if (ret == 0) 
+		{
+		
+		}
+		else if (ret == CLOUD_PAY_API_ERROR_SYSTEM_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT)
+		{
+			//结果未知 需要重试
+		}
+		else
+		{
+			//申请退款失败
+		}
+
+		rt_memcpy(request.out_refund_no, out_refund_no_2, rt_strlen(out_refund_no_2) + 1);
+	
+		ret = refund(&request);
+		rt_kprintf("refund ret2 = %d, %s\n", ret, errmsg_utf8_to_ansi(error_utf8()));
+		RT_ASSERT(ret == 0);
+	}
+
+	if (ret == 0)
+	{
+		QueryRefundRequest request;
+		QueryRefundResponse response;
+		rt_memset(&request, 0, sizeof(request));
+		rt_memcpy(request.out_trade_no, out_trade_no, rt_strlen(out_trade_no) + 1);
+		//memcpy(request.out_refund_no, out_refund_no_2, strlen(out_refund_no_2) + 1);
+		rt_memcpy(request.nonce_str, "nonce_str", rt_strlen("nonce_str") + 1);
+		request.pay_platform = 1;
+	
+		ret = query_refund(&request, &response);
+		rt_kprintf("query refund ret = %d, %s\n", ret, errmsg_utf8_to_ansi(error_utf8()));
+		RT_ASSERT(ret == 0);
+		RT_ASSERT(response.count == 2);
+
+		{
+			RT_ASSERT(response.refund_order[0].state == kCloudPaySdkRefundLocalStateSuccess || response.refund_order[0].state == kCloudPaySdkRefundLocalStateProcessing);
+			RT_ASSERT(response.refund_order[0].pay_platform == 1);
+			RT_ASSERT(response.refund_order[0].total_fee == 2);
+			RT_ASSERT(response.refund_order[0].refund_fee == 1);
+			RT_ASSERT(0 == rt_strcmp(response.refund_order[0].out_trade_no, out_trade_no));
+			RT_ASSERT(0 == rt_strcmp(response.refund_order[0].out_refund_no, out_refund_no_1));
+			if (response.refund_order[0].state == kCloudPaySdkRefundLocalStateSuccess)
+			{
+				RT_ASSERT(rt_strlen(response.refund_order[0].refund_id) > 0);
+			}
+		}
+
+		{
+			RT_ASSERT(response.refund_order[1].state == kCloudPaySdkRefundLocalStateSuccess || response.refund_order[0].state == kCloudPaySdkRefundLocalStateProcessing);
+			RT_ASSERT(response.refund_order[1].pay_platform == 1);
+			RT_ASSERT(response.refund_order[1].total_fee == 2);
+			RT_ASSERT(response.refund_order[1].refund_fee == 1);
+			RT_ASSERT(0 == rt_strcmp(response.refund_order[1].out_trade_no, out_trade_no));
+			RT_ASSERT(0 == rt_strcmp(response.refund_order[1].out_refund_no, out_refund_no_2));
+			if (response.refund_order[1].state == kCloudPaySdkRefundLocalStateSuccess)
+			{
+				RT_ASSERT(rt_strlen(response.refund_order[1].refund_id) > 0);
+			}
+		}
+	}	
+	return ret;	
 }
 static void thread_entry(void *parameter)
 {
 	char qr_code[30];
-	char last_code[18] = {0};
-	rt_err_t result;
-	result = cloud_pay_init();
-	
+	char last_code[18] = "\0";
 	while(1)
 	{
 		if(qr_mq_recv(qr_code, 30)==RT_EOK)
 		{
 			char *head, *head0, *head1, *end;
 			rt_uint8_t len;
-			head0 = rt_strstr(qr_code, "AAj]C0");
-			head1 = rt_strstr(qr_code, "AAQ]Q1");
+			head0 = rt_strstr(qr_code, "j]C0");
+			head1 = rt_strstr(qr_code, "Q]Q1");
 			head = head0?head0:head1;
 			if(head)
-			{	//AAQ]Q1135124350877540729BB
-				//AAj]C0135098347648826005BB
-				end = rt_strstr(qr_code, "BB\r");
+			{	//Q]Q1135124350877540729
+				//j]C0135098347648826005
+				end = rt_strstr(qr_code, "\r");
 				if(end)
 				{		
-					len = (rt_uint8_t)(end - head - 6);
-					rt_kprintf("len:%d",len);
+					len = (rt_uint8_t)(end - head - 4);
 					if(len==18)
 					{
-						rt_memcpy(qr_code, head+6, 18);
+						rt_memcpy(qr_code, head + 4, 18);
 						qr_code[18] = '\0';
 						if(rt_memcmp(qr_code, last_code, 18)==0)
 						{
@@ -153,6 +356,7 @@ static void thread_entry(void *parameter)
 						}
 						else
 						{
+							rt_kprintf("OK_QR:%s\n", qr_code);
 							if(cloud_pay_request(qr_code)==RT_EOK)
 							{
 								rt_kprintf("cloud pay ok!%s", qr_code);
@@ -173,14 +377,15 @@ static void thread_entry(void *parameter)
 	}
 }
 
-static int qr_code_scan_start(void)
+static int cloud_pay_thread_startup(void)
 {
-	rt_err_t result;	
-	result = qr_device_init(QR_DEVICE_NAME, QR_BUFFER_SIZE, QR_MQ_MAX_MSGS);
-	if(result==RT_EOK)
+	rt_err_t result0, result1, result2;	
+	result0 = qr_device_init(QR_DEVICE_NAME, QR_BUFFER_SIZE, QR_MQ_MAX_MSGS);
+	result1 = cloud_pay_init();
+	if(result0==RT_EOK && result1==RT_EOK)
 	{
 		rt_thread_t rtt = RT_NULL;
-		rtt = rt_thread_create("qr_scan",         //线程名称。
+		rtt = rt_thread_create("cl_pay",      //线程名称。
 								thread_entry,    //线程入口函数。
 								RT_NULL,         //线程入口参数。
 								STACK_SIZE,      //线程栈大小。
@@ -189,12 +394,13 @@ static int qr_code_scan_start(void)
 		if(rtt != RT_NULL)                       //判断线程是否创建成功。
 		{
 			rt_thread_startup(rtt);             //线程创建成功，启动线程。
+			result2 = RT_EOK;
 		}
 		else
 		{
-			result = RT_ERROR;
+			result2 = -RT_ERROR;
 		}
 	}
-	return result;
+	return (result0 | result1 | result2);
 }
-INIT_APP_EXPORT(qr_code_scan_start);
+INIT_APP_EXPORT(cloud_pay_thread_startup);

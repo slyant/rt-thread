@@ -3,8 +3,11 @@
 #include <rtdevice.h>
 #include <qr_client.h>
 
-#define LOG_TAG              "qr.client"
-#include <at_log.h>
+#define DBG_ENABLE
+#define DBG_COLOR
+#define DBG_SECTION_NAME	"qr.client"
+#define DBG_LEVEL           DBG_INFO
+#include <rtdbg.h>
 
 #define PRIORITY 8        
 #define STACK_SIZE 512
@@ -124,7 +127,7 @@ static int qr_client_para_init(qr_client_t client, rt_size_t recv_mqsz, rt_size_
         result = -RT_ENOMEM;
         goto __exit;
     }
-    client->parser = rt_thread_create("qr_parser",
+    client->parser = rt_thread_create("qr_pars",
                                      (void (*)(void *parameter))client_parser,
                                      client,
                                      STACK_SIZE,

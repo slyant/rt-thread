@@ -11,11 +11,12 @@
 */
 
 #include "stdint.h"
+#include <stddef.h>
+#include <rtthread.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 	/**
 	* 公用数据接口
 	*/
@@ -81,12 +82,12 @@ extern "C" {
 
 	typedef int(*pfHmacSha256)(const char *in, const char* key, char *out, size_t *out_size);
 	typedef int(*pfRSA_SSA_PSS_2048_SHA256_2_Base64)(const char *in, const char* private_key, char *out, size_t *out_size);
-	typedef void* (*pfMemCpy)(void *dst, const void *src, size_t n);
-	typedef int(*pfStrCmp)(const char *s1, const char *s2);
-	typedef size_t(*pfStrLen)(const char *s);
-	typedef void *(*pfMalloc)(size_t sz);
+	typedef void *(*pfMemCpy)(void *dst, const void *src, rt_ubase_t count);
+	typedef rt_int32_t (*pfStrCmp)(const char *cs, const char *ct);
+	typedef rt_size_t (*pfStrLen)(const char *s);
+	typedef void *(*pfMalloc)(rt_size_t size);
 	typedef void(*pfFree)(void *ptr);
-	typedef int(*pfSnprintf)(char *str, size_t size, const char *format, ...);
+	typedef rt_int32_t (*pfSnprintf)(char *buf, rt_size_t size, const char *fmt, ...);
 	typedef int (*pfAnsi2Utf8)(const char *ansi, char *utf8);
 
 	/**

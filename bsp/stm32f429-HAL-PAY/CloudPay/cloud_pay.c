@@ -1,7 +1,10 @@
 #include "cloud_pay_intf.h"
-#include "cJSON.h"
+#include <cJSON.h>
 
-#include "assert.h"
+static rt_bool_t cJSON_HasObjectItem(const cJSON *object, const char *string)
+{
+    return cJSON_GetObjectItem((cJSON*)(cJSON*)object, string) ? 1 : 0;
+}
 
 typedef struct _Manager {
 	Account account;
@@ -70,7 +73,7 @@ do{\
 		set_error_ansi("响应包无效");\
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 	}\
-	cJSON* detail = cJSON_GetObjectItem(response_content, detail_macro);\
+	cJSON* detail = cJSON_GetObjectItem((cJSON*)response_content, detail_macro);\
 	if (!cJSON_HasObjectItem(detail, "order_content"))\
 	{\
 		set_error_ansi("响应包无效");\
@@ -81,24 +84,24 @@ do{\
 		set_error_ansi("响应包无效");\
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 	}\
-	cJSON* order_content = cJSON_GetObjectItem(detail, "order_content");\
-	cJSON* pay_mch_key = cJSON_GetObjectItem(detail, "pay_mch_key");\
-	char* out_trade_no = cJSON_GetObjectItem(order_content, "out_trade_no")->valuestring;\
+	cJSON* order_content = cJSON_GetObjectItem((cJSON*)detail, "order_content");\
+	cJSON* pay_mch_key = cJSON_GetObjectItem((cJSON*)detail, "pay_mch_key");\
+	char* out_trade_no = cJSON_GetObjectItem((cJSON*)order_content, "out_trade_no")->valuestring;\
 	g_manager.ops.pf_mem_cpy(response->order.out_trade_no, out_trade_no, g_manager.ops.pf_str_len(out_trade_no) + 1);\
 	if (cJSON_HasObjectItem(order_content, "transaction_id")) {\
-		char* transaction_id = cJSON_GetObjectItem(order_content, "transaction_id")->valuestring; \
+		char* transaction_id = cJSON_GetObjectItem((cJSON*)order_content, "transaction_id")->valuestring; \
 		g_manager.ops.pf_mem_cpy(response->order.transaction_id, transaction_id, g_manager.ops.pf_str_len(transaction_id) + 1); \
 	}\
-	response->order.total_fee = cJSON_GetObjectItem(order_content, "total_fee")->valueint;\
-	response->order.pay_platform = cJSON_GetObjectItem(pay_mch_key, "pay_platform")->valueint;\
+	response->order.total_fee = cJSON_GetObjectItem((cJSON*)order_content, "total_fee")->valueint;\
+	response->order.pay_platform = cJSON_GetObjectItem((cJSON*)pay_mch_key, "pay_platform")->valueint;\
 	if (response->order.pay_platform == 1) { \
 		if (!cJSON_HasObjectItem(order_content, "wxpay_order_content_ext"))\
 		{\
 			set_error_ansi("响应包无效");\
 			return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 		}\
-		cJSON* wxpay_order_content_ext = cJSON_GetObjectItem(order_content, "wxpay_order_content_ext");\
-		int current_trade_state = cJSON_GetObjectItem(wxpay_order_content_ext, "current_trade_state")->valueint;\
+		cJSON* wxpay_order_content_ext = cJSON_GetObjectItem((cJSON*)order_content, "wxpay_order_content_ext");\
+		int current_trade_state = cJSON_GetObjectItem((cJSON*)wxpay_order_content_ext, "current_trade_state")->valueint;\
 		response->order.state = get_local_state(response->order.pay_platform, current_trade_state);\
 	}\
 	if (response->order.pay_platform == 2) {\
@@ -107,8 +110,8 @@ do{\
 			set_error_ansi("响应包无效");\
 			return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 		}\
-		cJSON* alipay_order_content_ext = cJSON_GetObjectItem(order_content, "alipay_order_content_ext");\
-		int current_trade_state = cJSON_GetObjectItem(alipay_order_content_ext, "current_trade_state")->valueint;\
+		cJSON* alipay_order_content_ext = cJSON_GetObjectItem((cJSON*)order_content, "alipay_order_content_ext");\
+		int current_trade_state = cJSON_GetObjectItem((cJSON*)alipay_order_content_ext, "current_trade_state")->valueint;\
 		response->order.state = get_local_state(response->order.pay_platform, current_trade_state);\
 	}\
 	return 0;\
@@ -202,7 +205,7 @@ static int core_process(
 	int ret = pf_request_compute_authen_info(request_content, &authen_info);
 	if (ret != 0) 
 	{
-		assert(ret == CLOUD_PAY_API_ERROR_COMPUTE_AUTHEN_CODE_FAIL || ret == CLOUD_PAY_API_ERROR_COMPUTE_SIGN_2_BASE64_FAIL);
+		RT_ASSERT(ret == CLOUD_PAY_API_ERROR_COMPUTE_AUTHEN_CODE_FAIL || ret == CLOUD_PAY_API_ERROR_COMPUTE_SIGN_2_BASE64_FAIL);
 		return ret;
 	}
 
@@ -220,7 +223,7 @@ static int core_process(
 	ret = g_manager.ops.pf_http_post(url, request_str, response_str, &length);
 	if (ret != 0) 
 	{
-		assert(ret == CLOUD_PAY_API_ERROR_NETWORK_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT);
+		RT_ASSERT(ret == CLOUD_PAY_API_ERROR_NETWORK_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT);
 		return ret;
 	}
 
@@ -231,15 +234,15 @@ static int core_process(
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;
 	}
 
-	char* response_content_str = cJSON_GetObjectItem(response, "response_content")->valuestring;
+	char* response_content_str = cJSON_GetObjectItem((cJSON*)response, "response_content")->valuestring;
 
 	//hmac check
 	if (cJSON_HasObjectItem(response, "authen_info")) 
 	{
-		cJSON* authen_info = cJSON_GetObjectItem(response, "authen_info");
-		cJSON* a = cJSON_GetObjectItem(authen_info, "a");
+		cJSON* authen_info = cJSON_GetObjectItem((cJSON*)response, "authen_info");
+		cJSON* a = cJSON_GetObjectItem((cJSON*)authen_info, "a");
 
-		char *authen_code = cJSON_GetObjectItem(a,"authen_code")->valuestring;
+		char *authen_code = cJSON_GetObjectItem((cJSON*)a,"authen_code")->valuestring;
 
 		char authen_code_resp[65];
 		size_t length = sizeof(authen_code_resp);
@@ -257,10 +260,10 @@ static int core_process(
 	//解包
 	cJSON* response_content = cJSON_Parse(response_content_str);
 
-	int status = cJSON_GetObjectItem(response_content, "status")->valueint;
-	int internal_status = cJSON_GetObjectItem(response_content, "internal_status")->valueint;
-	char* description = cJSON_GetObjectItem(response_content, "description")->valuestring;
-	double log_id = cJSON_GetObjectItem(response_content, "log_id")->valuedouble;
+	int status = cJSON_GetObjectItem((cJSON*)response_content, "status")->valueint;
+	int internal_status = cJSON_GetObjectItem((cJSON*)response_content, "internal_status")->valueint;
+	char* description = cJSON_GetObjectItem((cJSON*)response_content, "description")->valuestring;
+	double log_id = cJSON_GetObjectItem((cJSON*)response_content, "log_id")->valuedouble;
 
 	set_error_utf8(status, internal_status, log_id, description);
 
@@ -297,12 +300,6 @@ int cloud_pay_api_init(
 	{
 		return -1;
 	}
-
-	cJSON_Hooks cjson_hooks;
-	cjson_hooks.malloc_fn = ops->pf_malloc;
-	cjson_hooks.free_fn   = ops->pf_free;
-
-	cJSON_InitHooks(&cjson_hooks);
 
 	if (ops->pf_init) 
 	{
@@ -441,19 +438,19 @@ static enum CloudPaySdkRefundLocalState get_refund_local_state(int pay_platform,
 		if (state == kWxpayRefundOrderStateInit ||
 			state == kWxpayRefundOrderStateProcessing)
 		{
-			local_state = 1;
+			local_state = (enum CloudPaySdkRefundLocalState)1;
 		}
 
 		if (state == kWxpayRefundOrderStateSuccess)
 		{
-			local_state = 2;
+			local_state = (enum CloudPaySdkRefundLocalState)2;
 		}
 
 		if (state == kWxpayRefundOrderStateFail ||
 			state == kWxpayRefundOrderStateChange ||
 			state == kWxpayRefundOrderStateVoid)
 		{
-			local_state = 3;
+			local_state = (enum CloudPaySdkRefundLocalState)3;
 		}
 	}
 
@@ -461,17 +458,17 @@ static enum CloudPaySdkRefundLocalState get_refund_local_state(int pay_platform,
 	{
 		if (state == kAlipayRefundStateInit)
 		{
-			local_state = 1;
+			local_state = (enum CloudPaySdkRefundLocalState)1;
 		}
 
 		if (state == kAlipayRefundStateSuccess)
 		{
-			local_state = 2;
+			local_state = (enum CloudPaySdkRefundLocalState)2;
 		}
 
 		if (state == kAlipayRefundStateFail)
 		{
-			local_state = 3;
+			local_state = (enum CloudPaySdkRefundLocalState)3;
 		}
 	}
 	return local_state;
@@ -684,7 +681,7 @@ static int query_refund_response_success_process(
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID; 
 	}
 
-	cJSON* query_refund_order = cJSON_GetObjectItem(response_content, "query_refund_order");
+	cJSON* query_refund_order = cJSON_GetObjectItem((cJSON*)(cJSON*)response_content, "query_refund_order");
 	if (!cJSON_HasObjectItem(query_refund_order, "refund_order_content"))
 	{
 		//return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;
@@ -693,7 +690,7 @@ static int query_refund_response_success_process(
 		return 0;
 	}
 
-	cJSON* refund_order_content = cJSON_GetObjectItem(query_refund_order, "refund_order_content");
+	cJSON* refund_order_content = cJSON_GetObjectItem((cJSON*)query_refund_order, "refund_order_content");
 
 	int count = cJSON_GetArraySize(refund_order_content);
 
@@ -713,23 +710,23 @@ static int query_refund_response_success_process(
 		cJSON* refund_order_json = cJSON_GetArrayItem(refund_order_content, idx);
 		RefundOrder * refund_order = &(refund_orders[idx]);
 
-		char* out_trade_no = cJSON_GetObjectItem(refund_order_json, "out_trade_no")->valuestring;
+		char* out_trade_no = cJSON_GetObjectItem((cJSON*)refund_order_json, "out_trade_no")->valuestring;
 		g_manager.ops.pf_mem_cpy(refund_order->out_trade_no, out_trade_no, g_manager.ops.pf_str_len(out_trade_no) + 1);
 
-		char* out_refund_no = cJSON_GetObjectItem(refund_order_json, "out_refund_no")->valuestring;
+		char* out_refund_no = cJSON_GetObjectItem((cJSON*)refund_order_json, "out_refund_no")->valuestring;
 		g_manager.ops.pf_mem_cpy(refund_order->out_refund_no, out_refund_no, g_manager.ops.pf_str_len(out_refund_no) + 1);
 
 		if (cJSON_HasObjectItem(refund_order_json, "refund_id")) 
 		{
-			char* refund_id = cJSON_GetObjectItem(refund_order_json, "refund_id")->valuestring;
+			char* refund_id = cJSON_GetObjectItem((cJSON*)refund_order_json, "refund_id")->valuestring;
 			g_manager.ops.pf_mem_cpy(refund_order->refund_id, refund_id, g_manager.ops.pf_str_len(refund_id) + 1);
 		}
 
-		refund_order->total_fee = cJSON_GetObjectItem(refund_order_json, "total_fee")->valueint;
-		refund_order->refund_fee = cJSON_GetObjectItem(refund_order_json, "refund_fee")->valueint;
+		refund_order->total_fee = cJSON_GetObjectItem((cJSON*)refund_order_json, "total_fee")->valueint;
+		refund_order->refund_fee = cJSON_GetObjectItem((cJSON*)refund_order_json, "refund_fee")->valueint;
 
-		cJSON* pay_mch_key = cJSON_GetObjectItem(query_refund_order, "pay_mch_key");
-		refund_order->pay_platform = cJSON_GetObjectItem(pay_mch_key, "pay_platform")->valueint;
+		cJSON* pay_mch_key = cJSON_GetObjectItem((cJSON*)query_refund_order, "pay_mch_key");
+		refund_order->pay_platform = cJSON_GetObjectItem((cJSON*)pay_mch_key, "pay_platform")->valueint;
 
 		if (refund_order->pay_platform == 1) 
 		{
@@ -737,8 +734,8 @@ static int query_refund_response_success_process(
 			{
 				return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;
 			}
-			cJSON* wxpay_refund_order_content_ext = cJSON_GetObjectItem(refund_order_json, "wxpay_refund_order_content_ext");
-			int state = cJSON_GetObjectItem(wxpay_refund_order_content_ext, "state")->valueint;
+			cJSON* wxpay_refund_order_content_ext = cJSON_GetObjectItem((cJSON*)refund_order_json, "wxpay_refund_order_content_ext");
+			int state = cJSON_GetObjectItem((cJSON*)wxpay_refund_order_content_ext, "state")->valueint;
 			refund_order->state = get_refund_local_state(refund_order->pay_platform, state);
 		}
 
@@ -748,8 +745,8 @@ static int query_refund_response_success_process(
 			{
 				return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;
 			}
-			cJSON* alipay_refund_order_content_ext = cJSON_GetObjectItem(refund_order_json, "alipay_refund_order_content_ext");
-			int state = cJSON_GetObjectItem(alipay_refund_order_content_ext, "refund_status")->valueint;
+			cJSON* alipay_refund_order_content_ext = cJSON_GetObjectItem((cJSON*)refund_order_json, "alipay_refund_order_content_ext");
+			int state = cJSON_GetObjectItem((cJSON*)alipay_refund_order_content_ext, "refund_status")->valueint;
 			refund_order->state = get_refund_local_state(refund_order->pay_platform, state);
 		}
 	}

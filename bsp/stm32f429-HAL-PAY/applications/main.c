@@ -29,7 +29,7 @@ SPI2:ICCard
 */
 
 int main(void)
-{		
+{	
     rt_kprintf("hello rt-thread\n");
 	
     return 0;	

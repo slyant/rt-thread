@@ -405,11 +405,6 @@
               <FileType>1</FileType>
               <FilePath>CloudPay\cloud_pay_request.c</FilePath>
             </File>
-            <File>
-              <FileName>cJSON.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\CloudPay\cJSON.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
