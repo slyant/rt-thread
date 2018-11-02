@@ -46,23 +46,23 @@ void MX_RTC_Init(void)
     RT_ASSERT(HAL_RTC_Init(&hrtc) == HAL_OK);
     /**Initialize RTC and set the Time and Date
     */
-    if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != 0x32F2)
+    if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != 0x33F3)
     {
-        sTime.Hours = 22;
-        sTime.Minutes = 28;
+        sTime.Hours = 0;
+        sTime.Minutes = 0;
         sTime.Seconds = 0;
         sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         sTime.StoreOperation = RTC_STOREOPERATION_RESET;
         RT_ASSERT(HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) == HAL_OK);
 
-        sDate.WeekDay = RTC_WEEKDAY_THURSDAY;
-        sDate.Month = RTC_MONTH_OCTOBER;
-        sDate.Date = 26;
-        sDate.Year = 17;
+        sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+        sDate.Month = RTC_MONTH_JANUARY;
+        sDate.Date = 1;
+        sDate.Year = 18;
 
         RT_ASSERT(HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) == HAL_OK);
     }
-    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, 0x32F2);
+    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, 0x33F3);
 
 }
 

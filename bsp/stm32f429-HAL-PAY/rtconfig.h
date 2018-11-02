@@ -103,6 +103,9 @@
 #define RT_USING_MTD_NAND
 #define RT_MTD_NAND_DEBUG
 #define RT_USING_RTC
+#define RTC_SYNC_USING_NTP
+#define RTC_NTP_FIRST_SYNC_DELAY 60
+#define RTC_NTP_SYNC_PERIOD 3600
 #define RT_USING_SPI
 
 /* Using WiFi */
@@ -224,6 +227,7 @@
 /* example package: hello */
 
 #define SOC_STM32F429IG
+#define RT_USING_RNG
 #define RT_HSE_VALUE 25000000
 #define RT_HSE_HCLK 168000000
 #define RT_USING_EXT_SDRAM

@@ -1,6 +1,8 @@
 #include <rtthread.h>
 #include <qr_client.h>
 #include <cloud_pay_intf.h>
+#include <drv_rng.h>
+#include "mbedtls/sha256.h"
 
 #define DBG_ENABLE
 #define DBG_COLOR
@@ -10,7 +12,7 @@
 
 #define QR_DEVICE_NAME	"uart1"
 #define QR_BUFFER_SIZE	30
-#define QR_MQ_MAX_MSGS	2
+#define QR_MQ_MAX_MSGS	5
 
 #define PRIORITY	7
 #define STACK_SIZE	20480
@@ -67,6 +69,21 @@ static int self_compute_sign_2_base64(const char *in, const char* private_key, c
 }
 static int self_compute_authen_code(const char *in, const char* key, char *out, size_t *out_size)
 {
+	unsigned char md[32]; //32 bytes
+	unsigned int md_len = sizeof(md);
+	
+	mbedtls_sha256((const unsigned char*)in, rt_strlen(in), md, 0);
+	
+	if (*out_size < SHA256_DIGEST_LENGTH * 2 + 1) {
+		return -1;
+	}
+
+	for (unsigned int i = 0; i < md_len; i++)
+	{
+		snprintf(out + i * 2, *out_size - i*2, "%02X", md[i]);
+	}
+	*out_size = SHA256_DIGEST_LENGTH * 2;
+	return 0;
 	return 0;
 }
 static int self_ansi_to_utf8(const char *ansi, char *utf8)
@@ -142,24 +159,24 @@ static int cloud_pay_init(void)
 static int cloud_pay_request(char* pay_code)
 {
 	rt_err_t ret = RT_EOK;
+	char nonce_str[17];
+	rt_sprintf(nonce_str, "%04d%04d%04d%04d", RNG_Get_RandomRange(0,9999), RNG_Get_RandomRange(0,9999), RNG_Get_RandomRange(0,9999), RNG_Get_RandomRange(0,9999)); 
+	struct tm datetime;
+	time_t now = time(RT_NULL);
+	struct tm *tmnow = localtime(&now);
+	rt_memcpy(&datetime, tmnow, sizeof(struct tm));
+	datetime.tm_year += (1900-2);
+	datetime.tm_mon += 1;
 	char* author_code = pay_code;
 	char out_trade_no[64]; //云支付订单前缀
-	rt_sprintf(out_trade_no,"%s%04d%02d%02d%02d%02d%02d",TRADE_NO_HEAD, 2018,11,1,11,20,25);
+	rt_sprintf(out_trade_no,"%s%s%s%04d%02d%02d%02d%02d%02d%04d", TRADE_NO_HEAD, DEVICE_ID, STAFF_ID, datetime.tm_year, datetime.tm_mon, datetime.tm_mday,
+	datetime.tm_hour, datetime.tm_min, datetime.tm_sec, RNG_Get_RandomRange(0,9999));
 
 	char out_refund_no_1[64];
 	rt_snprintf(out_refund_no_1, sizeof(out_refund_no_1) - 1, "%s%s", out_trade_no, "01");
 
 	char out_refund_no_2[64];
 	rt_snprintf(out_refund_no_2, sizeof(out_refund_no_2) - 1, "%s%s", out_trade_no, "02");
-
-//	char url[64] = "https://139.199.232.94:4455";
-//	ret = ping(url);
-//	printf("ping ret = %d\n", ret);
-
-//	RT_ASSERT(ret == 0);
-
-//	//可选择
-//	set_url(url);
 
 	int state = 0;
 	
@@ -171,12 +188,13 @@ static int cloud_pay_request(char* pay_code)
 		rt_memset(&request, 0, sizeof(request));
 		rt_memcpy(request.out_trade_no, out_trade_no, rt_strlen(out_trade_no) + 1);
 		rt_memcpy(request.author_code, author_code, rt_strlen(author_code) +1);
-		rt_memcpy(request.nonce_str, "nonce_str", rt_strlen("nonce_str") + 1); //真实请填真正的随机数
-		rt_memcpy(request.body, "test", rt_strlen("test") + 1);
-		request.total_fee = 2;
+		rt_memcpy(request.nonce_str, nonce_str, rt_strlen(nonce_str) + 1);
+		rt_memcpy(request.body, "Bus fare", rt_strlen("Bus fare") + 1);
+		request.total_fee = 1;
 		request.pay_platform= 1;
 		
 		ret = micro_pay(&request, &response);
+return 0;		
 		rt_kprintf("ret = %d, %s\n", ret, errmsg_utf8_to_ansi(error_utf8()));
 		
 		if (ret == 0) 
@@ -205,7 +223,7 @@ static int cloud_pay_request(char* pay_code)
 		}
 		
 	}
-
+/*
 	while (ret == 0 && state == KCloudPaySdkLocalStateUserPaying) //用户支付中状态 需要继续查单 可以查询1分钟没有结果就提示去手机端管理系统查询订单支付结果
 	{
 		QueryOrderRequest request;
@@ -325,14 +343,15 @@ static int cloud_pay_request(char* pay_code)
 		}
 	}	
 	return ret;	
+*/
 }
 static void thread_entry(void *parameter)
 {
-	char qr_code[30];
+	char qr_code[QR_BUFFER_SIZE];
 	char last_code[18] = "\0";
 	while(1)
 	{
-		if(qr_mq_recv(qr_code, 30)==RT_EOK)
+		if(qr_mq_recv(qr_code, QR_BUFFER_SIZE)==RT_EOK)
 		{
 			char *head, *head0, *head1, *end;
 			rt_uint8_t len;
@@ -364,8 +383,7 @@ static void thread_entry(void *parameter)
 							else
 							{
 								rt_kprintf("cloud pay failed!%s", qr_code);
-							}
-							
+							}							
 							rt_memcpy(last_code, qr_code, 18);
 						}
 						continue;

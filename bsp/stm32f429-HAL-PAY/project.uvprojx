@@ -481,6 +481,11 @@
               <FilePath>drivers\drv_rtc.c</FilePath>
             </File>
             <File>
+              <FileName>drv_rng.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers\drv_rng.c</FilePath>
+            </File>
+            <File>
               <FileName>drv_rom_fs.c</FileName>
               <FileType>1</FileType>
               <FilePath>drivers\drv_rom_fs.c</FilePath>

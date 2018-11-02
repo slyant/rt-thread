@@ -363,10 +363,8 @@ static inline char* set_micro_pay_request_content(cJSON *pay_mch_key, cJSON *ord
 	cJSON_AddItemToObject (request_content,  "order_client", order_client);
 	cJSON_AddItemToObject (request_content,  "pay_content",  pay_content);
 	cJSON_AddStringToObject(request_content, "nonce_str",    nonce_str);
-
 	char *s = cJSON_PrintUnformatted(request_content);
 	cJSON_Delete(request_content);
-
 	return s;
 }
 
@@ -495,6 +493,7 @@ int micro_pay(MicroPayRequest *request, MicroPayResponse *response)
 	char url[256];
 	g_manager.ops.pf_snprintf(url, sizeof(url) - 1, "%s/cpay/micro_pay", g_url);
 
+return 0;
 	return  core_process(url,
 						 request_content_str,
 						 request_compute_authen_code,
