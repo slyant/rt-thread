@@ -1,8 +1,9 @@
 #include <rtthread.h>
+#include <webclient.h>
 #include <qr_client.h>
 #include <cloud_pay_intf.h>
 #include <drv_rng.h>
-#include "mbedtls/sha256.h"
+#include <tinycrypt.h>
 
 #define DBG_ENABLE
 #define DBG_COLOR
@@ -59,10 +60,109 @@ const char* PRIVATE_KEY =
 static char* errmsg_utf8_to_ansi(const char* in)
 {
 	return (char*)in;
+//	int outputSize = 0; //记录转换后的Unicode字符串的字节数
+//	char* pInput = (char*)in;
+//	char* pOutput;
+//	while (*pInput)
+//	{
+//		if (*pInput > 0x00 && *pInput <= 0x7F) //处理单字节UTF8字符（英文字母、数字）
+//		{
+//			*pOutput = *pInput;
+//			 pOutput++;
+//			*pOutput = 0; //小端法表示，在高地址填补0
+//		}
+//		else if (((*pInput) & 0xE0) == 0xC0) //处理双字节UTF8字符
+//		{
+//			char high = *pInput;
+//			pInput++;
+//			char low = *pInput;
+//			if ((low & 0xC0) != 0x80)  //检查是否为合法的UTF8字符表示
+//			{
+//				return pOutput; //如果不是则报错
+//			}
+// 
+//			*pOutput = (high << 6) + (low & 0x3F);
+//			pOutput++;
+//			*pOutput = (high >> 2) & 0x07;
+//		}
+//		else if (((*pInput) & 0xF0) == 0xE0) //处理三字节UTF8字符
+//		{
+//			char high = *pInput;
+//			pInput++;
+//			char middle = *pInput;
+//			pInput++;
+//			char low = *pInput;
+//			if (((middle & 0xC0) != 0x80) || ((low & 0xC0) != 0x80))
+//			{
+//				return pOutput;
+//			}
+//			*pOutput = (middle << 6) + (low & 0x3F);//取出middle的低两位与low的低6位，组合成unicode字符的低8位
+//			pOutput++;
+//			*pOutput = (high << 4) + ((middle >> 2) & 0x0F); //取出high的低四位与middle的中间四位，组合成unicode字符的高8位
+//		}
+//		else //对于其他字节数的UTF8字符不进行处理
+//		{
+//			return pOutput;
+//		}
+//		pInput ++;//处理下一个utf8字符
+//		pOutput ++;
+//		outputSize += 2;
+//	}
+//	//unicode字符串后面，有两个\0
+//	*pOutput = 0;
+//	 pOutput++;
+//	*pOutput = 0;
+//	return pOutput;	
 }
 static int self_http_post(const char *url, const char *request, char *response, size_t *length)
 {
-	return 0;
+#define POST_HEADER_BUFSZ	1024
+#define POST_RESP_BUFSZ		1024
+	
+    struct webclient_session* session = RT_NULL;
+    unsigned char *buffer = (unsigned char*)response;
+    char *URI = (char*)url;
+    int response_pos = 0, index, ret = 0;
+    int bytes_read, resp_status;
+
+    /* create webclient session and set header response size */
+    session = webclient_session_create(POST_HEADER_BUFSZ);
+    if (session == RT_NULL)
+    {
+        ret = -RT_ENOMEM;
+        goto __exit;
+    }
+	
+    /* build header for upload */
+    webclient_header_fields_add(session, "Content-Length: %d\r\n", rt_strlen(request));
+    webclient_header_fields_add(session, "Content-Type: application/json\r\n");
+    /* send GET request by default header */
+	rt_kprintf("send POST request to %s\n", URI);
+    if ((resp_status = webclient_post(session, URI, request)) != 200)
+    {
+        rt_kprintf("webclient POST request failed, response(%d) error.\n", resp_status);
+        ret = -RT_ERROR;
+        goto __exit;
+    }
+	
+    do
+    {
+        bytes_read = webclient_read(session, buffer + response_pos, POST_RESP_BUFSZ);
+        if (bytes_read <= 0)
+        {
+            break;
+        }
+		response_pos += bytes_read;
+    } while (1);
+
+__exit:
+    if (session)
+    {
+        webclient_close(session);
+    }
+	rt_kprintf("request:%s\r\n",request);
+	rt_kprintf("response:%s\r\n",response);
+    return ret;	
 }
 static int self_compute_sign_2_base64(const char *in, const char* private_key, char *out, size_t *out_size)
 {
@@ -73,7 +173,7 @@ static int self_compute_authen_code(const char *in, const char* key, char *out, 
 	unsigned char md[SHA256_DIGEST_LENGTH]; //32 bytes
 	unsigned int md_len = sizeof(md);
 	
-	mbedtls_sha256((const unsigned char*)in, rt_strlen(in), md, 0);
+	tiny_sha2_hmac((unsigned char*)key, rt_strlen(key), (unsigned char*)in, rt_strlen(in), md, 0);
 	
 	if (*out_size < SHA256_DIGEST_LENGTH * 2 + 1) {
 		return -1;
@@ -88,9 +188,52 @@ static int self_compute_authen_code(const char *in, const char* key, char *out, 
 }
 static int self_ansi_to_utf8(const char *ansi, char *utf8)
 {
-	rt_strncpy(utf8, ansi, rt_strlen(ansi));
+	rt_strncpy((char*)utf8, ansi, rt_strlen(ansi));
 	return 0;
+//	int len = 0; //记录转换后的Utf8字符串的字节数
+//	char* pInput = (char*)ansi;
+//	char* pOutput = utf8;
+//	while (*pInput)
+//	{
+//		//处理一个unicode字符
+//		char low = *pInput;//取出unicode字符的低8位
+//		pInput++;
+//		char high = *pInput;//取出unicode字符的高8位
+//		int w=high<<8;
+//		unsigned  wchar = (high<<8)+low;//高8位和低8位组成一个unicode字符,加法运算级别高
+// 
+//		if (wchar <= 0x7F ) //英文字符
+//		{   
+//			pOutput[len] = (char)wchar;  //取wchar的低8位
+//			len++;
+//		}  
+//		else if (wchar >=0x80 && wchar <= 0x7FF)  //可以转换成双字节pOutput字符
+//		{  
+//			pOutput[len] = 0xc0 |((wchar >> 6)&0x1f);  //取出unicode编码低6位后的5位，填充到110yyyyy 10zzzzzz 的yyyyy中
+//			len++;
+//			pOutput[len] = 0x80 | (wchar & 0x3f);  //取出unicode编码的低6位，填充到110yyyyy 10zzzzzz 的zzzzzz中
+//			len++;
+//		}  
+//		else if (wchar >=0x800 && wchar < 0xFFFF)  //可以转换成3个字节的pOutput字符
+//		{  
+//			pOutput[len] = 0xe0 | ((wchar >> 12)&0x0f);  //高四位填入1110xxxx 10yyyyyy 10zzzzzz中的xxxx
+//			len++;
+//			pOutput[len] = 0x80 | ((wchar >> 6) & 0x3f);  //中间6位填入1110xxxx 10yyyyyy 10zzzzzz中的yyyyyy
+//			len++;
+//			pOutput[len] = 0x80 | (wchar & 0x3f);  //低6位填入1110xxxx 10yyyyyy 10zzzzzz中的zzzzzz
+//			len++;
+//		}
+//		else //对于其他字节数的unicode字符不进行处理
+//		{
+//			return -1;
+//		}
+//		pInput ++;//处理下一个unicode字符
+//	}
+//	//utf8字符串后面，有个\0
+//	pOutput [len]= 0;
+//	return len;
 }
+
 static int self_pf_fini()
 {
 //	EVP_cleanup();
@@ -157,7 +300,7 @@ static int cloud_pay_init(void)
 		return -RT_ERROR;
 	}
 }
-static int cloud_pay_request(char* pay_code)
+static int cloud_pay_request(char* pay_code, long long fee)
 {
 	rt_err_t ret = RT_EOK;
 	char nonce_str[17];
@@ -170,8 +313,8 @@ static int cloud_pay_request(char* pay_code)
 	datetime.tm_mon += 1;
 	char* author_code = pay_code;
 	char out_trade_no[64]; //云支付订单前缀
-	rt_sprintf(out_trade_no,"%s%s%s%04d%02d%02d%02d%02d%02d%04d", TRADE_NO_HEAD, DEVICE_ID, STAFF_ID, datetime.tm_year, datetime.tm_mon, datetime.tm_mday,
-	datetime.tm_hour, datetime.tm_min, datetime.tm_sec, RNG_Get_RandomRange(0,9999));
+	rt_sprintf(out_trade_no,"%s04d%02d%02d%02d%02d%02d", TRADE_NO_HEAD, datetime.tm_year, datetime.tm_mon, datetime.tm_mday,
+	datetime.tm_hour, datetime.tm_min, datetime.tm_sec);
 
 	char out_refund_no_1[64];
 	rt_snprintf(out_refund_no_1, sizeof(out_refund_no_1) - 1, "%s%s", out_trade_no, "01");
@@ -191,11 +334,11 @@ static int cloud_pay_request(char* pay_code)
 		rt_memcpy(request.author_code, author_code, rt_strlen(author_code) +1);
 		rt_memcpy(request.nonce_str, nonce_str, rt_strlen(nonce_str) + 1);
 		rt_memcpy(request.body, "Bus fare", rt_strlen("Bus fare") + 1);
-		request.total_fee = 1;
+		request.total_fee = fee;
 		request.pay_platform= 1;
 		
 		ret = micro_pay(&request, &response);
-return 0;		
+
 		rt_kprintf("ret = %d, %s\n", ret, errmsg_utf8_to_ansi(error_utf8()));
 		
 		if (ret == 0) 
@@ -208,7 +351,7 @@ return 0;
 			{
 				RT_ASSERT(state == KCloudPaySdkLocalStateSuccess || state == KCloudPaySdkLocalStateUserPaying || state == KCloudPaySdkLocalStateRefund);
 				RT_ASSERT(response.order.pay_platform == 1);
-				RT_ASSERT(response.order.total_fee == 2);
+				RT_ASSERT(response.order.total_fee == fee);
 				RT_ASSERT(0 == rt_strcmp(response.order.out_trade_no,out_trade_no));
 				RT_ASSERT(rt_strlen(response.order.transaction_id) > 0);
 			}
@@ -221,9 +364,9 @@ return 0;
 		else
 		{
 			//支付失败
-		}
-		
+		}		
 	}
+	return ret;
 /*
 	while (ret == 0 && state == KCloudPaySdkLocalStateUserPaying) //用户支付中状态 需要继续查单 可以查询1分钟没有结果就提示去手机端管理系统查询订单支付结果
 	{
@@ -377,7 +520,7 @@ static void thread_entry(void *parameter)
 						else
 						{
 							rt_kprintf("OK_QR:%s\n", qr_code);
-							if(cloud_pay_request(qr_code)==RT_EOK)
+							if(cloud_pay_request(qr_code, 1)==RT_EOK)
 							{
 								rt_kprintf("cloud pay ok!%s", qr_code);
 							}
