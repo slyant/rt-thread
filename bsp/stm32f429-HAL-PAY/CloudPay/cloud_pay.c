@@ -489,11 +489,10 @@ int micro_pay(MicroPayRequest *request, MicroPayResponse *response)
 		set_micro_pay_request_content(set_pay_mch_key(request->pay_platform), 
 			                          set_order_client(), 
 									  set_pay_content(request),
-									   request->nonce_str);
+									  request->nonce_str);
 	char url[256];
 	g_manager.ops.pf_snprintf(url, sizeof(url) - 1, "%s/cpay/micro_pay", g_url);
 
-return 0;
 	return  core_process(url,
 						 request_content_str,
 						 request_compute_authen_code,

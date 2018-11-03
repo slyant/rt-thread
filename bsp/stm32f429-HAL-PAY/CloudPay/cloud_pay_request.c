@@ -18,6 +18,7 @@
 #define STACK_SIZE	20480
 #define TIMESLICE	10
 
+#define SHA256_DIGEST_LENGTH	32
 const char* TRADE_NO_HEAD = "sz0100mpp3";
 const char* MCH_ID = "sz01Kb5mGP6pdxtj7C53";
 const char* SUB_MCH_ID = "sz01mYMssPJx5r5U4K8K";
@@ -69,7 +70,7 @@ static int self_compute_sign_2_base64(const char *in, const char* private_key, c
 }
 static int self_compute_authen_code(const char *in, const char* key, char *out, size_t *out_size)
 {
-	unsigned char md[32]; //32 bytes
+	unsigned char md[SHA256_DIGEST_LENGTH]; //32 bytes
 	unsigned int md_len = sizeof(md);
 	
 	mbedtls_sha256((const unsigned char*)in, rt_strlen(in), md, 0);
@@ -80,14 +81,14 @@ static int self_compute_authen_code(const char *in, const char* key, char *out, 
 
 	for (unsigned int i = 0; i < md_len; i++)
 	{
-		snprintf(out + i * 2, *out_size - i*2, "%02X", md[i]);
+		rt_snprintf(out + i * 2, *out_size - i*2, "%02X", md[i]);
 	}
 	*out_size = SHA256_DIGEST_LENGTH * 2;
-	return 0;
 	return 0;
 }
 static int self_ansi_to_utf8(const char *ansi, char *utf8)
 {
+	rt_strncpy(utf8, ansi, rt_strlen(ansi));
 	return 0;
 }
 static int self_pf_fini()
