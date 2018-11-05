@@ -122,7 +122,7 @@ static int self_http_post(const char *url, const char *request, char *response, 
     struct webclient_session* session = RT_NULL;
     unsigned char *buffer = (unsigned char*)response;
     char *URI = (char*)url;
-    int response_pos = 0, index, ret = 0;
+    int response_pos = 0, ret = 0;
     int bytes_read, resp_status;
 
     /* create webclient session and set header response size */
@@ -160,8 +160,6 @@ __exit:
     {
         webclient_close(session);
     }
-	rt_kprintf("request:%s\r\n",request);
-	rt_kprintf("response:%s\r\n",response);
     return ret;	
 }
 static int self_compute_sign_2_base64(const char *in, const char* private_key, char *out, size_t *out_size)
@@ -286,8 +284,8 @@ static int cloud_pay_init(void)
 	rt_memcpy(terminal.sdk_version,      "1.1", rt_strlen("1.1")+1);
 	rt_memcpy(terminal.machine_no,       "01-01-01-01-01-01", rt_strlen("01-01-01-01-01-01") + 1);
 	rt_memcpy(terminal.spbill_create_ip, "192.168.1.1", rt_strlen("192.168.1.1") + 1);
-	terminal.terminal_type=     2;    // 1 windows 2 linux 3 android
-	terminal.sub_terminal_type= 900;  // 机具的类型. 找云支付分配， 可以统计某个机具的交易量
+	terminal.terminal_type=2;		// 1 windows 2 linux 3 android
+	terminal.sub_terminal_type=900;	// 机具的类型. 找云支付分配， 可以统计某个机具的交易量
 
 	if(cloud_pay_api_init(&account, &key, &terminal, &ops)==RT_EOK)
 	{
@@ -334,8 +332,8 @@ static int cloud_pay_request(char* pay_code, long long fee)
 		rt_memcpy(request.author_code, author_code, rt_strlen(author_code) +1);
 		rt_memcpy(request.nonce_str, nonce_str, rt_strlen(nonce_str) + 1);
 		rt_memcpy(request.body, "Bus fare", rt_strlen("Bus fare") + 1);
-		request.total_fee = fee;
-		request.pay_platform= 1;
+		request.total_fee=fee;
+		request.pay_platform=1;
 		
 		ret = micro_pay(&request, &response);
 
