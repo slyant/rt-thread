@@ -26,7 +26,7 @@ const char* SUB_MCH_ID = "sz01mYMssPJx5r5U4K8K";
 const char* SHOP_ID = "sz011MYZ6vv7mZGfyEFP";
 const char* DEVICE_ID = "1001";
 const char* STAFF_ID = "1000";
-const char* AUTHEN_KEY = "JIEcmop4533i8dcmdfddjnnRlpppce02";
+const char* AUTHEN_KEY = "vGs4apQ3Iw4h2JwnuH2jaxp57rfPjsdD";
 const char* PRIVATE_KEY = 
 "-----BEGIN PRIVATE KEY-----\n"
 "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDKv/ktN9dsscql\n"
@@ -182,6 +182,7 @@ static int self_compute_authen_code(const char *in, const char* key, char *out, 
 		rt_snprintf(out + i * 2, *out_size - i*2, "%02X", md[i]);
 	}
 	*out_size = SHA256_DIGEST_LENGTH * 2;
+	
 	return 0;
 }
 static int self_ansi_to_utf8(const char *ansi, char *utf8)
@@ -520,11 +521,11 @@ static void thread_entry(void *parameter)
 							rt_kprintf("OK_QR:%s\n", qr_code);
 							if(cloud_pay_request(qr_code, 1)==RT_EOK)
 							{
-								rt_kprintf("cloud pay ok!%s", qr_code);
+								rt_kprintf("cloud pay ok!");
 							}
 							else
 							{
-								rt_kprintf("cloud pay failed!%s", qr_code);
+								rt_kprintf("cloud pay failed!");
 							}							
 							rt_memcpy(last_code, qr_code, 18);
 						}

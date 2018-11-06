@@ -1,5 +1,5 @@
 #include "cloud_pay_intf.h"
-#include <cJSON.h>
+#include <cJSON_util.h>
 
 typedef struct _Manager {
 	Account account;
@@ -161,14 +161,7 @@ static int request_compute_authen_code(const char *in, cJSON **out)
 	{
 		set_error_ansi("计算认证码失败");
 		return CLOUD_PAY_API_ERROR_COMPUTE_AUTHEN_CODE_FAIL;
-	}
-	
-//调试信息输出开始
-	rt_kprintf("in:%s\r\n", in);
-	rt_kprintf("key:%s\r\n", g_manager.key.authen_key);
-	rt_kprintf("code:%s\r\n", authen_code);
-//调试信息输出结束
-	
+	}	
 	//构造authen info
 	cJSON *authen = cJSON_CreateObject();
 	cJSON_AddStringToObject(authen, "authen_code", authen_code);
@@ -215,15 +208,24 @@ static int core_process(
 	cJSON_AddStringToObject(request, "request_content", request_content);
 	cJSON_AddItemToObject  (request, "authen_info",     authen_info);
 //调试信息输出开始
-
+	rt_kprintf("request_content_str:%s\r\n", request_content);
+	rt_kprintf("key:%s\r\n", g_manager.key.authen_key);
+	const char* authen_info_str = cJSON_PrintUnformatted(authen_info);
+	rt_kprintf("authen_info_str:%s\r\n", authen_info_str);
+	rt_kprintf("\r\n");
 //调试信息输出结束
 	char* request_str = cJSON_PrintUnformatted(request);
 	cJSON_Delete(request);
-
+//调试信息输出开始
+	rt_kprintf("request_str:%s\r\n", request_str);
+//调试信息输出结束
 	//https
 	char response_str[4096];
 	size_t length = sizeof(response_str);
 	ret = g_manager.ops.pf_http_post(url, request_str, response_str, &length);
+//调试信息输出开始
+	rt_kprintf("response_str:%s\r\n", response_str);
+//调试信息输出结束	
 	if (ret != 0) 
 	{
 		RT_ASSERT(ret == CLOUD_PAY_API_ERROR_NETWORK_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT);

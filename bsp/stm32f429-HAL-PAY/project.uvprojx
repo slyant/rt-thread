@@ -973,7 +973,7 @@
             <File>
               <FileName>cJSON_util.c</FileName>
               <FileType>1</FileType>
-              <FilePath>packages\cJSON-v1.0.2\cJSON_util.c</FilePath>
+              <FilePath>.\packages\cJSON-v1.0.2\cJSON_util.c</FilePath>
             </File>
           </Files>
         </Group>
