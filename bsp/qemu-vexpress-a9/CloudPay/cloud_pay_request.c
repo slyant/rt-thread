@@ -1,9 +1,8 @@
 #include <rtthread.h>
 #include <webclient.h>
-#include <qr_client.h>
 #include <cloud_pay_intf.h>
-#include <drv_rng.h>
 #include <tinycrypt.h>
+#include <stdlib.h>
 
 #define DBG_ENABLE
 #define DBG_COLOR
@@ -22,7 +21,8 @@
 #define SHA256_DIGEST_LENGTH	32
 const char* TRADE_NO_HEAD = "sz0100mpp3";
 const char* MCH_ID = "sz01Kb5mGP6pdxtj7C53";
-const char* SUB_MCH_ID = "sz01mYMssPJx5r5U4K8K";
+const char* SUB_MCH_ID = "sz01Kb5mGP6pdxtj7C53";
+// const char* SUB_MCH_ID = "sz01mYMssPJx5r5U4K8K";
 const char* SHOP_ID = "sz011MYZ6vv7mZGfyEFP";
 const char* DEVICE_ID = "1001";
 const char* STAFF_ID = "1000";
@@ -299,6 +299,13 @@ static int cloud_pay_init(void)
 		return -RT_ERROR;
 	}
 }
+
+static int RNG_Get_RandomRange(int min, int max)
+{
+	int tick = (int)rt_tick_get();
+	srand(tick);
+	return min+(int)(max * rand()/(RAND_MAX + min));
+}
 static int cloud_pay_request(char* pay_code, long long fee)
 {
 	rt_err_t ret = RT_EOK;
@@ -488,80 +495,96 @@ static int cloud_pay_request(char* pay_code, long long fee)
 	return ret;	
 */
 }
-static void thread_entry(void *parameter)
-{
-	char qr_code[QR_BUFFER_SIZE];
-	char last_code[18] = "\0";
-	while(1)
-	{
-		if(qr_mq_recv(qr_code, QR_BUFFER_SIZE)==RT_EOK)
-		{
-			char *head, *head0, *head1, *end;
-			rt_uint8_t len;
-			head0 = rt_strstr(qr_code, "j]C0");
-			head1 = rt_strstr(qr_code, "Q]Q1");
-			head = head0?head0:head1;
-			if(head)
-			{	//Q]Q1135124350877540729
-				//j]C0135098347648826005
-				end = rt_strstr(qr_code, "\r");
-				if(end)
-				{		
-					len = (rt_uint8_t)(end - head - 4);
-					if(len==18)
-					{
-						rt_memcpy(qr_code, head + 4, 18);
-						qr_code[18] = '\0';
-						if(rt_memcmp(qr_code, last_code, 18)==0)
-						{
-							rt_kprintf("The QR Code repetition!mq:%s", qr_code);
-						}
-						else
-						{
-							rt_kprintf("OK_QR:%s\n", qr_code);
-//							if(cloud_pay_request(qr_code, 1)==RT_EOK)
-//							{
-//								rt_kprintf("cloud pay ok!");
-//							}
-//							else
-//							{
-//								rt_kprintf("cloud pay failed!");
-//							}							
-							rt_memcpy(last_code, qr_code, 18);
-						}
-						continue;
-					}
-				}				
-			}
-			rt_kprintf("ERR_QR:%s\n", qr_code);
-		}
-	}
-}
+// static void thread_entry(void *parameter)
+// {
+// 	char qr_code[QR_BUFFER_SIZE];
+// 	char last_code[18] = "\0";
+// 	while(1)
+// 	{
+// 		if(qr_mq_recv(qr_code, QR_BUFFER_SIZE)==RT_EOK)
+// 		{
+// 			char *head, *head0, *head1, *end;
+// 			rt_uint8_t len;
+// 			head0 = rt_strstr(qr_code, "j]C0");
+// 			head1 = rt_strstr(qr_code, "Q]Q1");
+// 			head = head0?head0:head1;
+// 			if(head)
+// 			{	//Q]Q1135124350877540729
+// 				//j]C0135098347648826005
+// 				end = rt_strstr(qr_code, "\r");
+// 				if(end)
+// 				{		
+// 					len = (rt_uint8_t)(end - head - 4);
+// 					if(len==18)
+// 					{
+// 						rt_memcpy(qr_code, head + 4, 18);
+// 						qr_code[18] = '\0';
+// 						if(rt_memcmp(qr_code, last_code, 18)==0)
+// 						{
+// 							rt_kprintf("The QR Code repetition!mq:%s", qr_code);
+// 						}
+// 						else
+// 						{
+// 							rt_kprintf("OK_QR:%s\n", qr_code);
+// 							if(cloud_pay_request(qr_code, 1)==RT_EOK)
+// 							{
+// 								rt_kprintf("cloud pay ok!");
+// 							}
+// 							else
+// 							{
+// 								rt_kprintf("cloud pay failed!");
+// 							}							
+// 							rt_memcpy(last_code, qr_code, 18);
+// 						}
+// 						continue;
+// 					}
+// 				}				
+// 			}
+// 			rt_kprintf("ERR_QR:%s\n", qr_code);
+// 		}
+// 	}
+// }
 
 static int cloud_pay_thread_startup(void)
 {
-	rt_err_t result0, result1, result2;	
-	result0 = qr_device_init(QR_DEVICE_NAME, QR_BUFFER_SIZE, QR_MQ_MAX_MSGS);
-	result1 = cloud_pay_init();
-	if(result0==RT_EOK && result1==RT_EOK)
-	{
-		rt_thread_t rtt = RT_NULL;
-		rtt = rt_thread_create("cl_pay",      //线程名称。
-								thread_entry,    //线程入口函数。
-								RT_NULL,         //线程入口参数。
-								STACK_SIZE,      //线程栈大小。
-								PRIORITY,        //线程优先级。
-								TIMESLICE);      //时间片Tick。
-		if(rtt != RT_NULL)                       //判断线程是否创建成功。
-		{
-			rt_thread_startup(rtt);             //线程创建成功，启动线程。
-			result2 = RT_EOK;
-		}
-		else
-		{
-			result2 = -RT_ERROR;
-		}
-	}
-	return (result0 | result1 | result2);
+	// rt_err_t result0, result1, result2;	
+	// result0 = qr_device_init(QR_DEVICE_NAME, QR_BUFFER_SIZE, QR_MQ_MAX_MSGS);
+	// result1 = cloud_pay_init();
+	// if(result0==RT_EOK && result1==RT_EOK)
+	// {
+	// 	rt_thread_t rtt = RT_NULL;
+	// 	rtt = rt_thread_create("cl_pay",      //线程名称。
+	// 							thread_entry,    //线程入口函数。
+	// 							RT_NULL,         //线程入口参数。
+	// 							STACK_SIZE,      //线程栈大小。
+	// 							PRIORITY,        //线程优先级。
+	// 							TIMESLICE);      //时间片Tick。
+	// 	if(rtt != RT_NULL)                       //判断线程是否创建成功。
+	// 	{
+	// 		rt_thread_startup(rtt);             //线程创建成功，启动线程。
+	// 		result2 = RT_EOK;
+	// 	}
+	// 	else
+	// 	{
+	// 		result2 = -RT_ERROR;
+	// 	}
+	// }
+	// return (result0 | result1 | result2);
+	
+	cloud_pay_init();
+	return 0;
 }
 INIT_APP_EXPORT(cloud_pay_thread_startup);
+
+static void pay_entry(char* qr_code)
+{
+	if(cloud_pay_request(qr_code, 1)==RT_EOK)
+	{
+		rt_kprintf("cloud pay ok!");
+	}
+	else
+	{
+		rt_kprintf("cloud pay failed!");
+	}	
+}
+FINSH_FUNCTION_EXPORT_ALIAS(pay_entry, pay, cloud pay);
