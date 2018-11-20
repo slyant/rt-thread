@@ -941,19 +941,9 @@
           <GroupName>at_device</GroupName>
           <Files>
             <File>
-              <FileName>at_device.c</FileName>
+              <FileName>at_socket_ec20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>packages\at_device-latest\at_device.c</FilePath>
-            </File>
-            <File>
-              <FileName>at_socket_air800.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\at_device-latest\at_socket_air800.c</FilePath>
-            </File>
-            <File>
-              <FileName>at_air800_sample.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\at_device-latest\at_air800_sample.c</FilePath>
+              <FilePath>packages\at_device-latest\at_socket_ec20.c</FilePath>
             </File>
           </Files>
         </Group>

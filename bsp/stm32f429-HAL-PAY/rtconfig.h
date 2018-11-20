@@ -40,7 +40,7 @@
 #define RT_USING_INTERRUPT_INFO
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
-#define RT_CONSOLE_DEVICE_NAME "uart7"
+#define RT_CONSOLE_DEVICE_NAME "uart6"
 
 /* RT-Thread Components */
 
@@ -145,6 +145,7 @@
 #define AT_CLIENT_NUM_MAX 1
 #define AT_USING_SOCKET
 #define AT_USING_CLI
+#define AT_PRINT_RAW_CMD
 #define AT_SW_VERSION_NUM 0x10200
 
 /* VBUS(Virtual Software BUS) */
@@ -178,12 +179,11 @@
 #define PKG_USING_NETUTILS_LATEST_VERSION
 #define PKG_USING_AT_DEVICE
 #define PKG_AT_INIT_BY_THREAD
-#define AT_DEVICE_AIR800
-#define AT_DEVICE_SOCKETS_NUM 1
+#define AT_DEVICE_EC20
+#define AT_DEVICE_SOCKETS_NUM 12
 #define AT_DEVICE_NAME "uart3"
 #define AT_DEVICE_RECV_BUFF_LEN 1024
 #define PKG_USING_AT_DEVICE_LATEST_VERSION
-#define PKG_AT_DEVICE_VER_NUM 0x10400
 
 /* IoT Cloud */
 
@@ -262,6 +262,7 @@
 
 /* SPI Select */
 
+#define RT_USING_SPI1
 #define RT_USING_SPI2
 
 #endif
