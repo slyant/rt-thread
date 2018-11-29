@@ -101,6 +101,9 @@
 #define RT_SFUD_USING_SFDP
 #define RT_SFUD_USING_FLASH_INFO_TABLE
 
+/* Using WiFi */
+
+
 /* Using USB */
 
 

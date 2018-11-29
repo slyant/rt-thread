@@ -103,8 +103,8 @@ int userinfo_get_all(na_queue_t * q)
 //操作成功返回0
 int userinfo_add(ENTITY_TYPE * e)
 {
-    //return db_nonquery_operator("insert into userinfo(userid,username) values (?,?);",userinfo_bind_for_insert,e);
-	return db_nonquery_by_varpara("insert into userinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
+    return db_nonquery_operator("insert into userinfo(userid,username) values (?,?);",userinfo_bind_for_insert,e);
+		//return db_nonquery_by_varpara("insert into userinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
 }
 
 int userinfo_update(ENTITY_TYPE * e)
@@ -135,26 +135,26 @@ void userinfo_free_queue(na_queue_t *h)
     na_queue_init(head);
 }
 
-static void list_all_user(void)
+static void list_all_userinfo(void)
 {
 	rt_kprintf("test get all userinfo\n");
-	na_queue_t *h = rt_calloc(sizeof(userinfo_t), 1);
+	na_queue_t *h = rt_calloc(sizeof(ENTITY_TYPE), 1);
 	int ret = userinfo_get_all(h);
 	userinfo_print_queue(h);
 	rt_kprintf("record(s):%d\n", ret);
 	userinfo_free_queue(h);
 	rt_free(h);
 }
-static void user(uint8_t argc, char **argv)
+static void userinfo(uint8_t argc, char **argv)
 {	
 	if(argc<2)
 	{
-		list_all_user();
+		list_all_userinfo();
 		return;
 	}
 	else
 	{
-		userinfo_t *u = rt_calloc(sizeof(userinfo_t),1);
+		ENTITY_TYPE *u = rt_calloc(sizeof(ENTITY_TYPE),1);
 		char* cmd = argv[1];
 		if(rt_strcmp(cmd,"add")==0)
 		{
@@ -208,7 +208,7 @@ static void user(uint8_t argc, char **argv)
 		{
 			if(argc >= 5)
 			{
-				userinfo_t *u = rt_calloc(sizeof(userinfo_t), 1);
+				ENTITY_TYPE *u = rt_calloc(sizeof(ENTITY_TYPE), 1);
 				u->id = atol(argv[2]);
 				u->userid = atol(argv[3]);
 				rt_strncpy(u->username, argv[4], rt_strlen(argv[4]));
@@ -242,4 +242,4 @@ static void user(uint8_t argc, char **argv)
 		rt_free(u);
 	}
 }
-MSH_CMD_EXPORT(user, user add del update query);
+MSH_CMD_EXPORT(userinfo, userinfo add del update query);

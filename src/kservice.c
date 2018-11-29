@@ -1143,7 +1143,6 @@ void rt_kputs(const char *str)
  */
 void rt_kprintf(const char *fmt, ...)
 {
-	#define RT_CONSOLEBUF_SIZE	10240
     va_list args;
     rt_size_t length;
     static char rt_log_buf[RT_CONSOLEBUF_SIZE];
