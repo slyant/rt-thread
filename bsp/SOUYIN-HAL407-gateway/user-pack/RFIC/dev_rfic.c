@@ -62,7 +62,7 @@ static void rfic_delay_ms(rt_uint32_t nms)
 	
 	static rt_err_t rfic_rx_call_back(rt_device_t dev, rt_size_t size)
 	{
-		/* ·¢ËÍÊÂ¼ş */
+		/* å‘é€äº‹ä»¶ */
 		rt_event_send(&rfic_event, UART_RX_EVENT);
 
 		return RT_EOK;
@@ -83,10 +83,10 @@ static void rfic_delay_ms(rt_uint32_t nms)
 		rt_uint32_t e;
 		rt_uint8_t ch;
 
-		/* ¶ÁÈ¡1×Ö½ÚÊı¾İ */
+		/* è¯»å–1å­—èŠ‚æ•°æ® */
 		while (rt_device_read(rfic_device, 0, &ch, 1) != 1)
 		{
-			 /* ½ÓÊÕÊÂ¼ş */
+			 /* æ¥æ”¶äº‹ä»¶ */
 			rt_event_recv(&rfic_event, UART_RX_EVENT,RT_EVENT_FLAG_AND | RT_EVENT_FLAG_CLEAR,RT_WAITING_FOREVER, &e);
 		}
 
@@ -99,12 +99,12 @@ static void rfic_delay_ms(rt_uint32_t nms)
 
 	#define RFIC_RST_PIN   39
 
-	#define  IIC_USE_RTOS_FUN    0      //¶¨Òå¸ÃÖµÈ·¶¨Ê¹ÓÃµÄº¯Êı¡£0Ê¹ÓÃÓÃ»§×Ô¼ºµÄº¯Êı£¬1Ê¹ÓÃrtthreadÏµÍ³µÄº¯Êı      
+	#define  IIC_USE_RTOS_FUN    0      //å®šä¹‰è¯¥å€¼ç¡®å®šä½¿ç”¨çš„å‡½æ•°ã€‚0ä½¿ç”¨ç”¨æˆ·è‡ªå·±çš„å‡½æ•°ï¼Œ1ä½¿ç”¨rtthreadç³»ç»Ÿçš„å‡½æ•°      
 	
 	#if IIC_USE_RTOS_FUN == 1
 	
 		#define  RDIC_ADDR      0x28
-		static struct rt_i2c_bus_device   *rfic_card_bus;     //RFIC¿¨Éè±¸¾ä±ú
+		static struct rt_i2c_bus_device   *rfic_card_bus;     //RFICå¡è®¾å¤‡å¥æŸ„
 
 	#else
 		
@@ -119,13 +119,13 @@ static void rfic_delay_ms(rt_uint32_t nms)
 	
 	static void iic_start(void)
 	{
-		SET_IIC_SDA(1);     //´´ÔìÆğÊ¼Ìõ¼ş
+		SET_IIC_SDA(1);     //åˆ›é€ èµ·å§‹æ¡ä»¶
 		SET_IIC_SCL(1);
 		rfic_delay_us(6);
-		SET_IIC_SDA(0);      //·¢ËÍÆğÊ¼ĞÅºÅ
+		SET_IIC_SDA(0);      //å‘é€èµ·å§‹ä¿¡å·
 		rfic_delay_us(5);
 		SET_IIC_SCL(0);
-		rfic_delay_us(5);                        //Ç¯×¡×ÜÏß
+		rfic_delay_us(5);                        //é’³ä½æ€»çº¿
 	}
 	
 	static void iic_stop(void)
@@ -134,11 +134,11 @@ static void rfic_delay_ms(rt_uint32_t nms)
 		rfic_delay_us(5);
 		SET_IIC_SCL(1);
 		rfic_delay_us(5);
-		SET_IIC_SDA(1);     //ÊÍ·Å×ÜÏß
+		SET_IIC_SDA(1);     //é‡Šæ”¾æ€»çº¿
 		rfic_delay_us(5);  
 	}
 	
-	static void iic_send_ack(unsigned char ack)     //·¢ËÍÓ¦´ğ£¨²»Ó¦´ğ£©ĞÅºÅ:0=Ó¦´ğ£¬1=²»Ó¦´ğ
+	static void iic_send_ack(unsigned char ack)     //å‘é€åº”ç­”ï¼ˆä¸åº”ç­”ï¼‰ä¿¡å·:0=åº”ç­”ï¼Œ1=ä¸åº”ç­”
 	{
 		SET_IIC_SDA(ack);
 		rfic_delay_us(2);
@@ -148,10 +148,10 @@ static void rfic_delay_ms(rt_uint32_t nms)
 		rfic_delay_us(5);
 	}
 	
-	static uint8_t iic_read_ack(void)               //²éÑ¯Ó¦´ğĞÅºÅ
+	static uint8_t iic_read_ack(void)               //æŸ¥è¯¢åº”ç­”ä¿¡å·
 	{
 		uint8_t ack;
-		SET_IIC_SDA(1);       //ÊÍ·ÅÊı¾İÏß
+		SET_IIC_SDA(1);       //é‡Šæ”¾æ•°æ®çº¿
 		SET_IIC_SCL(1);
 		rfic_delay_us(5);
 		ack = rt_pin_read(RFIC_SDA_PIN);
@@ -197,13 +197,13 @@ static void rfic_delay_ms(rt_uint32_t nms)
 	#endif
 	
 	
-	/*        ·¢ËÍÊı¾İº¯Êı£¬·µ»Ø0·¢ËÍ´íÎó£¬·µ»Ø1Íê³É·¢ËÍ       */
+	/*        å‘é€æ•°æ®å‡½æ•°ï¼Œè¿”å›0å‘é€é”™è¯¯ï¼Œè¿”å›1å®Œæˆå‘é€       */
 	static uint8_t iic_send_data(uint8_t addr, uint8_t addr_sub, uint8_t *buf, uint8_t len)
 	{
 		#if IIC_USE_RTOS_FUN ==1
 		
 		    uint8_t tbuf[len+1] ,i;
-			tbuf[0] = addr_sub;      //¼Ä´æÆ÷µØÖ·
+			tbuf[0] = addr_sub;      //å¯„å­˜å™¨åœ°å€
 			for(i=0;i<len;i++)	{ tbuf[1+i] = buf[i]; }
 			if(rt_i2c_master_send(rfic_card_bus, addr, 0, tbuf, len+1)==len+1 )
 				return 1;
@@ -226,12 +226,12 @@ static void rfic_delay_ms(rt_uint32_t nms)
 			return 1;
 		#endif
 	}
-	/*        ¶ÁÊı¾İº¯Êı£¬·µ»Ø0·¢Éú¶ÁÈ¡´íÎó£¬·µ»Ø1³É¹¦¶ÁÈ¡       */
+	/*        è¯»æ•°æ®å‡½æ•°ï¼Œè¿”å›0å‘ç”Ÿè¯»å–é”™è¯¯ï¼Œè¿”å›1æˆåŠŸè¯»å–       */
 	static uint8_t iic_read_data(uint8_t addr, uint8_t addr_sub, uint8_t *buf, uint8_t len)
 	{
 		#if IIC_USE_RTOS_FUN == 1
 
-			if(rt_i2c_master_send(rfic_card_bus, addr, 0, &addr_sub, 1)==1)   //·¢ËÍĞ´ÃüÁîĞòÁĞºó²úÉúÍ£Ö¹Ìõ¼ş
+			if(rt_i2c_master_send(rfic_card_bus, addr, 0, &addr_sub, 1)==1)   //å‘é€å†™å‘½ä»¤åºåˆ—åäº§ç”Ÿåœæ­¢æ¡ä»¶
 			{
 				if(rt_i2c_master_recv(rfic_card_bus, addr, 1, buf, len)==len)
 					return 1;
@@ -256,11 +256,11 @@ static void rfic_delay_ms(rt_uint32_t nms)
 			for(i=0;i<len-1;i++)
 			{
 				*buf=iic_read_byte();
-				iic_send_ack(0);         //·¢ËÍÓ¦´ğ
+				iic_send_ack(0);         //å‘é€åº”ç­”
 				buf++;
 			}
 			*buf=iic_read_byte();
-			iic_send_ack(1);              //·¢ËÍÎŞÓ¦´ğ
+			iic_send_ack(1);              //å‘é€æ— åº”ç­”
 			iic_stop();
 			return 1;
 		#endif
@@ -271,14 +271,14 @@ static void rfic_delay_ms(rt_uint32_t nms)
 
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºĞ´RC632¼Ä´æÆ÷
-//²ÎÊıËµÃ÷£ºAddress[IN]:¼Ä´æÆ÷µØÖ·
-//          value[IN]:Ğ´ÈëµÄÖµ
-//·µ    »Ø  1=OK 0=falut
+//åŠŸ    èƒ½ï¼šå†™RC632å¯„å­˜å™¨
+//å‚æ•°è¯´æ˜ï¼šAddress[IN]:å¯„å­˜å™¨åœ°å€
+//          value[IN]:å†™å…¥çš„å€¼
+//è¿”    å›  1=OK 0=falut
 /////////////////////////////////////////////////////////////////////
 static uint8_t write_raw_rc_ex(unsigned char Address, unsigned char value)
 {  
-#ifdef RC_BUS_SPI  //SPI×ÜÏß
+#ifdef RC_BUS_SPI  //SPIæ€»çº¿
 	unsigned char ucAddr[2];
 	ucAddr[0] = (Address<<1)&0x7F ;
 	ucAddr[1] = value ;
@@ -288,8 +288,8 @@ static uint8_t write_raw_rc_ex(unsigned char Address, unsigned char value)
 #ifdef RC_BUS_UART  //UART
 	unsigned char ucAddr;
 	ucAddr = Address & 0x3F;
-    rfic_putchar(ucAddr);    //Ğ´ÃüÁî£¬¸½¼ÓµØÖ·
-    rfic_putchar(value);     //Ğ´Êı¾İ
+    rfic_putchar(ucAddr);    //å†™å‘½ä»¤ï¼Œé™„åŠ åœ°å€
+    rfic_putchar(value);     //å†™æ•°æ®
 	return 1;
 #endif
 #ifdef RC_BUS_IIC  //IIC
@@ -300,9 +300,9 @@ static uint8_t write_raw_rc_ex(unsigned char Address, unsigned char value)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£º¶ÁRC632¼Ä´æÆ÷
-//²ÎÊıËµÃ÷£ºAddress[IN]:¼Ä´æÆ÷µØÖ·
-//·µ    »Ø£º¶Á³öµÄÖµ
+//åŠŸ    èƒ½ï¼šè¯»RC632å¯„å­˜å™¨
+//å‚æ•°è¯´æ˜ï¼šAddress[IN]:å¯„å­˜å™¨åœ°å€
+//è¿”    å›ï¼šè¯»å‡ºçš„å€¼
 /////////////////////////////////////////////////////////////////////
 static uint8_t read_raw_rc_ex(unsigned char Address)
 {
@@ -316,8 +316,8 @@ static uint8_t read_raw_rc_ex(unsigned char Address)
 #endif
 #ifdef RC_BUS_UART
     ucAddr = (Address&0x3F) | 0x80;
-    rfic_putchar(ucAddr);                   //Ğ´¼Ä´æÆ÷µØÖ·
-	ucResult = rfic_getchar();              //¶Á¼Ä´æÆ÷Êı¾İ
+    rfic_putchar(ucAddr);                   //å†™å¯„å­˜å™¨åœ°å€
+	ucResult = rfic_getchar();              //è¯»å¯„å­˜å™¨æ•°æ®
 #endif
 #ifdef RC_BUS_IIC
 	ucAddr = Address;
@@ -327,8 +327,8 @@ static uint8_t read_raw_rc_ex(unsigned char Address)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£º¸´Î»RC522
-//·µ    »Ø: ³É¹¦·µ»Ø0,²»³É¹¦·µ»Ø³ö´í´ÎÊı
+//åŠŸ    èƒ½ï¼šå¤ä½RC522
+//è¿”    å›: æˆåŠŸè¿”å›0,ä¸æˆåŠŸè¿”å›å‡ºé”™æ¬¡æ•°
 /////////////////////////////////////////////////////////////////////
 static uint8_t pcd_reset_ex(void)
 {
@@ -341,19 +341,19 @@ static uint8_t pcd_reset_ex(void)
 	rfic_delay_us(50);
 	rt_pin_write(RFIC_RST_PIN,PIN_HIGH);
 	rfic_delay_us(100);
-	write_raw_rc_ex(COMMAND_REG,PCD_RESETPHASE);   //º¯ÊıÄÚÓĞºê¾ö¶Ï×ÜÏß·½Ê½
+	write_raw_rc_ex(COMMAND_REG,PCD_RESETPHASE);   //å‡½æ•°å†…æœ‰å®å†³æ–­æ€»çº¿æ–¹å¼
 #ifdef 	RC_BUS_UART
 	tmp = read_raw_rc_ex(SERIAL_SPEED_REG);
 	RFIC_LOG("SERIAL_SPEED_REG = 0x%x \n",tmp);
-//	write_raw_rc_ex(SERIAL_SPEED_REG,0x7A);	//ÉèÖÃMFRC522´®¿ÚÍ¨Ñ¶ËÙÂÊ
+//	write_raw_rc_ex(SERIAL_SPEED_REG,0x7A);	//è®¾ç½®MFRC522ä¸²å£é€šè®¯é€Ÿç‡
 	rfic_delay_us(10);
 	tmp = read_raw_rc_ex(SERIAL_SPEED_REG);
 	RFIC_LOG("SERIAL_SPEED_REG = 0x%x \n",tmp);
-//	uart_set_baud_rate("uart1",BAUD_RATE_115200);    //´®¿ÚÃû³Æ±ØĞëÊÇrt_thread³õÊ¼»¯×¢²áÁËµÄ´®¿ÚÃû³Æ£¨×Ö·û´®£©
+//	uart_set_baud_rate("uart1",BAUD_RATE_115200);    //ä¸²å£åç§°å¿…é¡»æ˜¯rt_threadåˆå§‹åŒ–æ³¨å†Œäº†çš„ä¸²å£åç§°ï¼ˆå­—ç¬¦ä¸²ï¼‰
 #endif
 	rfic_delay_us(10);
 	
-    write_raw_rc_ex(MODE_REG,0x3D);            //ºÍMifare¿¨Í¨Ñ¶£¬CRC³õÊ¼Öµ0x6363
+    write_raw_rc_ex(MODE_REG,0x3D);            //å’ŒMifareå¡é€šè®¯ï¼ŒCRCåˆå§‹å€¼0x6363
 	data = read_raw_rc_ex(MODE_REG);
 	if(data!=0x3D){RFIC_LOG(" read 0x%x \n",data); tmp++;}
 	
@@ -381,9 +381,9 @@ static uint8_t pcd_reset_ex(void)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºÇåRC522¼Ä´æÆ÷Î»
-//²ÎÊıËµÃ÷£ºreg[IN]:¼Ä´æÆ÷µØÖ·
-//          mask[IN]:ÇåÎ»Öµ
+//åŠŸ    èƒ½ï¼šæ¸…RC522å¯„å­˜å™¨ä½
+//å‚æ•°è¯´æ˜ï¼šreg[IN]:å¯„å­˜å™¨åœ°å€
+//          mask[IN]:æ¸…ä½å€¼
 /////////////////////////////////////////////////////////////////////
 static void clear_bit_mask_ex(unsigned char reg,unsigned char mask)
 {
@@ -393,9 +393,9 @@ static void clear_bit_mask_ex(unsigned char reg,unsigned char mask)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºÖÃRC522¼Ä´æÆ÷Î»
-//²ÎÊıËµÃ÷£ºreg[IN]:¼Ä´æÆ÷µØÖ·
-//          mask[IN]:ÖÃÎ»Öµ
+//åŠŸ    èƒ½ï¼šç½®RC522å¯„å­˜å™¨ä½
+//å‚æ•°è¯´æ˜ï¼šreg[IN]:å¯„å­˜å™¨åœ°å€
+//          mask[IN]:ç½®ä½å€¼
 /////////////////////////////////////////////////////////////////////
 static void set_bit_mask_ex(unsigned char reg,unsigned char mask)
 {
@@ -405,8 +405,8 @@ static void set_bit_mask_ex(unsigned char reg,unsigned char mask)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¿ªÆôÌìÏß  
-//Ã¿´ÎÆô¶¯»ò¹Ø±ÕÌìÏÕ·¢ÉäÖ®¼äÓ¦ÖÁÉÙÓĞ1msµÄ¼ä¸ô
+//å¼€å¯å¤©çº¿  
+//æ¯æ¬¡å¯åŠ¨æˆ–å…³é—­å¤©é™©å‘å°„ä¹‹é—´åº”è‡³å°‘æœ‰1msçš„é—´éš”
 /////////////////////////////////////////////////////////////////////
 static void pcd_antenna_on_ex(void)
 {
@@ -419,7 +419,7 @@ static void pcd_antenna_on_ex(void)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹Ø±ÕÌìÏß
+//å…³é—­å¤©çº¿
 /////////////////////////////////////////////////////////////////////
 static void pcd_antenna_off_ex(void)
 {
@@ -427,7 +427,7 @@ static void pcd_antenna_off_ex(void)
 }
 
 //////////////////////////////////////////////////////////////////////
-//ÉèÖÃRC632µÄ¹¤×÷·½Ê½ 
+//è®¾ç½®RC632çš„å·¥ä½œæ–¹å¼ 
 //////////////////////////////////////////////////////////////////////
 static int m599_pcd_config_isotype_ex(unsigned char type)
 {
@@ -454,7 +454,7 @@ static int rt_hw_card_init(void)
 	rt_uint8_t i;
 	
 	rt_pin_mode(RFIC_RST_PIN,PIN_MODE_OUTPUT);
-	rt_pin_write(RFIC_RST_PIN,PIN_LOW);                 //À­µÍ¸´Î»Ïß
+	rt_pin_write(RFIC_RST_PIN,PIN_LOW);                 //æ‹‰ä½å¤ä½çº¿
 	
 #ifdef RC_BUS_SPI
 	
@@ -468,11 +468,11 @@ static int rt_hw_card_init(void)
 	rfic_device = rt_device_find("uart1");
 	if(rfic_device != RT_NULL)
 	{
-		if(rt_device_set_rx_indicate(rfic_device,rfic_rx_call_back) == RT_EOK )      //ÉèÖÃÊı¾İ½ÓÊÕ»Øµ÷º¯Êı
+		if(rt_device_set_rx_indicate(rfic_device,rfic_rx_call_back) == RT_EOK )      //è®¾ç½®æ•°æ®æ¥æ”¶å›è°ƒå‡½æ•°
 			{RFIC_LOG("RFIC set callback OK ! \n");}
 		else  {RFIC_LOG("RFIC set callback error ! \n");   return RT_ERROR; }
 		
-		res = rt_device_open(rfic_device, RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX );  //´ò¿ªÉè±¸
+		res = rt_device_open(rfic_device, RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX );  //æ‰“å¼€è®¾å¤‡
 		if(res != RT_EOK)
 		{	RFIC_LOG("open RFIC device(usart1) error ! \n"); return RT_ERROR;	}
 		else { RFIC_LOG("RFIC device(usart1) was opened OK ! \n"); }
@@ -526,16 +526,16 @@ static int rt_hw_card_init(void)
 	RFIC_LOG(" start initing... \n"); rt_kprintf(" \n");
 	for(i=0;i<2;i++)
 	{
-		ts=pcd_reset_ex();     //¸´Î»
-		if(ts) 	{RFIC_LOG(" pcd reset hanved %d error ... \n", ts);}     //Èç¹ûts²»Îª0Ôò±¨´í£¬²¢Ö¸³ö´íÎóÁ¿
+		ts=pcd_reset_ex();     //å¤ä½
+		if(ts) 	{RFIC_LOG(" pcd reset hanved %d error ... \n", ts);}     //å¦‚æœtsä¸ä¸º0åˆ™æŠ¥é”™ï¼Œå¹¶æŒ‡å‡ºé”™è¯¯é‡
 		else
 		{
 			rfic_delay_ms(2);
-			pcd_antenna_off_ex();  //¹Ø±ÕÌìÏß
+			pcd_antenna_off_ex();  //å…³é—­å¤©çº¿
 			rfic_delay_ms(10);
-			pcd_antenna_on_ex();   //´ò¿ªÌìÏß
+			pcd_antenna_on_ex();   //æ‰“å¼€å¤©çº¿
 			rfic_delay_ms(2);
-			if(m599_pcd_config_isotype_ex('A')!=MI_OK)   //ÉèÖÃ¹¤×÷·½Ê½
+			if(m599_pcd_config_isotype_ex('A')!=MI_OK)   //è®¾ç½®å·¥ä½œæ–¹å¼
 				{RFIC_LOG(" m599 pcd config ERR ! \n");}
 			else {RFIC_LOG(" m599 pcd config success ! \n");}
 		}
@@ -562,7 +562,7 @@ INIT_DEVICE_EXPORT(rt_hw_card_init);
 /********************************************************************************************************************************************/
 
 /////////////////////////////////////////////////////////////////////
-//ÓÃMF522¼ÆËãCRC16º¯Êı
+//ç”¨MF522è®¡ç®—CRC16å‡½æ•°
 /////////////////////////////////////////////////////////////////////
 static void calulate_crc_ex(unsigned char *pIndata,unsigned char len,unsigned char *pOutData)
 {
@@ -586,12 +586,12 @@ static void calulate_crc_ex(unsigned char *pIndata,unsigned char len,unsigned ch
 
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºÍ¨¹ıRC522ºÍISO14443¿¨Í¨Ñ¶
-//²ÎÊıËµÃ÷£ºCommand[IN]:RC522ÃüÁî×Ö
-//          pInData[IN]:Í¨¹ıRC522·¢ËÍµ½¿¨Æ¬µÄÊı¾İ
-//          InLenByte[IN]:·¢ËÍÊı¾İµÄ×Ö½Ú³¤¶È
-//          pOutData[OUT]:½ÓÊÕµ½µÄ¿¨Æ¬·µ»ØÊı¾İ
-//          *pOutLenBit[OUT]:·µ»ØÊı¾İµÄÎ»³¤¶È
+//åŠŸ    èƒ½ï¼šé€šè¿‡RC522å’ŒISO14443å¡é€šè®¯
+//å‚æ•°è¯´æ˜ï¼šCommand[IN]:RC522å‘½ä»¤å­—
+//          pInData[IN]:é€šè¿‡RC522å‘é€åˆ°å¡ç‰‡çš„æ•°æ®
+//          InLenByte[IN]:å‘é€æ•°æ®çš„å­—èŠ‚é•¿åº¦
+//          pOutData[OUT]:æ¥æ”¶åˆ°çš„å¡ç‰‡è¿”å›æ•°æ®
+//          *pOutLenBit[OUT]:è¿”å›æ•°æ®çš„ä½é•¿åº¦
 /////////////////////////////////////////////////////////////////////
 
 extern uint32_t SystemCoreClock;
@@ -632,11 +632,11 @@ static int pcd_com_mf522_ex(unsigned char Command,
     { set_bit_mask_ex(BIT_FRAMING_REG,0x80); }
 	//
 	{
-		unsigned long dwTime = 25000;//²Ù×÷M1¿¨×î´óµÈ´ıÊ±¼ä25ms
-		unsigned long dwCurCounter=0;                                //µ±Ç°Ê±¼ä¼ÆÊıÖµ
-		unsigned long dwPreTickVal=SysTick->VAL;                     //ÉÏÒ»´ÎSYSTICK¼ÆÊıÖµ
-		unsigned long dwCurTickVal;                                  //ÉÏÒ»´ÎSYSTICK¼ÆÊıÖµ
-		dwTime=dwTime*(SystemCoreClock/1000000);    //ĞèÑÓÊ±Ê±¼ä£¬¹²¶àÉÙÊ±¼ä½ÚÅÄ
+		unsigned long dwTime = 25000;//æ“ä½œM1å¡æœ€å¤§ç­‰å¾…æ—¶é—´25ms
+		unsigned long dwCurCounter=0;                                //å½“å‰æ—¶é—´è®¡æ•°å€¼
+		unsigned long dwPreTickVal=SysTick->VAL;                     //ä¸Šä¸€æ¬¡SYSTICKè®¡æ•°å€¼
+		unsigned long dwCurTickVal;                                  //ä¸Šä¸€æ¬¡SYSTICKè®¡æ•°å€¼
+		dwTime=dwTime*(SystemCoreClock/1000000);    //éœ€å»¶æ—¶æ—¶é—´ï¼Œå…±å¤šå°‘æ—¶é—´èŠ‚æ‹
 		for(;;){
 			n = read_raw_rc_ex(COM_IRQ_REG);
 			//
@@ -688,17 +688,17 @@ static int pcd_com_mf522_ex(unsigned char Command,
 
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºÑ°¿¨
-//²ÎÊıËµÃ÷: req_code[IN]:Ñ°¿¨·½Ê½
-//                0x52 = Ñ°¸ĞÓ¦ÇøÄÚËùÓĞ·ûºÏ14443A±ê×¼µÄ¿¨
-//                0x26 = Ñ°Î´½øÈëĞİÃß×´Ì¬µÄ¿¨
-//          pTagType[OUT]£º¿¨Æ¬ÀàĞÍ´úÂë
+//åŠŸ    èƒ½ï¼šå¯»å¡
+//å‚æ•°è¯´æ˜: req_code[IN]:å¯»å¡æ–¹å¼
+//                0x52 = å¯»æ„Ÿåº”åŒºå†…æ‰€æœ‰ç¬¦åˆ14443Aæ ‡å‡†çš„å¡
+//                0x26 = å¯»æœªè¿›å…¥ä¼‘çœ çŠ¶æ€çš„å¡
+//          pTagType[OUT]ï¼šå¡ç‰‡ç±»å‹ä»£ç 
 //                0x4400 = Mifare_UltraLight
 //                0x0400 = Mifare_One(S50)
 //                0x0200 = Mifare_One(S70)
 //                0x0800 = Mifare_Pro(X)
 //                0x4403 = Mifare_DESFire
-//·µ    »Ø: ³É¹¦·µ»ØMI_OK
+//è¿”    å›: æˆåŠŸè¿”å›MI_OK
 /////////////////////////////////////////////////////////////////////
 int pcd_request_ex(unsigned char req_code,unsigned char *pTagType)
 {
@@ -731,9 +731,9 @@ int pcd_request_ex(unsigned char req_code,unsigned char *pTagType)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£º·À³å×²
-//²ÎÊıËµÃ÷: pSnr[OUT]:¿¨Æ¬ĞòÁĞºÅ£¬4×Ö½Ú
-//·µ    »Ø: ³É¹¦·µ»ØMI_OK
+//åŠŸ    èƒ½ï¼šé˜²å†²æ’
+//å‚æ•°è¯´æ˜: pSnr[OUT]:å¡ç‰‡åºåˆ—å·ï¼Œ4å­—èŠ‚
+//è¿”    å›: æˆåŠŸè¿”å›MI_OK
 /////////////////////////////////////////////////////////////////////  
 int pcd_anticoll_ex(unsigned char *pSnr)
 {
@@ -766,9 +766,9 @@ int pcd_anticoll_ex(unsigned char *pSnr)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºÑ¡¶¨¿¨Æ¬
-//²ÎÊıËµÃ÷: pSnr[IN]:¿¨Æ¬ĞòÁĞºÅ£¬4×Ö½Ú
-//·µ    »Ø: ³É¹¦·µ»ØMI_OK
+//åŠŸ    èƒ½ï¼šé€‰å®šå¡ç‰‡
+//å‚æ•°è¯´æ˜: pSnr[IN]:å¡ç‰‡åºåˆ—å·ï¼Œ4å­—èŠ‚
+//è¿”    å›: æˆåŠŸè¿”å›MI_OK
 /////////////////////////////////////////////////////////////////////
 int pcd_select_ex(unsigned char *pSnr)
 {
@@ -799,14 +799,14 @@ int pcd_select_ex(unsigned char *pSnr)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºÑéÖ¤¿¨Æ¬ÃÜÂë
-//²ÎÊıËµÃ÷: auth_mode[IN]: ÃÜÂëÑéÖ¤Ä£Ê½
-//                 0x60 = ÑéÖ¤AÃÜÔ¿
-//                 0x61 = ÑéÖ¤BÃÜÔ¿ 
-//          addr[IN]£º¿éµØÖ·
-//          pKey[IN]£ºÃÜÂë
-//          pSnr[IN]£º¿¨Æ¬ĞòÁĞºÅ£¬4×Ö½Ú
-//·µ    »Ø: ³É¹¦·µ»ØMI_OK
+//åŠŸ    èƒ½ï¼šéªŒè¯å¡ç‰‡å¯†ç 
+//å‚æ•°è¯´æ˜: auth_mode[IN]: å¯†ç éªŒè¯æ¨¡å¼
+//                 0x60 = éªŒè¯Aå¯†é’¥
+//                 0x61 = éªŒè¯Bå¯†é’¥ 
+//          addr[IN]ï¼šå—åœ°å€
+//          pKey[IN]ï¼šå¯†ç 
+//          pSnr[IN]ï¼šå¡ç‰‡åºåˆ—å·ï¼Œ4å­—èŠ‚
+//è¿”    å›: æˆåŠŸè¿”å›MI_OK
 /////////////////////////////////////////////////////////////////////               
 int pcd_auth_state_ex(unsigned char auth_mode,unsigned char addr,unsigned char *pKey,unsigned char *pSnr)
 {
@@ -829,10 +829,10 @@ int pcd_auth_state_ex(unsigned char auth_mode,unsigned char addr,unsigned char *
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£º¶ÁÈ¡M1¿¨Ò»¿éÊı¾İ
-//²ÎÊıËµÃ÷: addr[IN]£º¿éµØÖ·
-//          pData[OUT]£º¶Á³öµÄÊı¾İ£¬16×Ö½Ú
-//·µ    »Ø: ³É¹¦·µ»ØMI_OK
+//åŠŸ    èƒ½ï¼šè¯»å–M1å¡ä¸€å—æ•°æ®
+//å‚æ•°è¯´æ˜: addr[IN]ï¼šå—åœ°å€
+//          pData[OUT]ï¼šè¯»å‡ºçš„æ•°æ®ï¼Œ16å­—èŠ‚
+//è¿”    å›: æˆåŠŸè¿”å›MI_OK
 ///////////////////////////////////////////////////////////////////// 
 int pcd_read_ex(unsigned char addr,unsigned char *pData)
 {
@@ -857,10 +857,10 @@ int pcd_read_ex(unsigned char addr,unsigned char *pData)
 }
 
 /////////////////////////////////////////////////////////////////////
-//¹¦    ÄÜ£ºĞ´Êı¾İµ½M1¿¨Ò»¿é
-//²ÎÊıËµÃ÷: addr[IN]£º¿éµØÖ·
-//          pData[IN]£ºĞ´ÈëµÄÊı¾İ£¬16×Ö½Ú
-//·µ    »Ø: ³É¹¦·µ»ØMI_OK
+//åŠŸ    èƒ½ï¼šå†™æ•°æ®åˆ°M1å¡ä¸€å—
+//å‚æ•°è¯´æ˜: addr[IN]ï¼šå—åœ°å€
+//          pData[IN]ï¼šå†™å…¥çš„æ•°æ®ï¼Œ16å­—èŠ‚
+//è¿”    å›: æˆåŠŸè¿”å›MI_OK
 /////////////////////////////////////////////////////////////////////                  
 int pcd_write_ex(unsigned char addr,unsigned char *pData)
 {

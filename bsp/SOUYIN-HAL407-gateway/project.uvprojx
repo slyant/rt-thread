@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\MultiButton-v1.0.2;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;user-pack\RFIC;user-pack\uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc</IncludePath>
+              <IncludePath>applications;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\MultiButton-v1.0.2;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;user-pack\nrf_app;user-pack\RFIC;user-pack\uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -421,14 +421,29 @@
               <FilePath>DbHelper\app_sqlite.c</FilePath>
             </File>
             <File>
+              <FileName>cardinfo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>DbHelper\cardinfo.c</FilePath>
+            </File>
+            <File>
               <FileName>dbhelper.c</FileName>
               <FileType>1</FileType>
               <FilePath>DbHelper\dbhelper.c</FilePath>
             </File>
             <File>
+              <FileName>doorinfo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>DbHelper\doorinfo.c</FilePath>
+            </File>
+            <File>
+              <FileName>loginfo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>DbHelper\loginfo.c</FilePath>
+            </File>
+            <File>
               <FileName>sysinfo.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\DbHelper\sysinfo.c</FilePath>
+              <FilePath>DbHelper\sysinfo.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -998,6 +1013,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>NRF-APP</GroupName>
+          <Files>
+            <File>
+              <FileName>nrf_app_gateway.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>user-pack\nrf_app\nrf_app_gateway.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>RFIC</GroupName>
           <Files>
             <File>
@@ -1013,12 +1038,12 @@
             <File>
               <FileName>ic_card_protocol.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\RFIC\ic_card_protocol.c</FilePath>
+              <FilePath>.\user-pack\RFIC\ic_card_protocol.c</FilePath>
             </File>
             <File>
               <FileName>rfic_oper.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\RFIC\rfic_oper.c</FilePath>
+              <FilePath>.\user-pack\RFIC\rfic_oper.c</FilePath>
             </File>
           </Files>
         </Group>

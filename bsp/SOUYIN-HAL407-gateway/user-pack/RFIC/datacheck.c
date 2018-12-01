@@ -1,5 +1,5 @@
 #include "datacheck.h"
-/*按字节处理的CRC8校验码生成算法*/
+
 static const unsigned char crc8_table[256] =
 {
   0, 94, 188, 226, 97, 63, 221, 131, 194, 156, 126, 32, 163, 253, 31, 65,

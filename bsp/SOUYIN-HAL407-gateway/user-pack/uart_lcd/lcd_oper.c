@@ -35,6 +35,11 @@ card_t temp_card;
 const uint16_t utex[3] = {84,312,540};
 const uint16_t utey[2] = {230,372};
 
+const uint8_t  key_card_str[] = {0xC3, 0xDC, 0xD4, 0xBF, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //密钥卡管理
+const uint8_t  cof_card_str[] = {0xC5, 0xE4, 0xD6, 0xC3, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //配置卡
+const uint8_t  pri_card_str[] = {0xCC, 0xD8, 0xC8, 0xA8, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //特权卡
+const uint8_t  nom_card_str[] = {0xC6, 0xD5, 0xCD, 0xA8, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //普通卡  218，62 64点阵
+
 static uint8_t test_sta_char[] = {0xD7, 0xB4, 0xCC, 0xAC, 0xA3, 0xBA,0};     //"状态"
 static uint8_t test_add_char[] = {0xB5, 0xD8, 0xD6, 0xB7, 0xA3, 0xBA,0};     //"地址"
 
@@ -66,10 +71,10 @@ static void show_parment(uint8_t addr,uint8_t id)
 	
 	if(t_button[i].stat)
 	{
-		show_string(TEST_UI,utex[i%3]+68,utey[i/3],1,(uint8_t*)test_dor_open);
+		show_string(TEST_UI,utex[i%3]+68,utey[i/3],1,6,(uint8_t*)test_dor_open);
 	}
-	else show_string(TEST_UI,utex[i%3]+68,utey[i/3],1,(uint8_t*)test_dor_close);
-	show_string(TEST_UI,utex[i%3]+68,utey[i/3]+26,1,(uint8_t*)tmp);
+	else show_string(TEST_UI,utex[i%3]+68,utey[i/3],1,6,(uint8_t*)test_dor_close);
+	show_string(TEST_UI,utex[i%3]+68,utey[i/3]+26,1,6,(uint8_t*)tmp);
 	
 }
 
@@ -98,10 +103,10 @@ static void test_screen(void)
 	SetFcolor(0xFFFF); //前景白色
 	for(i=0;i<3;i++)
 	{
-		show_string(TEST_UI,utex[i],utey[0],0,test_sta_char);
-		show_string(TEST_UI,utex[i],utey[1],0,test_sta_char);
-		show_string(TEST_UI,utex[i],utey[0]+26,0,test_add_char);
-		show_string(TEST_UI,utex[i],utey[1]+26,0,test_add_char);
+		show_string(TEST_UI,utex[i],utey[0],0,6,test_sta_char);
+		show_string(TEST_UI,utex[i],utey[1],0,6,test_sta_char);
+		show_string(TEST_UI,utex[i],utey[0]+26,0,6,test_add_char);
+		show_string(TEST_UI,utex[i],utey[1]+26,0,6,test_add_char);
 	}
 }
 
@@ -291,7 +296,7 @@ static void show_sark_list(void)
 				str[12] = ' '; str[13] = '<'; str[14] = '-'; str[15] = 0;
 			}
 			else str[12] = 0;
-			show_string(SARK_MANAGE,574,288+sk_pt.item*27,1,(uint8_t*)str);
+			show_string(SARK_MANAGE,574,288+sk_pt.item*27,1,6,(uint8_t*)str);
 			sk_pt.item++;
 		}
 	}
@@ -432,6 +437,38 @@ static uint8_t sark_save_param(sark_msg_t tag)
 
 /*------------------------------ end -- 节点信息处理块  ----------------------------*/
 
+static void card_manager_rst(void)
+{
+	switch(UI)
+	{
+		case SYS_KEY_CRCF:  key_card_init();       break;
+		case MANA_CARD_SET: manager_card_init();   break;
+		case PRIV_CARD_SET: privilege_card_init(); break;
+		case NORM_CARD_SET: normaal_card_init();   break;
+	}
+}
+
+static void card_manager_make(void)
+{
+	switch(UI)
+	{
+		case SYS_KEY_CRCF:   key_card_make();       break;
+		case MANA_CARD_SET:  manager_card_make();   break;
+		case PRIV_CARD_SET:  privilege_card_make(); break;
+		case NORM_CARD_SET:  normaal_card_make();   break;
+	}
+}
+
+static void card_manager_clear(void)
+{
+	switch(UI)
+	{
+		case SYS_KEY_CRCF:  key_card_clear();       break;
+		case MANA_CARD_SET: manager_card_clear();   break;
+		case PRIV_CARD_SET: privilege_card_clear(); break;
+		case NORM_CARD_SET: normaal_card_clear();   break;
+	}
+}
 
 
 /*! 
@@ -452,9 +489,12 @@ static void NotifyButton(unsigned short screen_id, unsigned short control_id, un
         case SYS_CFG_INDEX:
 				switch(control_id)
 				{
-					case 101: UI=MANA_CARD_SET; SetScreen(MANA_CARD_SET);  break;     //进入配置卡
-					case 102: UI=PRIV_CARD_SET; SetScreen(PRIV_CARD_SET);  break;     //进入特权卡设置
-					case 103: UI=NORM_CARD_SET; SetScreen(NORM_CARD_SET);  break;     //进入柜门数量设置
+					case 101: UI=MANA_CARD_SET; SetScreen(CARD_MANAG);   
+							  show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str); break;     //进入配置卡
+					case 102: UI=PRIV_CARD_SET; SetScreen(CARD_MANAG);  
+							  show_string(CARD_MANAG,258,62,1,9,(uint8_t*)pri_card_str); break;     //进入特权卡设置
+					case 103: UI=NORM_CARD_SET; SetScreen(CARD_MANAG);  
+							  show_string(CARD_MANAG,258,62,1,9,(uint8_t*)nom_card_str); break;     //进入普通卡
 					case 104: UI=SYS_TIME_SETUP; SetScreen(SYS_TIME_SETUP); break;     //进入系统时间设置
 					case 105: UI=SARK_MANAGE; show_sark_list();    break;     //柜门管理
 					case 106: UI=MAIN_INDEX; SetScreen(MAIN_INDEX);
@@ -487,35 +527,15 @@ static void NotifyButton(unsigned short screen_id, unsigned short control_id, un
 					UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX);
 				}
 				break;
-        case MANA_CARD_SET:  
+        case CARD_MANAG:  
 				switch(control_id)
 				{
-					case 31:  manager_card_init(); break;          //初始化配置卡
-					case 32:  manager_card_make();  break;         //制作配置卡
-					case 33:  manager_card_clear(); break;         //重置制作卡
+					case 31:  card_manager_rst();  break;          //初始化卡，函数内区分卡类型：钥匙卡，配置卡等
+					case 32:  card_manager_make();  break;         //制作配置卡
+					case 33:  card_manager_clear(); break;         //重置制作卡
 					case 34:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;
 					case 35:  complete_card_work();   break;	
 				}
-				break;
-        case PRIV_CARD_SET:
-				switch(control_id)
-				{
-					case 41:  privilege_card_init(); break;          //初始化特权卡
-					case 42:  privilege_card_make();  break;         //制作特权卡
-					case 43:  privilege_card_clear(); break;         //重置特权卡
-					case 44:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;
-					case 45:  complete_card_work();   break;	
-				}
-				break;
-        case NORM_CARD_SET:
-				switch(control_id)
-				{
-					case 51:  normaal_card_init(); break;          //初始化普通卡
-					case 52:  normaal_card_make();  break;         //制作普通卡
-					case 53:  normaal_card_clear(); break;         //重置普通卡
-					case 54:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;     //系统配置
-					case 55:  complete_card_work();   break;	
-				}			
 				break;
         case SARK_MANAGE:
 				switch(control_id)

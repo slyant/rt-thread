@@ -99,6 +99,4 @@ typedef struct{
     unsigned char crc8;
 }sys_config_t;
 
-
-
 #endif

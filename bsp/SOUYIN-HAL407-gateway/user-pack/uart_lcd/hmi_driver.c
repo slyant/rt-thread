@@ -1101,14 +1101,14 @@ void SetRtc(unsigned short Year,unsigned char Mon,unsigned char Day,unsigned cha
 	END_CMD();    
 }
 
-void show_string(unsigned short screen_id, unsigned short x, unsigned short y, unsigned char fg, unsigned char *str)
+void show_string(unsigned short screen_id, unsigned short x, unsigned short y, unsigned char fg, unsigned char size, unsigned char *str)
 {
 	BEGIN_CMD();
 	TX_8(0x20);
 	TX_16(x);
 	TX_16(y);
 	TX_8(fg);
-	TX_8(6);
+	TX_8(size);
 	SendStrings(str);
 	END_CMD();
 }

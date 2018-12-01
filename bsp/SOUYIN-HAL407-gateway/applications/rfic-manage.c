@@ -1,7 +1,7 @@
 
 /*
- *  IC¿¨²Ù×÷³ÌĞò£¬Íê³ÉÈË»ú½»»¥¹¦ÄÜ¶ø²»ÊÇÇı¶¯¡£
- *  Ïà¹ØÇı¶¯³ÌĞòÔÚRFIC·Ö×éÄÚ
+ *  ICå¡æ“ä½œç¨‹åºï¼Œå®Œæˆäººæœºäº¤äº’åŠŸèƒ½è€Œä¸æ˜¯é©±åŠ¨ã€‚
+ *  ç›¸å…³é©±åŠ¨ç¨‹åºåœ¨RFICåˆ†ç»„å†…
  *
  *
  *
@@ -11,73 +11,124 @@
 
 #include <rtthread.h>
 #include "rfic-manage.h"
+#include "ic_card_protocol.h"
 
 /*******************************************************************************************/
 /*
- *  ÅäÖÃ¿¨µÄ³õÊ¼»¯£¬¶ÁĞ´µÈ³ÌĞò
+ *  å¯†é’¥å¡çš„åˆå§‹åŒ–ï¼Œè¯»å†™ç­‰ç¨‹åº
+ *
+ */
+
+uint8_t user_data[16]={0}, use_bk_card_id[4];
+
+void key_card_init(void)
+{
+	if(card_init(ROOT_CARD))
+	{
+		rt_kprintf("key card reset ok ! \n");
+		creat_sys_key();
+	}
+	else rt_kprintf("key card reset faulted ! \n");
+}
+
+void key_card_make(void)
+{
+	if(write_inf_card(ROOT_CARD,user_data,16,use_bk_card_id))
+		rt_kprintf("key card make ok ! \n");
+	else rt_kprintf("key card make faulted ! \n");
+}
+
+void key_card_clear(void)
+{
+	if(card_reset(ROOT_CARD))
+		rt_kprintf("key card clear done ! \n");
+	else rt_kprintf("key card clear faulted ! \n");
+}
+
+/*******************************************************************************************/
+/*
+ *  é…ç½®å¡çš„åˆå§‹åŒ–ï¼Œè¯»å†™ç­‰ç¨‹åº
  *
  */
 
 void manager_card_init(void)
 {
-	rt_kprintf("manage card init ok ! \n");
+	if(card_init(SYS_CARD))
+		rt_kprintf("manage card init ok ! \n");
+	else rt_kprintf("manage card init faulted ! \n");
 }
 
 void manager_card_make(void)
 {
-	rt_kprintf("manage card make ok ! \n");
+	if(write_inf_card(SYS_CARD,user_data,16,use_bk_card_id))
+		rt_kprintf("manage card make ok ! \n");
+	else rt_kprintf("manage card make faulted ! \n");
 }
 
 void manager_card_clear(void)
 {
-	rt_kprintf("manage card clear done ! \n");
+	if(card_reset(SYS_CARD))
+		rt_kprintf("manage card clear done ! \n");
+	else rt_kprintf("manage card clear faulted ! \n");
 }
 
 /*******************************************************************************************/
 /*
- *  ÌØÈ¨¿¨µÄ³õÊ¼»¯£¬¶ÁĞ´µÈ³ÌĞò
+ *  ç‰¹æƒå¡çš„åˆå§‹åŒ–ï¼Œè¯»å†™ç­‰ç¨‹åº
  *
  */
 
 void privilege_card_init(void)
 {
-	rt_kprintf("privilege card init ok ! \n");
+	if(card_init(SYS_CARD))
+		rt_kprintf("privilege card init ok ! \n");
+	else rt_kprintf("privilege card init faulted ! \n");
 }
 
 void privilege_card_make(void)
 {
-	rt_kprintf("privilege card make ok ! \n");
+	if(write_inf_card(SYS_CARD,user_data,16,use_bk_card_id))
+		rt_kprintf("privilege card make ok ! \n");
+	else rt_kprintf("privilege card make faulted ! \n");
 }
 
 void privilege_card_clear(void)
 {
-	rt_kprintf("privilege card clear done ! \n");
+	if(card_reset(SYS_CARD))
+		rt_kprintf("privilege card clear done ! \n");
+	else rt_kprintf("privilege card clear faulted ! \n");
 }
 
 /*******************************************************************************************/
 /*
- *  ÆÕÍ¨¿¨µÄ³õÊ¼»¯£¬¶ÁĞ´µÈ³ÌĞò
+ *  æ™®é€šå¡çš„åˆå§‹åŒ–ï¼Œè¯»å†™ç­‰ç¨‹åº
  *
  */
 
 void normaal_card_init(void)
 {
-	rt_kprintf("normaal card init ok ! \n");
+	if(card_init(SYS_CARD))
+		rt_kprintf("normaal card init ok ! \n");
+	else rt_kprintf("normaal card init faulted ! \n");
 }
 
 void normaal_card_make(void)
 {
-	rt_kprintf("normaal card make ok ! \n");
+	if(write_inf_card(SYS_CARD,user_data,16,use_bk_card_id))
+		rt_kprintf("normaal card make ok ! \n");
+	else rt_kprintf("normaal card make faulted ! \n");
 }
 
 void normaal_card_clear(void)
 {
-	rt_kprintf("normaal card clear domne ! \n");
+	if(card_reset(SYS_CARD))
+		rt_kprintf("normaal card clear domne ! \n");
+	else rt_kprintf("normaal card clear faulted ! \n");
 }
 
 /*******************************************************************************************/
 /*
- *  ¿¨ĞÅÏ¢±£´æÖÁÏµÍ³
+ *  å¡ä¿¡æ¯ä¿å­˜è‡³ç³»ç»Ÿ
  *
  */
 void complete_card_work(void)

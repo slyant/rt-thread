@@ -12,15 +12,21 @@
 #define sys_config_addr					(data_base_addr+FLASH_PAGE_SIZE*0)
 #define sys_config_addr2				(data_base_addr+FLASH_PAGE_SIZE*1)
 
+/*************************  UI界面 ID*********************/
 #define MAIN_INDEX      0     //主界面
 #define SYS_CFG_INDEX   1     //系统配置
 #define SYS_TIME_SETUP  2     //系统时间设置（RTC）
-#define MANA_CARD_SET   3     //配置卡设置
-#define PRIV_CARD_SET   4     //特权卡设置
-#define NORM_CARD_SET   5     //普通卡设置
-#define SARK_MANAGE     6     //银柜管理
-#define DOOR_OPEN_MANA  7     //柜门开门管理
-#define TEST_UI         8     //测试
+#define CARD_MANAG      3
+#define SARK_MANAGE     4     //银柜管理
+#define DOOR_OPEN_MANA  5     //柜门开门管理
+#define TEST_UI         6     //测试
+/*************************  卡管理映射UI-->ID**************/
+#define SYS_KEY_CRCF    7     //密钥卡管理
+#define MANA_CARD_SET   8     //配置卡设置
+#define PRIV_CARD_SET   9     //特权卡设置
+#define NORM_CARD_SET   10    //普通卡设置
+/*************************  UI界面 ID**********************/
+
 
 //#define SYS_CFG_DATETIME_INDEX          3
 //#define SYS_CFG_CLOSETIMEOUT_INDEX      4

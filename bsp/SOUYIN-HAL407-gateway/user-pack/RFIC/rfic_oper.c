@@ -3,6 +3,7 @@
 #include "rtdevice.h"
 #include "rfic_oper.h"
 #include "ic_card_protocol.h"
+#include "lcd_oper.h"
 
 
 #define  RFID_SIG_LOG  rt_kprintf("[RFID_SIG]:");rt_kprintf
@@ -226,6 +227,5 @@ static int rfid_handle(void)
 	return 0;
 }
 INIT_APP_EXPORT(rfid_handle);
-
 
 

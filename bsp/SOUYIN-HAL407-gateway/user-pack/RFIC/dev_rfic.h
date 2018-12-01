@@ -2,45 +2,45 @@
 #define __DEV_RFIC_H__
 
 /****************************************************************/
-/*---------------     Ò»ÏÂÈýÏîÖ»ÄÜ¶¨ÒåÒ»¸ö     -----------------*/
-#define  RC_BUS_SPI             //SPI×ÜÏß                     */
-//#define  RC_BUS_UART            //UART×ÜÏß                    */
-//#define  RC_BUS_IIC             //IIC×ÜÏß                     */
+/*---------------     ä¸€ä¸‹ä¸‰é¡¹åªèƒ½å®šä¹‰ä¸€ä¸ª     -----------------*/
+#define  RC_BUS_SPI             //SPIæ€»çº¿                     */
+//#define  RC_BUS_UART            //UARTæ€»çº¿                    */
+//#define  RC_BUS_IIC             //IICæ€»çº¿                     */
 /****************************************************************/
 
 
 /////////////////////////////////////////////////////////////////////
-//MF522ÃüÁî×Ö
+//MF522å‘½ä»¤å­—
 /////////////////////////////////////////////////////////////////////
-#define PCD_IDLE              0x00               //È¡Ïûµ±Ç°ÃüÁî
-#define PCD_AUTHENT           0x0E               //ÑéÖ¤ÃÜÔ¿
-#define PCD_RECEIVE           0x08               //½ÓÊÕÊý¾Ý
-#define PCD_TRANSMIT          0x04               //·¢ËÍÊý¾Ý
-#define PCD_TRANSCEIVE        0x0C               //·¢ËÍ²¢½ÓÊÕÊý¾Ý
-#define PCD_RESETPHASE        0x0F               //¸´Î»
-#define PCD_CALCCRC           0x03               //CRC¼ÆËã
+#define PCD_IDLE              0x00               //å–æ¶ˆå½“å‰å‘½ä»¤
+#define PCD_AUTHENT           0x0E               //éªŒè¯å¯†é’¥
+#define PCD_RECEIVE           0x08               //æŽ¥æ”¶æ•°æ®
+#define PCD_TRANSMIT          0x04               //å‘é€æ•°æ®
+#define PCD_TRANSCEIVE        0x0C               //å‘é€å¹¶æŽ¥æ”¶æ•°æ®
+#define PCD_RESETPHASE        0x0F               //å¤ä½
+#define PCD_CALCCRC           0x03               //CRCè®¡ç®—
 
 
 /////////////////////////////////////////////////////////////////////
-//Mifare_One¿¨Æ¬ÃüÁî×Ö
+//Mifare_Oneå¡ç‰‡å‘½ä»¤å­—
 /////////////////////////////////////////////////////////////////////
-#define PICC_REQIDL           0x26               //Ñ°ÌìÏßÇøÄÚÎ´½øÈëÐÝÃß×´Ì¬
-#define PICC_REQALL           0x52               //Ñ°ÌìÏßÇøÄÚÈ«²¿¿¨
-#define PICC_ANTICOLL1        0x93               //·À³å×²
-#define PICC_ANTICOLL2        0x95               //·À³å×²
-#define PICC_AUTHENT1A        0x60               //ÑéÖ¤AÃÜÔ¿
-#define PICC_AUTHENT1B        0x61               //ÑéÖ¤BÃÜÔ¿
-#define PICC_READ             0x30               //¶Á¿é
-#define PICC_WRITE            0xA0               //Ð´¿é
-#define PICC_DECREMENT        0xC0               //¿Û¿î
-#define PICC_INCREMENT        0xC1               //³äÖµ
-#define PICC_RESTORE          0xC2               //µ÷¿éÊý¾Ýµ½»º³åÇø
-#define PICC_TRANSFER         0xB0               //±£´æ»º³åÇøÖÐÊý¾Ý
-#define PICC_HALT             0x50               //ÐÝÃß
+#define PICC_REQIDL           0x26               //å¯»å¤©çº¿åŒºå†…æœªè¿›å…¥ä¼‘çœ çŠ¶æ€
+#define PICC_REQALL           0x52               //å¯»å¤©çº¿åŒºå†…å…¨éƒ¨å¡
+#define PICC_ANTICOLL1        0x93               //é˜²å†²æ’ž
+#define PICC_ANTICOLL2        0x95               //é˜²å†²æ’ž
+#define PICC_AUTHENT1A        0x60               //éªŒè¯Aå¯†é’¥
+#define PICC_AUTHENT1B        0x61               //éªŒè¯Bå¯†é’¥
+#define PICC_READ             0x30               //è¯»å—
+#define PICC_WRITE            0xA0               //å†™å—
+#define PICC_DECREMENT        0xC0               //æ‰£æ¬¾
+#define PICC_INCREMENT        0xC1               //å……å€¼
+#define PICC_RESTORE          0xC2               //è°ƒå—æ•°æ®åˆ°ç¼“å†²åŒº
+#define PICC_TRANSFER         0xB0               //ä¿å­˜ç¼“å†²åŒºä¸­æ•°æ®
+#define PICC_HALT             0x50               //ä¼‘çœ 
 
 
 /////////////////////////////////////////////////////////////////////
-//MF522¼Ä´æÆ÷¶¨Òå
+//MF522å¯„å­˜å™¨å®šä¹‰
 /////////////////////////////////////////////////////////////////////
 // PAGE 0
 #define     RFU_00                    0x00    
@@ -113,7 +113,7 @@
 
 
 /////////////////////////////////////////////////////////////////////
-//ºÍMF522Í¨Ñ¶Ê±·µ»ØµÄ´íÎó´úÂë
+//å’ŒMF522é€šè®¯æ—¶è¿”å›žçš„é”™è¯¯ä»£ç 
 /////////////////////////////////////////////////////////////////////
 #define MI_OK                          0
 #define MI_NOTAGERR                    1

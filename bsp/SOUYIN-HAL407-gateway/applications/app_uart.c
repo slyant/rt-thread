@@ -82,6 +82,13 @@ uint8_t uart_rev_byte(void)
 	return ch;
 }
 
+/***********************************************************************************************************/
+extern uint8_t sys_key_a[6];
+extern uint8_t sys_key_b[6];    //系统密钥对，由密钥函数生成，并存入加密文件系统，这里暂时定义便于调试
+extern volatile uint8_t UI;
+extern const uint8_t  key_card_str[];
+extern const uint8_t  cof_card_str[];
+/***********************************************************************************************************/
 static int lcd_init(void)
 {
 	rt_err_t res;
@@ -117,13 +124,21 @@ static int lcd_init(void)
 		
 		SetFcolor(0xFFE0);//前景色设置成黄色
 		SetBcolor(0x52AA);
-		
-		if(card_temp_num<2)
+
+		if(sys_key_a[0]==RT_NULL && sys_key_b[0]==RT_NULL)    //没有做密钥设置
 		{
-			SetScreen(MANA_CARD_SET);      //如果配置卡小于2则直接显示配置卡假面
-			show_string(MANA_CARD_SET,20,440,0,mcardwarning);
-			show_string(MANA_CARD_SET,20,410,0,mcardnum);
-			show_string(MANA_CARD_SET,160,410,0,(uint8_t*)"0");
+			SetScreen(CARD_MANAG);    //进入密钥卡管理
+			show_string(CARD_MANAG,258,62,1,9,(uint8_t*)key_card_str);
+			UI = SYS_KEY_CRCF;
+		}
+		else if(card_temp_num<2)
+		{
+			SetScreen(CARD_MANAG);      //如果配置卡小于2则直接显示配置卡假面
+			show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str);
+			UI = MANA_CARD_SET;
+			show_string(MANA_CARD_SET,20,440,0,6,mcardwarning);
+			show_string(MANA_CARD_SET,20,410,0,6,mcardnum);
+			show_string(MANA_CARD_SET,160,410,0,6,(uint8_t*)"0");
 		}
 		else SetScreen(MAIN_INDEX);
 		

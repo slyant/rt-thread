@@ -32,15 +32,15 @@ enum WxpayOrderState
 	kWxpayOrderStateVoid = 11,
 };
 
-//Œ¢–≈ÕÀøÓ
+//ÂæÆ‰ø°ÈÄÄÊ¨æ
 enum WxpayRefundOrderState
 {
-	kWxpayRefundOrderStateInit = 1,  // ÕÀøÓµ•≥ı ºÃ¨
-	kWxpayRefundOrderStateSuccess = 2,   // ÕÀøÓ≥…π¶
-	kWxpayRefundOrderStateFail = 3,    // ÕÀøÓ ß∞‹ // ∂‘”¶REFUNDCLOSE
-	kWxpayRefundOrderStateProcessing = 4,    // ÕÀøÓ¥¶¿Ì÷–
-	kWxpayRefundOrderStateChange = 5,    // ◊™»Î¥˙∑¢£¨ÕÀøÓµΩ“¯––∑¢œ÷”√ªßµƒø®◊˜∑œªÚ’ﬂ∂≥Ω·¡À£¨µº÷¬‘≠¬∑ÕÀøÓ“¯––ø® ß∞‹£¨                                 // ◊ Ωªÿ¡˜µΩ◊”…Ãªßµƒœ÷Ω’ ∫≈£¨–Ë“™◊”…Ãªß»Àπ§∏…‘§£¨Õ®π˝œﬂœ¬ªÚ’ﬂ≤∆∏∂Õ®◊™’Àµƒ∑Ω ΩΩ¯––ÕÀøÓ
-	kWxpayRefundOrderStateVoid = 6,   // ◊˜∑œ◊¥Ã¨£¨±Ì æ±æµÿ”–£¨µ⁄»˝∑Ω÷ß∏∂∆ΩÃ®√ª”–µƒ∂©µ•
+	kWxpayRefundOrderStateInit = 1,  // ÈÄÄÊ¨æÂçïÂàùÂßãÊÄÅ
+	kWxpayRefundOrderStateSuccess = 2,   // ÈÄÄÊ¨æÊàêÂäü
+	kWxpayRefundOrderStateFail = 3,    // ÈÄÄÊ¨æÂ§±Ë¥• // ÂØπÂ∫îREFUNDCLOSE
+	kWxpayRefundOrderStateProcessing = 4,    // ÈÄÄÊ¨æÂ§ÑÁêÜ‰∏≠
+	kWxpayRefundOrderStateChange = 5,    // ËΩ¨ÂÖ•‰ª£ÂèëÔºåÈÄÄÊ¨æÂà∞Èì∂Ë°åÂèëÁé∞Áî®Êà∑ÁöÑÂç°‰ΩúÂ∫üÊàñËÄÖÂÜªÁªì‰∫ÜÔºåÂØºËá¥ÂéüË∑ØÈÄÄÊ¨æÈì∂Ë°åÂç°Â§±Ë¥•Ôºå                                 // ËµÑÈáëÂõûÊµÅÂà∞Â≠êÂïÜÊà∑ÁöÑÁé∞ÈáëÂ∏êÂè∑ÔºåÈúÄË¶ÅÂ≠êÂïÜÊà∑‰∫∫Â∑•Âπ≤È¢ÑÔºåÈÄöËøáÁ∫ø‰∏ãÊàñËÄÖË¥¢‰ªòÈÄöËΩ¨Ë¥¶ÁöÑÊñπÂºèËøõË°åÈÄÄÊ¨æ
+	kWxpayRefundOrderStateVoid = 6,   // ‰ΩúÂ∫üÁä∂ÊÄÅÔºåË°®Á§∫Êú¨Âú∞ÊúâÔºåÁ¨¨‰∏âÊñπÊîØ‰ªòÂπ≥Âè∞Ê≤°ÊúâÁöÑËÆ¢Âçï
 };
 
 enum AlipayOrderState
@@ -55,9 +55,9 @@ kAlipayOrderStateVoid = 7,
 
 enum AlipayRefundOrderState
 {
-	kAlipayRefundStateInit = 1,    // ÕÀøÓµ•≥ı ºÃ¨
-	kAlipayRefundStateSuccess = 2,    // ÕÀøÓµ•≥…π¶Ã¨
-	kAlipayRefundStateFail = 3,    // …Í«ÎÕÀøÓ ß∞‹
+	kAlipayRefundStateInit = 1,    // ÈÄÄÊ¨æÂçïÂàùÂßãÊÄÅ
+	kAlipayRefundStateSuccess = 2,    // ÈÄÄÊ¨æÂçïÊàêÂäüÊÄÅ
+	kAlipayRefundStateFail = 3,    // Áî≥ËØ∑ÈÄÄÊ¨æÂ§±Ë¥•
 };
 
 #define CLOUD_PAY_ORDER(response_type_marco,api_response_marco, detail_macro)\
@@ -65,18 +65,18 @@ do{\
 	response_type_marco *response = (response_type_marco *)api_response_marco;\
 	if (!cJSON_HasObjectItem(response_content, detail_macro))\
 	{\
-		set_error_ansi("œÏ”¶∞¸Œﬁ–ß");\
+		set_error_ansi("ÂìçÂ∫îÂåÖÊó†Êïà");\
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 	}\
 	cJSON* detail = cJSON_GetObjectItem(response_content, detail_macro);\
 	if (!cJSON_HasObjectItem(detail, "order_content"))\
 	{\
-		set_error_ansi("œÏ”¶∞¸Œﬁ–ß");\
+		set_error_ansi("ÂìçÂ∫îÂåÖÊó†Êïà");\
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 	}\
 	if (!cJSON_HasObjectItem(detail, "pay_mch_key"))\
 	{\
-		set_error_ansi("œÏ”¶∞¸Œﬁ–ß");\
+		set_error_ansi("ÂìçÂ∫îÂåÖÊó†Êïà");\
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 	}\
 	cJSON* order_content = cJSON_GetObjectItem(detail, "order_content");\
@@ -92,7 +92,7 @@ do{\
 	if (response->order.pay_platform == 1) { \
 		if (!cJSON_HasObjectItem(order_content, "wxpay_order_content_ext"))\
 		{\
-			set_error_ansi("œÏ”¶∞¸Œﬁ–ß");\
+			set_error_ansi("ÂìçÂ∫îÂåÖÊó†Êïà");\
 			return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 		}\
 		cJSON* wxpay_order_content_ext = cJSON_GetObjectItem(order_content, "wxpay_order_content_ext");\
@@ -102,7 +102,7 @@ do{\
 	if (response->order.pay_platform == 2) {\
 		if (!cJSON_HasObjectItem(order_content, "alipay_order_content_ext"))\
 		{\
-			set_error_ansi("œÏ”¶∞¸Œﬁ–ß");\
+			set_error_ansi("ÂìçÂ∫îÂåÖÊó†Êïà");\
 			return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 		}\
 		cJSON* alipay_order_content_ext = cJSON_GetObjectItem(order_content, "alipay_order_content_ext");\
@@ -123,7 +123,7 @@ static void set_error_utf8(int status, int internal_status, double log_id, const
 		"status %d, internal_status %d, log_id %.0f, %s", status, internal_status, log_id, error);
 }
 
-// ∑µªÿµƒ «authen info
+// ËøîÂõûÁöÑÊòØauthen info
 static int request_compute_sign(const char *in, cJSON **out)
 {
 	char sign_str[1024];
@@ -132,13 +132,13 @@ static int request_compute_sign(const char *in, cJSON **out)
 	int ret = g_manager.ops.pf_sign_2_base64(in, g_manager.key.private_key, sign_str, &length);
 	if (ret != 0) 
 	{
-		set_error_ansi("«©√˚ ß∞‹");
+		set_error_ansi("Á≠æÂêçÂ§±Ë¥•");
 		return CLOUD_PAY_API_ERROR_COMPUTE_SIGN_2_BASE64_FAIL;
 	}
 
 	sign_str[length] = 0;
 	
-	//ππ‘Ïauthen info
+	//ÊûÑÈÄ†authen info
 	cJSON *sign = cJSON_CreateObject();
 	cJSON_AddStringToObject (sign, "sign", sign_str);
 	cJSON_AddNumberToObject(sign, "sign_type", 1);
@@ -150,7 +150,7 @@ static int request_compute_sign(const char *in, cJSON **out)
 	return 0;
 }
 
-// ∑µªÿµƒ «authen info
+// ËøîÂõûÁöÑÊòØauthen info
 static int request_compute_authen_code(const char *in, cJSON **out)
 {
 	char authen_code[65];
@@ -159,10 +159,10 @@ static int request_compute_authen_code(const char *in, cJSON **out)
 	int ret = g_manager.ops.pf_hmac_sha256(in, g_manager.key.authen_key, authen_code, &length);
 	if (ret != 0) 
 	{
-		set_error_ansi("º∆À„»œ÷§¬Î ß∞‹");
+		set_error_ansi("ËÆ°ÁÆóËÆ§ËØÅÁ†ÅÂ§±Ë¥•");
 		return CLOUD_PAY_API_ERROR_COMPUTE_AUTHEN_CODE_FAIL;
 	}	
-	//ππ‘Ïauthen info
+	//ÊûÑÈÄ†authen info
 	cJSON *authen = cJSON_CreateObject();
 	cJSON_AddStringToObject(authen, "authen_code", authen_code);
 	cJSON_AddNumberToObject(authen, "authen_type", 1);
@@ -203,36 +203,36 @@ static int core_process(
 		return ret;
 	}
 
-	//◊È∞¸
+	//ÁªÑÂåÖ
 	cJSON *request = cJSON_CreateObject();
 	cJSON_AddStringToObject(request, "request_content", request_content);
 	cJSON_AddItemToObject  (request, "authen_info",     authen_info);
-//µ˜ ‘–≈œ¢ ‰≥ˆø™ º
+//Ë∞ÉËØï‰ø°ÊÅØËæìÂá∫ÂºÄÂßã
 	rt_kprintf("request_content_str:%s\r\n", request_content);
 	rt_kprintf("key:%s\r\n", g_manager.key.authen_key);
 	const char* authen_info_str = cJSON_PrintUnformatted(authen_info);
 	rt_kprintf("authen_info_str:%s\r\n", authen_info_str);
 	rt_kprintf("\r\n");
-//µ˜ ‘–≈œ¢ ‰≥ˆΩ· ¯
+//Ë∞ÉËØï‰ø°ÊÅØËæìÂá∫ÁªìÊùü
 	char* request_str = cJSON_PrintUnformatted(request);
 	cJSON_Delete(request);
-//µ˜ ‘–≈œ¢ ‰≥ˆø™ º
+//Ë∞ÉËØï‰ø°ÊÅØËæìÂá∫ÂºÄÂßã
 	rt_kprintf("request_str:%s\r\n", request_str);
-//µ˜ ‘–≈œ¢ ‰≥ˆΩ· ¯
+//Ë∞ÉËØï‰ø°ÊÅØËæìÂá∫ÁªìÊùü
 	//https
 	char response_str[4096];
 	size_t length = sizeof(response_str);
 	ret = g_manager.ops.pf_http_post(url, request_str, response_str, &length);
-//µ˜ ‘–≈œ¢ ‰≥ˆø™ º
+//Ë∞ÉËØï‰ø°ÊÅØËæìÂá∫ÂºÄÂßã
 	rt_kprintf("response_str:%s\r\n", response_str);
-//µ˜ ‘–≈œ¢ ‰≥ˆΩ· ¯	
+//Ë∞ÉËØï‰ø°ÊÅØËæìÂá∫ÁªìÊùü	
 	if (ret != 0) 
 	{
 		RT_ASSERT(ret == CLOUD_PAY_API_ERROR_NETWORK_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT);
 		return ret;
 	}
 
-	//Ω‚∞¸
+	//Ëß£ÂåÖ
 	cJSON* response = cJSON_Parse(response_str);
 
 	if (!cJSON_HasObjectItem(response, "response_content")){
@@ -262,7 +262,7 @@ static int core_process(
 		}
 	}
 
-	//Ω‚∞¸
+	//Ëß£ÂåÖ
 	cJSON* response_content = cJSON_Parse(response_content_str);
 
 	int status = cJSON_GetObjectItem(response_content, "status")->valueint;
@@ -284,10 +284,10 @@ static int core_process(
 			return pf_response_no_success_process(status, internal_status, description, log_id, api_response);
 		}
 
-		return CLOUD_PAY_API_ERROR_CLOUDPAY_FAIL; //‘∆÷ß∏∂µƒ ß∞‹
+		return CLOUD_PAY_API_ERROR_CLOUDPAY_FAIL; //‰∫ëÊîØ‰ªòÁöÑÂ§±Ë¥•
 	}
 
-	return CLOUD_PAY_API_ERROR_SYSTEM_ERROR; //‘∆÷ß∏∂µƒœµÕ≥ƒ⁄≤ø¥ÌŒÛ –Ë“™÷ÿ ‘
+	return CLOUD_PAY_API_ERROR_SYSTEM_ERROR; //‰∫ëÊîØ‰ªòÁöÑÁ≥ªÁªüÂÜÖÈÉ®ÈîôËØØ ÈúÄË¶ÅÈáçËØï
 }
 
 int cloud_pay_api_init(
@@ -356,7 +356,7 @@ static inline cJSON* set_pay_content(MicroPayRequest *request)
 	cJSON_AddStringToObject (pay_content, "out_trade_no",  request->out_trade_no);
 	cJSON_AddStringToObject (pay_content, "author_code",   request->author_code);
 	cJSON_AddStringToObject (pay_content, "body",          request->body);
-	cJSON_AddNumberToObject (pay_content, "total_fee",	   request->total_fee); // 64Œª
+	cJSON_AddNumberToObject (pay_content, "total_fee",	   request->total_fee); // 64‰Ωç
 	cJSON_AddStringToObject (pay_content, "fee_type",      "CNY");
 	return pay_content;
 }
@@ -529,10 +529,10 @@ static int query_order_response_fail_process(
 {
 	if (internal_status == 400) 
 	{
-		return CLOUD_PAY_API_ERROR_ORDER_DONTEXIST; //∂©µ•≤ª¥Ê‘⁄
+		return CLOUD_PAY_API_ERROR_ORDER_DONTEXIST; //ËÆ¢Âçï‰∏çÂ≠òÂú®
 	}
 
-	return CLOUD_PAY_API_ERROR_CLOUDPAY_FAIL;  //≤Èµ• ß∞‹
+	return CLOUD_PAY_API_ERROR_CLOUDPAY_FAIL;  //Êü•ÂçïÂ§±Ë¥•
 }
 
 static int query_order_response_success_process(
@@ -570,7 +570,7 @@ static int refund_response_success_process(
 	const cJSON *response_content,
 	void *api_response)
 {
-	return status; //status == 0 ÕÀøÓ ‹¿Ì≥…π¶
+	return status; //status == 0 ÈÄÄÊ¨æÂèóÁêÜÊàêÂäü
 }
 
 static inline cJSON* set_refund_content(RefundRequest *request)
@@ -578,8 +578,8 @@ static inline cJSON* set_refund_content(RefundRequest *request)
 	cJSON *refund_content = cJSON_CreateObject();
 	cJSON_AddStringToObject(refund_content, "out_trade_no",  request->out_trade_no);
 	cJSON_AddStringToObject(refund_content, "out_refund_no", request->out_refund_no);
-	cJSON_AddNumberToObject(refund_content, "total_fee",     request->total_fee); // 64Œª
-	cJSON_AddNumberToObject(refund_content, "refund_fee",    request->refund_fee); // 64Œª
+	cJSON_AddNumberToObject(refund_content, "total_fee",     request->total_fee); // 64‰Ωç
+	cJSON_AddNumberToObject(refund_content, "refund_fee",    request->refund_fee); // 64‰Ωç
 	cJSON_AddStringToObject(refund_content, "refund_fee_type", "CNY");
 	return refund_content;
 }

@@ -10,8 +10,8 @@
 #define  PCF_ADDR  0x51
 
 
-uint8_t time_buf[7] = {0};  //ÓÃÓÚ±£´æÊ±¼ä,[0]Ãë£¬[1]·Ö£¬[2]Ê±£¬[3]ÈÕ£¬[4]ÐÇÆÚ£¬[5]ÔÂ£¬[6]Äê
-const uint8_t tab_week[12]={0,3,3,6,1,4,6,2,5,0,3,5}; //ÔÂÐÞÕýÊý¾Ý±í
+uint8_t time_buf[7] = {0};  //ç”¨äºŽä¿å­˜æ—¶é—´,[0]ç§’ï¼Œ[1]åˆ†ï¼Œ[2]æ—¶ï¼Œ[3]æ—¥ï¼Œ[4]æ˜ŸæœŸï¼Œ[5]æœˆï¼Œ[6]å¹´
+const uint8_t tab_week[12]={0,3,3,6,1,4,6,2,5,0,3,5}; //æœˆä¿®æ­£æ•°æ®è¡¨
 
 static struct rt_i2c_bus_device  *pcf_bus;
 
@@ -73,26 +73,26 @@ static uint8_t ymd_to_wday(int year, int month, int mday)
 uint8_t rtc_set_time(Calendar_Def *ptime)
 {
 	uint8_t ds;
-	time_buf[0] = ptime->sec/10;		//Ãë
+	time_buf[0] = ptime->sec/10;		//ç§’
 	time_buf[0] <<= 4;
 	time_buf[0] |= (ptime->sec % 10);
-	time_buf[1] = ptime->min/10;  	//·Ö
+	time_buf[1] = ptime->min/10;  	//åˆ†
 	time_buf[1] <<= 4;
 	time_buf[1] |= (ptime->min % 10);
-	time_buf[2] = ptime->hour/10;  	//Ê±
+	time_buf[2] = ptime->hour/10;  	//æ—¶
 	time_buf[2] <<= 4;
 	time_buf[2] |= (ptime->hour % 10);
 	//
-	time_buf[3] = ptime->mday / 10;	//ÈÕ
+	time_buf[3] = ptime->mday / 10;	//æ—¥
 	time_buf[3] <<= 4;
 	time_buf[3] |= (ptime->mday % 10); 
-	time_buf[4] = ymd_to_wday(ptime->year,ptime->month,ptime->mday);	//ÐÇÆÚ
-	time_buf[5] = 0;						//ÊÀ¼Í0»ò1
+	time_buf[4] = ymd_to_wday(ptime->year,ptime->month,ptime->mday);	//æ˜ŸæœŸ
+	time_buf[5] = 0;						//ä¸–çºª0æˆ–1
 	time_buf[5] <<= 3;
-	time_buf[5] |= ptime->month / 10;	//ÔÂ
+	time_buf[5] |= ptime->month / 10;	//æœˆ
 	time_buf[5] <<= 4;
 	time_buf[5] |= ptime->month % 10;				
-	time_buf[6] = (ptime->year % 100) / 10;	//Äê
+	time_buf[6] = (ptime->year % 100) / 10;	//å¹´
 	time_buf[6] <<= 4;
 	time_buf[6] |= (ptime->year % 100) % 10;	
 	

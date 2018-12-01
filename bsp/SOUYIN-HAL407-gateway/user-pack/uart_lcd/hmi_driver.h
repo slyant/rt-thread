@@ -712,7 +712,7 @@ void ReadRtc(void);
 void SetRtc(unsigned short Year,unsigned char Mon,unsigned char Day,unsigned char Week,unsigned char Hour,unsigned char Min,unsigned char Sec);
 #endif
 
-void show_string(unsigned short screen_id, unsigned short x, unsigned short y, unsigned char fg, unsigned char *str);
+void show_string(unsigned short screen_id, unsigned short x, unsigned short y, unsigned char fg, unsigned char size, unsigned char *str);
 
 void update_lcd_enable(void);
 void update_lcd_disable(void);
