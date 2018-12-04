@@ -6,5 +6,8 @@
         "**/build" : true,
         "**/*.pyc" : true
     },
-    "editor.renderWhitespace": "all"
+    "editor.renderWhitespace": "all",
+    "files.associations": {
+        "cloud_pay_intf.h": "c"
+    }
 }

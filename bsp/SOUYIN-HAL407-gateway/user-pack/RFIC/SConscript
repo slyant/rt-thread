@@ -1,0 +1,12 @@
+import os
+from building import * 
+
+# get current dir path
+cwd = GetCurrentDir()
+inc = [cwd]
+src = Glob('*.c')
+
+# add group to IDE project
+group = DefineGroup('RFIC', src, depend = ['RT_USING_ICCARD'], CPPPATH = inc)
+
+Return('group')
