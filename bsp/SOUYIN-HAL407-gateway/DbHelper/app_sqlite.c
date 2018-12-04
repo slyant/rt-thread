@@ -3,7 +3,7 @@
 #include <dbinclude.h>
 
 #define SYSINFO_ID	1
-const char* SYS_TITLE = "武汉公交自助收银柜管理系统 V2.0";
+const char* SYS_TITLE = "公交自助收银柜管理系统 V2.0";
 const unsigned char DEFAULT_KEY_A[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char DEFAULT_KEY_B[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
