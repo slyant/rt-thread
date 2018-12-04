@@ -622,6 +622,9 @@ int at_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *f
             goto __exit;
         }
         sock->state = AT_SOCKET_CONNECT;
+        /* set AT socket receive data callback function */
+        at_dev_ops->at_set_event_cb(AT_SOCKET_EVT_RECV, at_recv_notice_cb);
+        at_dev_ops->at_set_event_cb(AT_SOCKET_EVT_CLOSED, at_closed_notice_cb);
     }
 
     /* socket passively closed, receive function return 0 */
@@ -668,6 +671,7 @@ int at_recvfrom(int socket, void *mem, size_t len, int flags, struct sockaddr *f
         if (rt_sem_take(sock->recv_notice, timeout) < 0)
         {
             LOG_E("AT socket (%d) receive timeout (%d)!", socket, timeout);
+            errno = EAGAIN;
             result = -1;
             goto __exit;
         }
@@ -699,7 +703,7 @@ __exit:
     {
         result = recv_len;
         at_do_event_changes(sock, AT_EVENT_RECV, RT_FALSE);
-
+        errno = 0;
         if (!rt_slist_isempty(&sock->recvpkt_list))
         {
             at_do_event_changes(sock, AT_EVENT_RECV, RT_TRUE);

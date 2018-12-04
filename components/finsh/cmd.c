@@ -25,9 +25,14 @@
  * 2012-06-02     lgnq         add list_memheap
  * 2012-10-22     Bernard      add MS VC++ patch.
  * 2016-06-02     armink       beautify the list_thread command
+ * 2018-11-22     Jesven       list_thread add smp support
  */
 
+#include <rthw.h>
 #include <rtthread.h>
+
+#ifdef RT_USING_FINSH
+
 #include "finsh.h"
 
 long hello(void)
@@ -84,30 +89,54 @@ static long _list_thread(struct rt_list_node *list)
 
     maxlen = object_name_maxlen(item_title, list);
 
+#ifdef RT_USING_SMP
+    rt_kprintf("%-*.s cpu pri  status      sp     stack size max used left tick  error\n", maxlen, item_title); object_split(maxlen);
+    rt_kprintf(     " --- ---  ------- ---------- ----------  ------  ---------- ---\n");
+#else
     rt_kprintf("%-*.s pri  status      sp     stack size max used left tick  error\n", maxlen, item_title); object_split(maxlen);
     rt_kprintf(     " ---  ------- ---------- ----------  ------  ---------- ---\n");
+#endif /*RT_USING_SMP*/
     for (node = list->next; node != list; node = node->next)
     {
         rt_uint8_t stat;
         thread = rt_list_entry(node, struct rt_thread, list);
-        rt_kprintf("%-*.*s %3d ", maxlen, RT_NAME_MAX, thread->name, thread->current_priority);
+#ifdef RT_USING_SMP
+        if (thread->oncpu != RT_CPU_DETACHED)
+            rt_kprintf("%-*.*s %3d %3d ", maxlen, RT_NAME_MAX, thread->name, thread->oncpu, thread->current_priority);
+        else
+            rt_kprintf("%-*.*s N/A %3d ", maxlen, RT_NAME_MAX, thread->name, thread->current_priority);
 
+#else
+        rt_kprintf("%-*.*s %3d ", maxlen, RT_NAME_MAX, thread->name, thread->current_priority);
+#endif /*RT_USING_SMP*/
         stat = (thread->stat & RT_THREAD_STAT_MASK);
         if (stat == RT_THREAD_READY)        rt_kprintf(" ready  ");
         else if (stat == RT_THREAD_SUSPEND) rt_kprintf(" suspend");
         else if (stat == RT_THREAD_INIT)    rt_kprintf(" init   ");
         else if (stat == RT_THREAD_CLOSE)   rt_kprintf(" close  ");
 
+#if defined(ARCH_CPU_STACK_GROWS_UPWARD)
+        ptr = (rt_uint8_t *)thread->stack_addr + thread->stack_size;
+        while (*ptr == '#')ptr --;
+
+        rt_kprintf(" 0x%08x 0x%08x    %02d%%   0x%08x %03d\n",
+                   ((rt_ubase_t)thread->sp - (rt_ubase_t)thread->stack_addr),
+                   thread->stack_size,
+                   ((rt_ubase_t)ptr - (rt_ubase_t)thread->stack_addr) * 100 / thread->stack_size,
+                   thread->remaining_tick,
+                   thread->error);
+#else
         ptr = (rt_uint8_t *)thread->stack_addr;
         while (*ptr == '#')ptr ++;
 
         rt_kprintf(" 0x%08x 0x%08x    %02d%%   0x%08x %03d\n",
-                   thread->stack_size + ((rt_uint32_t)thread->stack_addr - (rt_uint32_t)thread->sp),
+                   thread->stack_size + ((rt_ubase_t)thread->stack_addr - (rt_ubase_t)thread->sp),
                    thread->stack_size,
-                   (thread->stack_size - ((rt_uint32_t) ptr - (rt_uint32_t) thread->stack_addr)) * 100
+                   (thread->stack_size - ((rt_ubase_t) ptr - (rt_ubase_t) thread->stack_addr)) * 100
                         / thread->stack_size,
                    thread->remaining_tick,
                    thread->error);
+#endif
     }
 
     return 0;
@@ -115,10 +144,15 @@ static long _list_thread(struct rt_list_node *list)
 
 long list_thread(void)
 {
+    rt_ubase_t level;
     struct rt_object_information *info;
+    long ret;
 
+    level = rt_hw_interrupt_disable();
     info = rt_object_get_information(RT_Object_Class_Thread);
-    return _list_thread(&info->object_list);
+    ret = _list_thread(&info->object_list);
+    rt_hw_interrupt_enable(level);
+    return ret;
 }
 FINSH_FUNCTION_EXPORT(list_thread, list thread);
 MSH_CMD_EXPORT(list_thread, list thread);
@@ -831,3 +865,6 @@ void list_prefix(char *prefix)
 static int dummy = 0;
 FINSH_VAR_EXPORT(dummy, finsh_type_int, dummy variable for finsh)
 #endif
+
+#endif /* RT_USING_FINSH */
+
