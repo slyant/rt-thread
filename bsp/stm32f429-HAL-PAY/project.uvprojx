@@ -320,7 +320,7 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>0</wLevel>
+            <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
@@ -333,10 +333,10 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--no_multibyte_chars</MiscControls>
               <Define>USE_HAL_DRIVER, RT_USING_ARM_LIBC, STM32F429xx</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;CloudPay;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\at_device-latest;packages\cJSON-latest;packages\mbedtls-latest\mbedtls\include;packages\mbedtls-latest\mbedtls\include\mbedtls;packages\mbedtls-latest\ports\inc;packages\netutils-latest\iperf;packages\netutils-latest\ntp;packages\sqlite-v3.19.3;packages\tinycrypt-latest\include;packages\webclient-latest\inc;QRCodeScan;.;Weather;.;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\dfs\filesystems\uffs;..\..\components\dfs\filesystems\uffs\src\inc;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\net\at\include;..\..\components\net\at\at_socket;..\..\components\net\sal_socket\include;..\..\components\net\sal_socket\include\socket;..\..\components\net\sal_socket\impl;..\..\components\net\sal_socket\include\dfs_net;..\..\components\net\sal_socket\include\dfs_net\sys_select;..\..\components\net\sal_socket\include\socket\sys_socket</IncludePath>
+              <IncludePath>applications;.;CloudPay;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\at_device-latest;packages\cJSON-latest;packages\mbedtls-latest\mbedtls\include;packages\mbedtls-latest\mbedtls\include\mbedtls;packages\mbedtls-latest\ports\inc;packages\netutils-latest\iperf;packages\netutils-latest\ntp;packages\sqlite-v3.19.3;packages\tinycrypt-latest\include;packages\webclient-latest\inc;QRCodeScan;.;Weather;.;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\dfs\filesystems\uffs;..\..\components\dfs\filesystems\uffs\src\inc;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common;..\..\components\net\at\include;..\..\components\net\at\at_socket;..\..\components\net\sal_socket\include;..\..\components\net\sal_socket\include\socket;..\..\components\net\sal_socket\impl;..\..\components\net\sal_socket\include\dfs_net;..\..\components\net\sal_socket\include\dfs_net\sys_select;..\..\components\net\sal_socket\include\socket\sys_socket</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -370,7 +370,7 @@
             <ScatterFile>.\stm32_rom.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc> --keep *.o(.rti_fn.*)   --keep *.o(FSymTab) --keep *.o(VSymTab) </Misc>
+            <Misc>--keep *.o(.rti_fn.*)   --keep *.o(FSymTab) --keep *.o(VSymTab)</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -1456,6 +1456,11 @@
               <FilePath>..\..\src\components.c</FilePath>
             </File>
             <File>
+              <FileName>cpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\cpu.c</FilePath>
+            </File>
+            <File>
               <FileName>device.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\device.c</FilePath>
@@ -1993,20 +1998,25 @@
               <FileType>1</FileType>
               <FilePath>..\..\components\libc\compilers\armlibc\time.c</FilePath>
             </File>
+            <File>
+              <FileName>gmtime_r.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\components\libc\compilers\common\gmtime_r.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>AT</GroupName>
           <Files>
             <File>
-              <FileName>at_cli.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\components\net\at\src\at_cli.c</FilePath>
-            </File>
-            <File>
               <FileName>at_utils.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\components\net\at\src\at_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_cli.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\components\net\at\src\at_cli.c</FilePath>
             </File>
             <File>
               <FileName>at_client.c</FileName>
@@ -2042,6 +2052,11 @@
               <FileName>af_inet_at.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\components\net\sal_socket\impl\af_inet_at.c</FilePath>
+            </File>
+            <File>
+              <FileName>proto_mbedtls.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\components\net\sal_socket\impl\proto_mbedtls.c</FilePath>
             </File>
             <File>
               <FileName>net_sockets.c</FileName>

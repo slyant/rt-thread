@@ -60,32 +60,32 @@ const char* PRIVATE_KEY =
 static char* errmsg_utf8_to_ansi(const char* in)
 {
 	return (char*)in;
-//	int outputSize = 0; //¼ÇÂ¼×ª»»ºóµÄUnicode×Ö·û´®µÄ×Ö½ÚÊı
+//	int outputSize = 0; //è®°å½•è½¬æ¢åçš„Unicodeå­—ç¬¦ä¸²çš„å­—èŠ‚æ•°
 //	char* pInput = (char*)in;
 //	char* pOutput;
 //	while (*pInput)
 //	{
-//		if (*pInput > 0x00 && *pInput <= 0x7F) //´¦Àíµ¥×Ö½ÚUTF8×Ö·û£¨Ó¢ÎÄ×ÖÄ¸¡¢Êı×Ö£©
+//		if (*pInput > 0x00 && *pInput <= 0x7F) //å¤„ç†å•å­—èŠ‚UTF8å­—ç¬¦ï¼ˆè‹±æ–‡å­—æ¯ã€æ•°å­—ï¼‰
 //		{
 //			*pOutput = *pInput;
 //			 pOutput++;
-//			*pOutput = 0; //Ğ¡¶Ë·¨±íÊ¾£¬ÔÚ¸ßµØÖ·Ìî²¹0
+//			*pOutput = 0; //å°ç«¯æ³•è¡¨ç¤ºï¼Œåœ¨é«˜åœ°å€å¡«è¡¥0
 //		}
-//		else if (((*pInput) & 0xE0) == 0xC0) //´¦ÀíË«×Ö½ÚUTF8×Ö·û
+//		else if (((*pInput) & 0xE0) == 0xC0) //å¤„ç†åŒå­—èŠ‚UTF8å­—ç¬¦
 //		{
 //			char high = *pInput;
 //			pInput++;
 //			char low = *pInput;
-//			if ((low & 0xC0) != 0x80)  //¼ì²éÊÇ·ñÎªºÏ·¨µÄUTF8×Ö·û±íÊ¾
+//			if ((low & 0xC0) != 0x80)  //æ£€æŸ¥æ˜¯å¦ä¸ºåˆæ³•çš„UTF8å­—ç¬¦è¡¨ç¤º
 //			{
-//				return pOutput; //Èç¹û²»ÊÇÔò±¨´í
+//				return pOutput; //å¦‚æœä¸æ˜¯åˆ™æŠ¥é”™
 //			}
 // 
 //			*pOutput = (high << 6) + (low & 0x3F);
 //			pOutput++;
 //			*pOutput = (high >> 2) & 0x07;
 //		}
-//		else if (((*pInput) & 0xF0) == 0xE0) //´¦ÀíÈı×Ö½ÚUTF8×Ö·û
+//		else if (((*pInput) & 0xF0) == 0xE0) //å¤„ç†ä¸‰å­—èŠ‚UTF8å­—ç¬¦
 //		{
 //			char high = *pInput;
 //			pInput++;
@@ -96,19 +96,19 @@ static char* errmsg_utf8_to_ansi(const char* in)
 //			{
 //				return pOutput;
 //			}
-//			*pOutput = (middle << 6) + (low & 0x3F);//È¡³ömiddleµÄµÍÁ½Î»ÓëlowµÄµÍ6Î»£¬×éºÏ³Éunicode×Ö·ûµÄµÍ8Î»
+//			*pOutput = (middle << 6) + (low & 0x3F);//å–å‡ºmiddleçš„ä½ä¸¤ä½ä¸lowçš„ä½6ä½ï¼Œç»„åˆæˆunicodeå­—ç¬¦çš„ä½8ä½
 //			pOutput++;
-//			*pOutput = (high << 4) + ((middle >> 2) & 0x0F); //È¡³öhighµÄµÍËÄÎ»ÓëmiddleµÄÖĞ¼äËÄÎ»£¬×éºÏ³Éunicode×Ö·ûµÄ¸ß8Î»
+//			*pOutput = (high << 4) + ((middle >> 2) & 0x0F); //å–å‡ºhighçš„ä½å››ä½ä¸middleçš„ä¸­é—´å››ä½ï¼Œç»„åˆæˆunicodeå­—ç¬¦çš„é«˜8ä½
 //		}
-//		else //¶ÔÓÚÆäËû×Ö½ÚÊıµÄUTF8×Ö·û²»½øĞĞ´¦Àí
+//		else //å¯¹äºå…¶ä»–å­—èŠ‚æ•°çš„UTF8å­—ç¬¦ä¸è¿›è¡Œå¤„ç†
 //		{
 //			return pOutput;
 //		}
-//		pInput ++;//´¦ÀíÏÂÒ»¸öutf8×Ö·û
+//		pInput ++;//å¤„ç†ä¸‹ä¸€ä¸ªutf8å­—ç¬¦
 //		pOutput ++;
 //		outputSize += 2;
 //	}
-//	//unicode×Ö·û´®ºóÃæ£¬ÓĞÁ½¸ö\0
+//	//unicodeå­—ç¬¦ä¸²åé¢ï¼Œæœ‰ä¸¤ä¸ª\0
 //	*pOutput = 0;
 //	 pOutput++;
 //	*pOutput = 0;
@@ -189,46 +189,46 @@ static int self_ansi_to_utf8(const char *ansi, char *utf8)
 {
 	rt_strncpy((char*)utf8, ansi, rt_strlen(ansi));
 	return 0;
-//	int len = 0; //¼ÇÂ¼×ª»»ºóµÄUtf8×Ö·û´®µÄ×Ö½ÚÊı
+//	int len = 0; //è®°å½•è½¬æ¢åçš„Utf8å­—ç¬¦ä¸²çš„å­—èŠ‚æ•°
 //	char* pInput = (char*)ansi;
 //	char* pOutput = utf8;
 //	while (*pInput)
 //	{
-//		//´¦ÀíÒ»¸öunicode×Ö·û
-//		char low = *pInput;//È¡³öunicode×Ö·ûµÄµÍ8Î»
+//		//å¤„ç†ä¸€ä¸ªunicodeå­—ç¬¦
+//		char low = *pInput;//å–å‡ºunicodeå­—ç¬¦çš„ä½8ä½
 //		pInput++;
-//		char high = *pInput;//È¡³öunicode×Ö·ûµÄ¸ß8Î»
+//		char high = *pInput;//å–å‡ºunicodeå­—ç¬¦çš„é«˜8ä½
 //		int w=high<<8;
-//		unsigned  wchar = (high<<8)+low;//¸ß8Î»ºÍµÍ8Î»×é³ÉÒ»¸öunicode×Ö·û,¼Ó·¨ÔËËã¼¶±ğ¸ß
+//		unsigned  wchar = (high<<8)+low;//é«˜8ä½å’Œä½8ä½ç»„æˆä¸€ä¸ªunicodeå­—ç¬¦,åŠ æ³•è¿ç®—çº§åˆ«é«˜
 // 
-//		if (wchar <= 0x7F ) //Ó¢ÎÄ×Ö·û
+//		if (wchar <= 0x7F ) //è‹±æ–‡å­—ç¬¦
 //		{   
-//			pOutput[len] = (char)wchar;  //È¡wcharµÄµÍ8Î»
+//			pOutput[len] = (char)wchar;  //å–wcharçš„ä½8ä½
 //			len++;
 //		}  
-//		else if (wchar >=0x80 && wchar <= 0x7FF)  //¿ÉÒÔ×ª»»³ÉË«×Ö½ÚpOutput×Ö·û
+//		else if (wchar >=0x80 && wchar <= 0x7FF)  //å¯ä»¥è½¬æ¢æˆåŒå­—èŠ‚pOutputå­—ç¬¦
 //		{  
-//			pOutput[len] = 0xc0 |((wchar >> 6)&0x1f);  //È¡³öunicode±àÂëµÍ6Î»ºóµÄ5Î»£¬Ìî³äµ½110yyyyy 10zzzzzz µÄyyyyyÖĞ
+//			pOutput[len] = 0xc0 |((wchar >> 6)&0x1f);  //å–å‡ºunicodeç¼–ç ä½6ä½åçš„5ä½ï¼Œå¡«å……åˆ°110yyyyy 10zzzzzz çš„yyyyyä¸­
 //			len++;
-//			pOutput[len] = 0x80 | (wchar & 0x3f);  //È¡³öunicode±àÂëµÄµÍ6Î»£¬Ìî³äµ½110yyyyy 10zzzzzz µÄzzzzzzÖĞ
+//			pOutput[len] = 0x80 | (wchar & 0x3f);  //å–å‡ºunicodeç¼–ç çš„ä½6ä½ï¼Œå¡«å……åˆ°110yyyyy 10zzzzzz çš„zzzzzzä¸­
 //			len++;
 //		}  
-//		else if (wchar >=0x800 && wchar < 0xFFFF)  //¿ÉÒÔ×ª»»³É3¸ö×Ö½ÚµÄpOutput×Ö·û
+//		else if (wchar >=0x800 && wchar < 0xFFFF)  //å¯ä»¥è½¬æ¢æˆ3ä¸ªå­—èŠ‚çš„pOutputå­—ç¬¦
 //		{  
-//			pOutput[len] = 0xe0 | ((wchar >> 12)&0x0f);  //¸ßËÄÎ»ÌîÈë1110xxxx 10yyyyyy 10zzzzzzÖĞµÄxxxx
+//			pOutput[len] = 0xe0 | ((wchar >> 12)&0x0f);  //é«˜å››ä½å¡«å…¥1110xxxx 10yyyyyy 10zzzzzzä¸­çš„xxxx
 //			len++;
-//			pOutput[len] = 0x80 | ((wchar >> 6) & 0x3f);  //ÖĞ¼ä6Î»ÌîÈë1110xxxx 10yyyyyy 10zzzzzzÖĞµÄyyyyyy
+//			pOutput[len] = 0x80 | ((wchar >> 6) & 0x3f);  //ä¸­é—´6ä½å¡«å…¥1110xxxx 10yyyyyy 10zzzzzzä¸­çš„yyyyyy
 //			len++;
-//			pOutput[len] = 0x80 | (wchar & 0x3f);  //µÍ6Î»ÌîÈë1110xxxx 10yyyyyy 10zzzzzzÖĞµÄzzzzzz
+//			pOutput[len] = 0x80 | (wchar & 0x3f);  //ä½6ä½å¡«å…¥1110xxxx 10yyyyyy 10zzzzzzä¸­çš„zzzzzz
 //			len++;
 //		}
-//		else //¶ÔÓÚÆäËû×Ö½ÚÊıµÄunicode×Ö·û²»½øĞĞ´¦Àí
+//		else //å¯¹äºå…¶ä»–å­—èŠ‚æ•°çš„unicodeå­—ç¬¦ä¸è¿›è¡Œå¤„ç†
 //		{
 //			return -1;
 //		}
-//		pInput ++;//´¦ÀíÏÂÒ»¸öunicode×Ö·û
+//		pInput ++;//å¤„ç†ä¸‹ä¸€ä¸ªunicodeå­—ç¬¦
 //	}
-//	//utf8×Ö·û´®ºóÃæ£¬ÓĞ¸ö\0
+//	//utf8å­—ç¬¦ä¸²åé¢ï¼Œæœ‰ä¸ª\0
 //	pOutput [len]= 0;
 //	return len;
 }
@@ -243,7 +243,7 @@ static int self_pf_fini()
 }
 static int self_pf_init()
 {
-	//openssl³õÊ¼»¯
+	//opensslåˆå§‹åŒ–
 	//OpenSSL_add_all_algorithms();
 	return 0;
 }
@@ -286,7 +286,7 @@ static int cloud_pay_init(void)
 	rt_memcpy(terminal.machine_no,       "01-01-01-01-01-01", rt_strlen("01-01-01-01-01-01") + 1);
 	rt_memcpy(terminal.spbill_create_ip, "192.168.1.1", rt_strlen("192.168.1.1") + 1);
 	terminal.terminal_type=2;		// 1 windows 2 linux 3 android
-	terminal.sub_terminal_type=900;	// »ú¾ßµÄÀàĞÍ. ÕÒÔÆÖ§¸¶·ÖÅä£¬ ¿ÉÒÔÍ³¼ÆÄ³¸ö»ú¾ßµÄ½»Ò×Á¿
+	terminal.sub_terminal_type=900;	// æœºå…·çš„ç±»å‹. æ‰¾äº‘æ”¯ä»˜åˆ†é…ï¼Œ å¯ä»¥ç»Ÿè®¡æŸä¸ªæœºå…·çš„äº¤æ˜“é‡
 
 	if(cloud_pay_api_init(&account, &key, &terminal, &ops)==RT_EOK)
 	{
@@ -311,7 +311,7 @@ static int cloud_pay_request(char* pay_code, long long fee)
 	datetime.tm_year += (1900-2);
 	datetime.tm_mon += 1;
 	char* author_code = pay_code;
-	char out_trade_no[64]; //ÔÆÖ§¸¶¶©µ¥Ç°×º
+	char out_trade_no[64]; //äº‘æ”¯ä»˜è®¢å•å‰ç¼€
 	rt_sprintf(out_trade_no,"%s04d%02d%02d%02d%02d%02d", TRADE_NO_HEAD, datetime.tm_year, datetime.tm_mon, datetime.tm_mday,
 	datetime.tm_hour, datetime.tm_min, datetime.tm_sec);
 
@@ -345,7 +345,7 @@ static int cloud_pay_request(char* pay_code, long long fee)
 			state = response.order.state;
 			RT_ASSERT(state == KCloudPaySdkLocalStateUserPaying || 
 				   state == KCloudPaySdkLocalStateSuccess    || 
-				   state == KCloudPaySdkLocalStateRefund); //ÒÑ¾­ÍË¹ı¿î
+				   state == KCloudPaySdkLocalStateRefund); //å·²ç»é€€è¿‡æ¬¾
 			if (ret == 0) 
 			{
 				RT_ASSERT(state == KCloudPaySdkLocalStateSuccess || state == KCloudPaySdkLocalStateUserPaying || state == KCloudPaySdkLocalStateRefund);
@@ -357,17 +357,17 @@ static int cloud_pay_request(char* pay_code, long long fee)
 		}
 		else if (ret == CLOUD_PAY_API_ERROR_SYSTEM_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT)
 		{
-			//½á¹ûÎ´Öª ĞèÒªÖØÊÔ
+			//ç»“æœæœªçŸ¥ éœ€è¦é‡è¯•
 		}
 
 		else
 		{
-			//Ö§¸¶Ê§°Ü
+			//æ”¯ä»˜å¤±è´¥
 		}		
 	}
 	return ret;
 /*
-	while (ret == 0 && state == KCloudPaySdkLocalStateUserPaying) //ÓÃ»§Ö§¸¶ÖĞ×´Ì¬ ĞèÒª¼ÌĞø²éµ¥ ¿ÉÒÔ²éÑ¯1·ÖÖÓÃ»ÓĞ½á¹û¾ÍÌáÊ¾È¥ÊÖ»ú¶Ë¹ÜÀíÏµÍ³²éÑ¯¶©µ¥Ö§¸¶½á¹û
+	while (ret == 0 && state == KCloudPaySdkLocalStateUserPaying) //ç”¨æˆ·æ”¯ä»˜ä¸­çŠ¶æ€ éœ€è¦ç»§ç»­æŸ¥å• å¯ä»¥æŸ¥è¯¢1åˆ†é’Ÿæ²¡æœ‰ç»“æœå°±æç¤ºå»æ‰‹æœºç«¯ç®¡ç†ç³»ç»ŸæŸ¥è¯¢è®¢å•æ”¯ä»˜ç»“æœ
 	{
 		QueryOrderRequest request;
 		QueryOrderResponse response;
@@ -396,15 +396,15 @@ static int cloud_pay_request(char* pay_code, long long fee)
 		}
 		else if (ret == CLOUD_PAY_API_ERROR_SYSTEM_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT)
 		{			
-			//½á¹ûÎ´Öª ĞèÒªÖØÊÔ
+			//ç»“æœæœªçŸ¥ éœ€è¦é‡è¯•
 		}
 		else if (ret == CLOUD_PAY_API_ERROR_ORDER_DONTEXIST)
 		{
-			//¶©µ¥²»´æÔÚ
+			//è®¢å•ä¸å­˜åœ¨
 		}
 		else
 		{
-			//²éÑ¯Ê§°Ü
+			//æŸ¥è¯¢å¤±è´¥
 		}
 		rt_thread_mdelay(2000);
 	}
@@ -430,11 +430,11 @@ static int cloud_pay_request(char* pay_code, long long fee)
 		}
 		else if (ret == CLOUD_PAY_API_ERROR_SYSTEM_ERROR || ret == CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT)
 		{
-			//½á¹ûÎ´Öª ĞèÒªÖØÊÔ
+			//ç»“æœæœªçŸ¥ éœ€è¦é‡è¯•
 		}
 		else
 		{
-			//ÉêÇëÍË¿îÊ§°Ü
+			//ç”³è¯·é€€æ¬¾å¤±è´¥
 		}
 
 		rt_memcpy(request.out_refund_no, out_refund_no_2, rt_strlen(out_refund_no_2) + 1);
@@ -546,15 +546,15 @@ static int cloud_pay_thread_startup(void)
 	if(result0==RT_EOK && result1==RT_EOK)
 	{
 		rt_thread_t rtt = RT_NULL;
-		rtt = rt_thread_create("cl_pay",      //Ïß³ÌÃû³Æ¡£
-								thread_entry,    //Ïß³ÌÈë¿Úº¯Êı¡£
-								RT_NULL,         //Ïß³ÌÈë¿Ú²ÎÊı¡£
-								STACK_SIZE,      //Ïß³ÌÕ»´óĞ¡¡£
-								PRIORITY,        //Ïß³ÌÓÅÏÈ¼¶¡£
-								TIMESLICE);      //Ê±¼äÆ¬Tick¡£
-		if(rtt != RT_NULL)                       //ÅĞ¶ÏÏß³ÌÊÇ·ñ´´½¨³É¹¦¡£
+		rtt = rt_thread_create("cl_pay",      //çº¿ç¨‹åç§°ã€‚
+								thread_entry,    //çº¿ç¨‹å…¥å£å‡½æ•°ã€‚
+								RT_NULL,         //çº¿ç¨‹å…¥å£å‚æ•°ã€‚
+								STACK_SIZE,      //çº¿ç¨‹æ ˆå¤§å°ã€‚
+								PRIORITY,        //çº¿ç¨‹ä¼˜å…ˆçº§ã€‚
+								TIMESLICE);      //æ—¶é—´ç‰‡Tickã€‚
+		if(rtt != RT_NULL)                       //åˆ¤æ–­çº¿ç¨‹æ˜¯å¦åˆ›å»ºæˆåŠŸã€‚
 		{
-			rt_thread_startup(rtt);             //Ïß³Ì´´½¨³É¹¦£¬Æô¶¯Ïß³Ì¡£
+			rt_thread_startup(rtt);             //çº¿ç¨‹åˆ›å»ºæˆåŠŸï¼Œå¯åŠ¨çº¿ç¨‹ã€‚
 			result2 = RT_EOK;
 		}
 		else

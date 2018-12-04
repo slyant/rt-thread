@@ -2,11 +2,11 @@
 #define _CLOUD_PAY_DEF_H_
 
 /**
-*  ËµÃ÷: C SDK ÄÚ²¿ÎÄ¼şÎª cloud_pay_def.h, cloud_pay_intf.h ºÍ cloud_pay.c; ÊµÏÖÖĞÒıÓÃÁËcJSON, ÎÄ¼şÎªcJSON.h ºÍ cJSON.c; 
-*		 Ê¹ÓÃÕß½«Õâ5¸öÔ´ÎÄ¼şÖ±½ÓÄÃÈ¥±àÒë¼´¿É
-*		 cloud_pay_def.h Êı¾İ½á¹¹¶¨Òå  , cloud_pay_intf.h ½Ó¿ÚÉùÃ÷
-*        ÎªÁË½«C SDKÔËĞĞÒÔÀ´, µ÷ÓÃÕßĞèÒªÊ×ÏÈµ÷ÓÃcloud_pay_api_init ³õÊ¼»¯ºó²ÅÄÜµ÷ÓÃmicro_pay/ query_order/ refundµÈ½Ó¿Ú
-*        ÎªÁË¼æÈİ¶àÆ½Ì¨, Ê¹ÓÃÕßĞèÒª×Ô¼ºÊµÏÖÒ»Ğ©»ù±¾µÄ¹¦ÄÜ, ÈçÄÚ´æ¿½±´, HMAC_SHA256ÈÏÖ¤Ëã·¨, RSASSA-PSS-2048-SHA256Ç©ÃûËã·¨
+*  è¯´æ˜: C SDK å†…éƒ¨æ–‡ä»¶ä¸º cloud_pay_def.h, cloud_pay_intf.h å’Œ cloud_pay.c; å®ç°ä¸­å¼•ç”¨äº†cJSON, æ–‡ä»¶ä¸ºcJSON.h å’Œ cJSON.c; 
+*		 ä½¿ç”¨è€…å°†è¿™5ä¸ªæºæ–‡ä»¶ç›´æ¥æ‹¿å»ç¼–è¯‘å³å¯
+*		 cloud_pay_def.h æ•°æ®ç»“æ„å®šä¹‰  , cloud_pay_intf.h æ¥å£å£°æ˜
+*        ä¸ºäº†å°†C SDKè¿è¡Œä»¥æ¥, è°ƒç”¨è€…éœ€è¦é¦–å…ˆè°ƒç”¨cloud_pay_api_init åˆå§‹åŒ–åæ‰èƒ½è°ƒç”¨micro_pay/ query_order/ refundç­‰æ¥å£
+*        ä¸ºäº†å…¼å®¹å¤šå¹³å°, ä½¿ç”¨è€…éœ€è¦è‡ªå·±å®ç°ä¸€äº›åŸºæœ¬çš„åŠŸèƒ½, å¦‚å†…å­˜æ‹·è´, HMAC_SHA256è®¤è¯ç®—æ³•, RSASSA-PSS-2048-SHA256ç­¾åç®—æ³•
 *		 
 */
 
@@ -18,7 +18,7 @@
 extern "C" {
 #endif /* __cplusplus */
 	/**
-	* ¹«ÓÃÊı¾İ½Ó¿Ú
+	* å…¬ç”¨æ•°æ®æ¥å£
 	*/
 	#define CLOUD_PAY_ACCOUNT_LENGTH  33
 	#define CLOUD_PAY_AUTHEN_KEY_LENGTH  33
@@ -40,13 +40,13 @@ extern "C" {
 
 	typedef struct _Terminal {
 		int terminal_type; // 1 windows 2 linux 3 android
-		int sub_terminal_type; // »ú¾ßµÄÀàĞÍ. ÕÒÔÆÖ§¸¶·ÖÅä£¬ ¿ÉÒÔÍ³¼ÆÄ³¸ö»ú¾ßµÄ½»Ò×Á¿
+		int sub_terminal_type; // æœºå…·çš„ç±»å‹. æ‰¾äº‘æ”¯ä»˜åˆ†é…ï¼Œ å¯ä»¥ç»Ÿè®¡æŸä¸ªæœºå…·çš„äº¤æ˜“é‡
 		char sdk_version[32];
 		char machine_no[32];
 		char spbill_create_ip[32];
 	}Terminal;
 
-	//±¾µØ×´Ì¬
+	//æœ¬åœ°çŠ¶æ€
 	enum CloudPaySdkLocalState
 	{
 		KCloudPaySdkLocalStateNone		 = 0,
@@ -69,15 +69,15 @@ extern "C" {
 
 
 	/**
-	* »ú¾ßÉÏÊ¹ÓÃµÄ×Ö¶Î±È½ÏÉÙ ÕâÀïÖ»ÊÇÌá¹©ÁË¼¸¸ö¹Ø¼ü×Ö¶Î
-	* Èç¹ûĞèÒª¸ü¶àµÄ×Ö¶Î ¿ÉÒÔ×ÔĞĞĞŞ¸ÄSDKµÄ´úÂë
+	* æœºå…·ä¸Šä½¿ç”¨çš„å­—æ®µæ¯”è¾ƒå°‘ è¿™é‡Œåªæ˜¯æä¾›äº†å‡ ä¸ªå…³é”®å­—æ®µ
+	* å¦‚æœéœ€è¦æ›´å¤šçš„å­—æ®µ å¯ä»¥è‡ªè¡Œä¿®æ”¹SDKçš„ä»£ç 
 	*/
 	typedef struct _Order {
-		long long total_fee;   //¶©µ¥½ğ¶î µ¥Î»·Ö
-		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //¶©µ¥ºÅ
+		long long total_fee;   //è®¢å•é‡‘é¢ å•ä½åˆ†
+		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //è®¢å•å·
 		char transaction_id[CLOUD_PAY_ORDER_LENGTH];
-		int pay_platform;      //Ö§¸¶±¦ or Î¢ĞÅÖ§¸¶
-		enum CloudPaySdkLocalState state;             //¶©µ¥×´Ì¬
+		int pay_platform;      //æ”¯ä»˜å® or å¾®ä¿¡æ”¯ä»˜
+		enum CloudPaySdkLocalState state;             //è®¢å•çŠ¶æ€
 	}Order;
 
 	typedef int(*pfHmacSha256)(const char *in, const char* key, char *out, size_t *out_size);
@@ -91,7 +91,7 @@ extern "C" {
 	typedef int (*pfAnsi2Utf8)(const char *ansi, char *utf8);
 
 	/**
-	*	pfHttpPost º¯Êıµ÷ÓÃÕß×Ô¼º¸ºÔğ·µ»ØÏÂÃæÁ½¸ö´íÎóÂëÖ»ÄÜÊÇÕâÁ½¸ö´íÎóÂë
+	*	pfHttpPost å‡½æ•°è°ƒç”¨è€…è‡ªå·±è´Ÿè´£è¿”å›ä¸‹é¢ä¸¤ä¸ªé”™è¯¯ç åªèƒ½æ˜¯è¿™ä¸¤ä¸ªé”™è¯¯ç 
 	*	CLOUD_PAY_API_ERROR_NETWORK_ERROR 
 	*	CLOUD_PAY_API_ERROR_NETWORK_TIMEOUT
 	*/
@@ -116,7 +116,7 @@ extern "C" {
 	}CloudPayApiOps;
 
 	/**
-	*	´íÎóÂë¶¨Òå
+	*	é”™è¯¯ç å®šä¹‰
 	*/
 	#define CLOUD_PAY_API_SUCCESS								 0
 	#define CLOUD_PAY_API_ERROR_CLOUDPAY_FAIL					 1
@@ -132,12 +132,12 @@ extern "C" {
 	#define CLOUD_PAY_API_ERROR_HTTP_POST_FAIL					-8
 
 	typedef struct _MicroPayRequest {
-		int pay_platform; //Ö§¸¶±¦ or Î¢ĞÅÖ§¸¶
-		char author_code[33]; // ¸¶¿îÂë
-		long long total_fee; //¶©µ¥½ğ¶î µ¥Î»·Ö
-		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //¶©µ¥ºÅĞèÒªÊ¹ÓÃÕß×Ô¼ºÉú³É, ÕâÀïÊÇÔÆÖ§¸¶¶©µ¥Ç°×º(20Î») + Ê¹ÓÃ·½×Ô¶¨Òå²¿·Ö, ¶©µ¥×îºÃ¿ØÖÆÔÙ20Îª×óÓÒ
-		char body[256]; //ÉÌÆ·ËµÃ÷
-		char nonce_str[64];//Ëæ»úÊı
+		int pay_platform; //æ”¯ä»˜å® or å¾®ä¿¡æ”¯ä»˜
+		char author_code[33]; // ä»˜æ¬¾ç 
+		long long total_fee; //è®¢å•é‡‘é¢ å•ä½åˆ†
+		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //è®¢å•å·éœ€è¦ä½¿ç”¨è€…è‡ªå·±ç”Ÿæˆ, è¿™é‡Œæ˜¯äº‘æ”¯ä»˜è®¢å•å‰ç¼€(20ä½) + ä½¿ç”¨æ–¹è‡ªå®šä¹‰éƒ¨åˆ†, è®¢å•æœ€å¥½æ§åˆ¶å†20ä¸ºå·¦å³
+		char body[256]; //å•†å“è¯´æ˜
+		char nonce_str[64];//éšæœºæ•°
 	}MicroPayRequest;
 
 	typedef struct _MicroPayResponse {
@@ -145,8 +145,8 @@ extern "C" {
 	}MicroPayResponse;
 
 	typedef struct _QueryOrderRequest {
-		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //¶©µ¥ºÅĞèÒªÊ¹ÓÃÕß×Ô¼ºÉú³É, ÕâÀïÊÇÔÆÖ§¸¶¶©µ¥Ç°×º(20Î») + Ê¹ÓÃ·½×Ô¶¨Òå²¿·Ö, ¶©µ¥×îºÃ¿ØÖÆÔÙ20Îª×óÓÒ
-		char nonce_str[64];//Ëæ»úÊı
+		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //è®¢å•å·éœ€è¦ä½¿ç”¨è€…è‡ªå·±ç”Ÿæˆ, è¿™é‡Œæ˜¯äº‘æ”¯ä»˜è®¢å•å‰ç¼€(20ä½) + ä½¿ç”¨æ–¹è‡ªå®šä¹‰éƒ¨åˆ†, è®¢å•æœ€å¥½æ§åˆ¶å†20ä¸ºå·¦å³
+		char nonce_str[64];//éšæœºæ•°
 	}QueryOrderRequest;
 
 
@@ -156,36 +156,36 @@ extern "C" {
 
 
 	typedef struct _RefundRequest {
-		int pay_platform; //Ö§¸¶±¦ or Î¢ĞÅÖ§¸¶
-		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //¶©µ¥ºÅĞèÒªÊ¹ÓÃÕß×Ô¼ºÉú³É, ÕâÀïÊÇÔÆÖ§¸¶¶©µ¥Ç°×º(20Î») + Ê¹ÓÃ·½×Ô¶¨Òå²¿·Ö, ¶©µ¥×îºÃ¿ØÖÆÔÙ20Îª×óÓÒ
-		char out_refund_no[CLOUD_PAY_ORDER_LENGTH]; //ÍË¿îµ¥ºÅĞèÒªÊ¹ÓÃÕß×Ô¼ºÉú³É, ÕâÀïÊÇÔÆÖ§¸¶¶©µ¥Ç°×º(20Î») + Ê¹ÓÃ·½×Ô¶¨Òå²¿·Ö
-		long long total_fee;   //¶©µ¥½ğ¶î µ¥Î»·Ö
-		long long refund_fee;   //ÍË¿î½ğ¶î µ¥Î»·Ö
-		char nonce_str[64];//Ëæ»úÊı
+		int pay_platform; //æ”¯ä»˜å® or å¾®ä¿¡æ”¯ä»˜
+		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //è®¢å•å·éœ€è¦ä½¿ç”¨è€…è‡ªå·±ç”Ÿæˆ, è¿™é‡Œæ˜¯äº‘æ”¯ä»˜è®¢å•å‰ç¼€(20ä½) + ä½¿ç”¨æ–¹è‡ªå®šä¹‰éƒ¨åˆ†, è®¢å•æœ€å¥½æ§åˆ¶å†20ä¸ºå·¦å³
+		char out_refund_no[CLOUD_PAY_ORDER_LENGTH]; //é€€æ¬¾å•å·éœ€è¦ä½¿ç”¨è€…è‡ªå·±ç”Ÿæˆ, è¿™é‡Œæ˜¯äº‘æ”¯ä»˜è®¢å•å‰ç¼€(20ä½) + ä½¿ç”¨æ–¹è‡ªå®šä¹‰éƒ¨åˆ†
+		long long total_fee;   //è®¢å•é‡‘é¢ å•ä½åˆ†
+		long long refund_fee;   //é€€æ¬¾é‡‘é¢ å•ä½åˆ†
+		char nonce_str[64];//éšæœºæ•°
 	}RefundRequest;
 
 	/**
-	*	Èç¹ûÖ»°´¶©µ¥ºÅ²éÑ¯ÍË¿îµ¥Çë½«out_refund_no³õÊ¼»¯Îª0
+	*	å¦‚æœåªæŒ‰è®¢å•å·æŸ¥è¯¢é€€æ¬¾å•è¯·å°†out_refund_noåˆå§‹åŒ–ä¸º0
 	*/
 	typedef struct _QueryRefundRequest {
-		int pay_platform; //Ö§¸¶±¦ or Î¢ĞÅÖ§¸¶
-		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //¶©µ¥ºÅĞèÒªÊ¹ÓÃÕß×Ô¼ºÉú³É, ÕâÀïÊÇÔÆÖ§¸¶¶©µ¥Ç°×º(20Î») + Ê¹ÓÃ·½×Ô¶¨Òå²¿·Ö, ¶©µ¥×îºÃ¿ØÖÆÔÙ20Îª×óÓÒ
-		char out_refund_no[CLOUD_PAY_ORDER_LENGTH]; //ÍË¿îµ¥ºÅĞèÒªÊ¹ÓÃÕß×Ô¼ºÉú³É, ÕâÀïÊÇÔÆÖ§¸¶¶©µ¥Ç°×º(20Î») + Ê¹ÓÃ·½×Ô¶¨Òå²¿·Ö
-		char nonce_str[64];//Ëæ»úÊı
+		int pay_platform; //æ”¯ä»˜å® or å¾®ä¿¡æ”¯ä»˜
+		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //è®¢å•å·éœ€è¦ä½¿ç”¨è€…è‡ªå·±ç”Ÿæˆ, è¿™é‡Œæ˜¯äº‘æ”¯ä»˜è®¢å•å‰ç¼€(20ä½) + ä½¿ç”¨æ–¹è‡ªå®šä¹‰éƒ¨åˆ†, è®¢å•æœ€å¥½æ§åˆ¶å†20ä¸ºå·¦å³
+		char out_refund_no[CLOUD_PAY_ORDER_LENGTH]; //é€€æ¬¾å•å·éœ€è¦ä½¿ç”¨è€…è‡ªå·±ç”Ÿæˆ, è¿™é‡Œæ˜¯äº‘æ”¯ä»˜è®¢å•å‰ç¼€(20ä½) + ä½¿ç”¨æ–¹è‡ªå®šä¹‰éƒ¨åˆ†
+		char nonce_str[64];//éšæœºæ•°
 	}QueryRefundRequest;
 
 	/**
-	* »ú¾ßÉÏÊ¹ÓÃµÄ×Ö¶Î±È½ÏÉÙ ÕâÀïÖ»ÊÇÌá¹©ÁË¼¸¸ö¹Ø¼ü×Ö¶Î
-	* Èç¹ûĞèÒª¸ü¶àµÄ×Ö¶Î ¿ÉÒÔ×ÔĞĞĞŞ¸ÄSDKµÄ´úÂë
+	* æœºå…·ä¸Šä½¿ç”¨çš„å­—æ®µæ¯”è¾ƒå°‘ è¿™é‡Œåªæ˜¯æä¾›äº†å‡ ä¸ªå…³é”®å­—æ®µ
+	* å¦‚æœéœ€è¦æ›´å¤šçš„å­—æ®µ å¯ä»¥è‡ªè¡Œä¿®æ”¹SDKçš„ä»£ç 
 	*/
 	typedef struct _RefundOrder {
-		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //¶©µ¥ºÅ
-		char out_refund_no[CLOUD_PAY_ORDER_LENGTH]; //ÍË¿î¶©µ¥ºÅ
-		char refund_id[CLOUD_PAY_ORDER_LENGTH]; //ÍË¿î¶©µ¥ºÅ
-		long long total_fee;   //¶©µ¥½ğ¶î µ¥Î»·Ö
-		long long refund_fee;   //ÍË¿î½ğ¶î µ¥Î»·Ö
-		int pay_platform;      //Ö§¸¶±¦ or Î¢ĞÅÖ§¸¶
-		enum CloudPaySdkRefundLocalState state;             //ÍË¿îµ¥×´Ì¬
+		char out_trade_no[CLOUD_PAY_ORDER_LENGTH]; //è®¢å•å·
+		char out_refund_no[CLOUD_PAY_ORDER_LENGTH]; //é€€æ¬¾è®¢å•å·
+		char refund_id[CLOUD_PAY_ORDER_LENGTH]; //é€€æ¬¾è®¢å•å·
+		long long total_fee;   //è®¢å•é‡‘é¢ å•ä½åˆ†
+		long long refund_fee;   //é€€æ¬¾é‡‘é¢ å•ä½åˆ†
+		int pay_platform;      //æ”¯ä»˜å® or å¾®ä¿¡æ”¯ä»˜
+		enum CloudPaySdkRefundLocalState state;             //é€€æ¬¾å•çŠ¶æ€
 	}RefundOrder;
 
 	typedef struct _QueryRefundResponse {

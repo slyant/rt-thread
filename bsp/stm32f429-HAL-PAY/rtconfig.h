@@ -41,6 +41,7 @@
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
 #define RT_CONSOLE_DEVICE_NAME "uart6"
+#define RT_VER_NUM 0x40000
 
 /* RT-Thread Components */
 
@@ -125,6 +126,7 @@
 /* protocol stack implement */
 
 #define SAL_USING_AT
+#define SAL_USING_TLS
 #define SAL_USING_POSIX
 #define SAL_PROTO_FAMILIES_NUM 4
 
