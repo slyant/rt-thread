@@ -519,14 +519,14 @@ static void thread_entry(void *parameter)
 						else
 						{
 							rt_kprintf("OK_QR:%s\n", qr_code);
-//							if(cloud_pay_request(qr_code, 1)==RT_EOK)
-//							{
-//								rt_kprintf("cloud pay ok!");
-//							}
-//							else
-//							{
-//								rt_kprintf("cloud pay failed!");
-//							}							
+							if(cloud_pay_request(qr_code, 1)==RT_EOK)
+							{
+								rt_kprintf("cloud pay ok!");
+							}
+							else
+							{
+								rt_kprintf("cloud pay failed!");
+							}							
 							rt_memcpy(last_code, qr_code, 18);
 						}
 						continue;

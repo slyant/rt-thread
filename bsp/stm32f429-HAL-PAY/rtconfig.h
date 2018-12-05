@@ -139,12 +139,10 @@
 /* AT commands */
 
 #define RT_USING_AT
-#define AT_DEBUG
 #define AT_USING_CLIENT
-#define AT_CLIENT_NUM_MAX 1
+#define AT_CLIENT_NUM_MAX 5
 #define AT_USING_SOCKET
 #define AT_USING_CLI
-#define AT_PRINT_RAW_CMD
 #define AT_SW_VERSION_NUM 0x10200
 
 /* VBUS(Virtual Software BUS) */
@@ -158,7 +156,7 @@
 /* IoT - internet of things */
 
 #define PKG_USING_WEBCLIENT
-#define WEBCLIENT_USING_SAL_TLS
+#define WEBCLIENT_USING_MBED_TLS
 #define PKG_USING_WEBCLIENT_LATEST_VERSION
 #define PKG_USING_CJSON
 #define PKG_USING_CJSON_LATEST_VERSION
@@ -181,7 +179,7 @@
 #define AT_DEVICE_EC20
 #define AT_DEVICE_SOCKETS_NUM 12
 #define AT_DEVICE_NAME "uart3"
-#define AT_DEVICE_RECV_BUFF_LEN 1024
+#define AT_DEVICE_RECV_BUFF_LEN 4096
 #define PKG_USING_AT_DEVICE_LATEST_VERSION
 
 /* IoT Cloud */

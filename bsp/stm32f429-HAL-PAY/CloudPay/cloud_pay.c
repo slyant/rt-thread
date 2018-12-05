@@ -60,15 +60,20 @@ enum AlipayRefundOrderState
 	kAlipayRefundStateFail = 3,    // 申请退款失败
 };
 
+rt_bool_t cJSON_HasObjectItem(cJSON *object,const char *string)
+{
+	return cJSON_GetObjectItem(object, string) ? 1 : 0;	
+}
+
 #define CLOUD_PAY_ORDER(response_type_marco,api_response_marco, detail_macro)\
 do{\
 	response_type_marco *response = (response_type_marco *)api_response_marco;\
-	if (!cJSON_HasObjectItem(response_content, detail_macro))\
+	if (!cJSON_HasObjectItem((cJSON*)response_content, detail_macro))\
 	{\
 		set_error_ansi("响应包无效");\
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;\
 	}\
-	cJSON* detail = cJSON_GetObjectItem(response_content, detail_macro);\
+	cJSON* detail = cJSON_GetObjectItem((cJSON*)response_content, detail_macro);\
 	if (!cJSON_HasObjectItem(detail, "order_content"))\
 	{\
 		set_error_ansi("响应包无效");\
@@ -679,12 +684,12 @@ static int query_refund_response_success_process(
 {
 	QueryRefundResponse *response = (QueryRefundResponse *)api_response; 
 	
-	if (!cJSON_HasObjectItem(response_content, "query_refund_order"))
+	if (!cJSON_HasObjectItem((cJSON*)response_content, "query_refund_order"))
 	{
 		return CLOUD_PAY_API_ERROR_RESPONSE_INVALID; 
 	}
 
-	cJSON* query_refund_order = cJSON_GetObjectItem(response_content, "query_refund_order");
+	cJSON* query_refund_order = cJSON_GetObjectItem((cJSON*)response_content, "query_refund_order");
 	if (!cJSON_HasObjectItem(query_refund_order, "refund_order_content"))
 	{
 		//return CLOUD_PAY_API_ERROR_RESPONSE_INVALID;
