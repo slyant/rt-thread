@@ -10,7 +10,7 @@
 #define URL_LEN_MAX			1024
 
 #define GET_LOCAL_URI		"https://www.apiopen.top/weatherApi?city=%s"
-#define LOCAL_CITY			"%E6%AD%A6%E6%B1%89"	//urlencode("Îäºº")
+#define LOCAL_CITY			"%E6%AD%A6%E6%B1%89"	//urlencode("æ­¦æ±‰")
 
 static void weather_data_parse(char* data)
 {
@@ -42,7 +42,7 @@ static void weather_data_parse(char* data)
 	   rt_kprintf("\nwendu:\t%s-%s", cJSON_item_get_string(weatheritem, "low"), cJSON_item_get_string(weatheritem, "high"));
 	   rt_kprintf("\nfengxiang:%s %s", cJSON_item_get_string(weatheritem, "fengxiang"), cJSON_item_get_string(weatheritem, "fengli"));
 	   rt_kprintf("\n");
-   }   
+   }
 	rt_kprintf("\n");
 __EXIT:
    if (root != RT_NULL)
@@ -65,7 +65,7 @@ int get_weather(int argc, char **argv)
 	else if (argc == 2)
     {
         strcpy(city_name, argv[1]);
-		urlencode(city_name);//¶ÔÖÐÎÄ±àÂë
+		urlencode(city_name);//å¯¹ä¸­æ–‡ç¼–ç 
     }
     else if(argc > 2)
     {
