@@ -6,26 +6,26 @@
 #include <rtthread.h>
 #include "cmd_process.h"
 
-//flash´æ´¢µØÖ·¶¨Òå(¹²Õ¼ÓÃ20KB/256KB£¬10¸öPAGE*2KB/PAGE)
+//flashå­˜å‚¨åœ°å€å®šä¹‰(å…±å ç”¨20KB/256KBï¼Œ10ä¸ªPAGE*2KB/PAGE)
 #define data_base_addr	0x0803B000L
 #define data_end_addr	0x0803FFFFL
 #define sys_config_addr					(data_base_addr+FLASH_PAGE_SIZE*0)
 #define sys_config_addr2				(data_base_addr+FLASH_PAGE_SIZE*1)
 
-/*************************  UI½çÃæ ID*********************/
-#define MAIN_INDEX      0     //Ö÷½çÃæ
-#define SYS_CFG_INDEX   1     //ÏµÍ³ÅäÖÃ
-#define SYS_TIME_SETUP  2     //ÏµÍ³Ê±¼äÉèÖÃ£¨RTC£©
-#define CARD_MANAG      3
-#define SARK_MANAGE     4     //Òø¹ñ¹ÜÀí
-#define DOOR_OPEN_MANA  5     //¹ñÃÅ¿ªÃÅ¹ÜÀí
-#define TEST_UI         6     //²âÊÔ
-/*************************  ¿¨¹ÜÀíÓ³ÉäUI-->ID**************/
-#define SYS_KEY_CRCF    7     //ÃÜÔ¿¿¨¹ÜÀí
-#define MANA_CARD_SET   8     //ÅäÖÃ¿¨ÉèÖÃ
-#define PRIV_CARD_SET   9     //ÌØÈ¨¿¨ÉèÖÃ
-#define NORM_CARD_SET   10    //ÆÕÍ¨¿¨ÉèÖÃ
-/*************************  UI½çÃæ ID**********************/
+/*************************  UIç•Œé¢ ID   *********************/
+#define MAIN_INDEX      0     //ä¸»ç•Œé¢
+#define SYS_CFG_INDEX   1     //ç³»ç»Ÿé…ç½®
+#define SYS_TIME_SETUP  2     //ç³»ç»Ÿæ—¶é—´è®¾ç½®ï¼ˆRTCï¼‰
+#define CARD_MANAG      3     //å¡ç®¡ç†
+#define SARK_MANAGE     4     //é“¶æŸœç®¡ç†
+#define DOOR_OPEN_MANA  5     //æŸœé—¨å¼€é—¨ç®¡ç†
+#define TEST_UI         6     //æµ‹è¯•
+#define KEY_CARD_COF    7     //å¯†é’¥å¡ç®¡ç†
+/*************************  å¡ç®¡ç†æ˜ å°„UI-->ID  **************/
+#define COF_CARD_SET   8      //é…ç½®å¡è®¾ç½®
+#define MANA_CARD_SET   9     //ç®¡ç†å¡è®¾ç½®
+#define NORM_CARD_SET   10    //æ™®é€šå¡è®¾ç½®
+/*************************  UIç•Œé¢ ID  **********************/
 
 
 //#define SYS_CFG_DATETIME_INDEX          3
@@ -39,10 +39,10 @@
 #define  MAX_SARK    8
 typedef struct
 {
-	uint8_t  node;    //Òø¹ñ½Úµã£¨µØÖ·£©
-	uint8_t  num;     //¹ñÃÅÊıÁ¿
-	uint8_t  ov_time; //¿ªÃÅ³¬Ê±ÏŞ¶¨
-	char     name[5]; //Òø¹ñÃû³Æ 
+	uint8_t  node;    //é“¶æŸœèŠ‚ç‚¹ï¼ˆåœ°å€ï¼‰
+	uint8_t  num;     //æŸœé—¨æ•°é‡
+	uint8_t  ov_time; //å¼€é—¨è¶…æ—¶é™å®š
+	char     name[5]; //é“¶æŸœåç§° 
 }SARK_MSG,*sark_msg_t;
 
 typedef struct
@@ -53,6 +53,12 @@ typedef struct
 	uint8_t  lins;
 }SARK_POINT;
 
+typedef struct
+{
+	int timrout;
+	int node_num;
+	int door_num;
+}SARK_PARM;
 
 
 void ProcessMessage( PCTRL_MSG msg, uint16_t size );
@@ -76,6 +82,7 @@ void sark_discon_remov(uint8_t addr);
 
 void UpdateUI(void);
 
+void sys_lcd_startup(void);
 
 #endif
 

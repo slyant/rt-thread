@@ -1,9 +1,11 @@
 #include <rtthread.h>
 #include <dfs_posix.h>
 #include <dbinclude.h>
+#include <sysinfo.h>
+#include "lcd_oper.h"
 
 #define SYSINFO_ID	1
-const char* SYS_TITLE = "公交自助收银柜管理系统 V2.0";
+const char* SYS_TITLE = "公交自助收银管理系统 V2.0";
 const unsigned char DEFAULT_KEY_A[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char DEFAULT_KEY_B[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -59,7 +61,7 @@ static int create_sqlite_db(void)
 }
 MSH_CMD_EXPORT(create_sqlite_db, create sqlite db);
 
-static int init_data(void)
+int init_data(void)
 {
 	sysinfo_t e;
 	rt_memset(&e,0x00,sizeof(sysinfo_t));
@@ -69,7 +71,7 @@ static int init_data(void)
 	e.node_count = 3;
 	e.door_count = 8;
 	rt_memcpy(e.key_a,DEFAULT_KEY_A,sizeof(DEFAULT_KEY_A));
-	rt_memcpy(e.key_a,DEFAULT_KEY_B,sizeof(DEFAULT_KEY_B));
+	rt_memcpy(e.key_b,DEFAULT_KEY_B,sizeof(DEFAULT_KEY_B));
 	return sysinfo_add(&e);
 }
 MSH_CMD_EXPORT(init_data, init sqlite db data);
@@ -83,10 +85,10 @@ void sysinfo_for_hd(sysinfo_t* e)
 int app_sqlite_init(void)
 {	
 	db_helper_init();
-/*
+
 	//创建数据库的例子
 	create_sqlite_db();
-	
+/*	
 	// sysinfo添加一条记录的例子：
 	if(db_query_count_result("select count(id) from sysinfo where id=1")==0)
 	{//如果id=1的记录不存在，则添加
@@ -129,7 +131,9 @@ int app_sqlite_init(void)
 		rt_kprintf("address:%d\nname:%s\n", nodeinfo.address, nodeinfo.name);
 	}
 */
+	sys_lcd_startup();
 	return 0;
 }
 INIT_APP_EXPORT(app_sqlite_init);
+
 

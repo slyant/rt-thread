@@ -105,7 +105,11 @@ void sysinfo_print_queue(na_queue_t *q)
 	sysinfo_t * e = NULL;
 	na_queue_foreach(e,q,sysinfo_t,queue)
 	{
-		rt_kprintf("id:%d\nsys_title:%s\nopen_timeout:%d\nnode_count:%d\ndoor_count:%d\n",e->id, e->sys_title, e->open_timeout, e->node_count, e->door_count);
+		rt_kprintf("id:%d\nsys_title:%s\nopen_timeout:%d\nnode_count:%d\ndoor_count:%d\n",\
+		e->id, e->sys_title, e->open_timeout,e->node_count, e->door_count);
+		rt_kprintf("keya:%02x%02x%02x%02x%02x%02x\nkeyb:%02x%02x%02x%02x%02x%02x",\
+		e->key_a[0],e->key_a[1],e->key_a[2],e->key_a[03],\
+		e->key_a[04],e->key_a[5],e->key_b[0],e->key_b[1],e->key_b[2],e->key_b[3],e->key_b[4],e->key_b[5]);
 	}
 }
 //遍历队列，自定义处理方法（注意处理完成后释放队列及队列变量，使用sysinfo_free_queue(q)和rt_free(q)）
@@ -174,7 +178,7 @@ static int list_all_sysinfo(void)
 	na_queue_t *q = rt_calloc(sizeof(sysinfo_t), 1);
 	int ret = sysinfo_get_all(q);
 	sysinfo_print_queue(q);
-	rt_kprintf("record(s):%d\n", ret);
+	rt_kprintf("\nrecord(s):%d\n", ret);
 	sysinfo_free_queue(q);
 	rt_free(q);
   return 0;

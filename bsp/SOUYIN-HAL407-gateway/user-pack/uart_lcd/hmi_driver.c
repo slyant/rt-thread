@@ -5,11 +5,11 @@
 
 extern void SendChar(unsigned char c);
 
-#define TX_8(P1) SEND_DATA((P1)&0xFF)  //·¢ËÍµ¥¸ö×Ö½Ú
-#define TX_8N(P,N) SendNU8((unsigned char *)P,N)  //·¢ËÍN¸ö×Ö½Ú
-#define TX_16(P1) TX_8((P1)>>8);TX_8(P1)  //·¢ËÍ16Î»ÕûÊı
-#define TX_16N(P,N) SendNU16((unsigned short *)P,N)  //·¢ËÍN¸ö16Î»ÕûÊı
-#define TX_32(P1) TX_16((P1)>>16);TX_16((P1)&0xFFFF)  //·¢ËÍ32Î»ÕûÊı
+#define TX_8(P1) SEND_DATA((P1)&0xFF)  //å‘é€å•ä¸ªå­—èŠ‚
+#define TX_8N(P,N) SendNU8((unsigned char *)P,N)  //å‘é€Nä¸ªå­—èŠ‚
+#define TX_16(P1) TX_8((P1)>>8);TX_8(P1)  //å‘é€16ä½æ•´æ•°
+#define TX_16N(P,N) SendNU16((unsigned short *)P,N)  //å‘é€Nä¸ª16ä½æ•´æ•°
+#define TX_32(P1) TX_16((P1)>>16);TX_16((P1)&0xFFFF)  //å‘é€32ä½æ•´æ•°
 
 #if(CRC16_ENABLE)
 
@@ -55,13 +55,13 @@ void SEND_DATA(unsigned char c)
 void BEGIN_CMD()
 {
 	TX_8(0XEE);
-	_crc16 = 0XFFFF;//¿ªÊ¼¼ÆËãCRC16
+	_crc16 = 0XFFFF;//å¼€å§‹è®¡ç®—CRC16
 }
 
 void END_CMD()
 {
 	unsigned short crc16 = _crc16;
-	TX_16(crc16);//·¢ËÍCRC16
+	TX_16(crc16);//å‘é€CRC16
 	TX_32(0XFFFCFFFF);
 }
 
@@ -1036,7 +1036,7 @@ void SetLanguage(unsigned char ui_lang,unsigned char sys_lang)
 	BEGIN_CMD();
 	TX_8(0xC1);
 	TX_8(lang);
-	TX_8(0xC1+lang);//Ğ£Ñé£¬·ÀÖ¹ÒâÍâĞŞ¸ÄÓïÑÔ
+	TX_8(0xC1+lang);//æ ¡éªŒï¼Œé˜²æ­¢æ„å¤–ä¿®æ”¹è¯­è¨€
 	END_CMD();
 }
 #endif

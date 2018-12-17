@@ -10,6 +10,7 @@
       <TargetName>rt-thread_stm32f4xx</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
+      <pArmCC>5060750::V5.06 update 6 (build 750)::ARMCC</pArmCC>
       <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
@@ -52,7 +53,7 @@
           <OutputName>rtthread-stm32f4xx</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\build\</ListingPath>
@@ -209,7 +210,7 @@
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
             <Im1Chk>1</Im1Chk>
-            <Im2Chk>0</Im2Chk>
+            <Im2Chk>1</Im2Chk>
             <OnChipMemories>
               <Ocm1>
                 <Type>0</Type>
@@ -336,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\MultiButton-v1.0.2;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;user-pack\nrf_app;user-pack\RFIC;user-pack\uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc</IncludePath>
+              <IncludePath>applications;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-v1.0.2;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;user-pack\nrf_app;user-pack\RFIC;user-pack\uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -409,6 +410,11 @@
               <FileName>pcf8563.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\pcf8563.c</FilePath>
+            </File>
+            <File>
+              <FileName>gps_user.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\gps_user.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -943,6 +949,26 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>cJSON</GroupName>
+          <Files>
+            <File>
+              <FileName>cJSON.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\cJSON-v1.0.2\cJSON.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\cJSON-v1.0.2\cJSON_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\cJSON-v1.0.2\cJSON_util.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>MultiButton</GroupName>
           <Files>
             <File>
@@ -1038,7 +1064,7 @@
             <File>
               <FileName>ic_card_protocol.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\user-pack\RFIC\ic_card_protocol.c</FilePath>
+              <FilePath>user-pack\RFIC\ic_card_protocol.c</FilePath>
             </File>
             <File>
               <FileName>rfic_oper.c</FileName>
@@ -1079,6 +1105,11 @@
               <FileName>components.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\components.c</FilePath>
+            </File>
+            <File>
+              <FileName>cpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\cpu.c</FilePath>
             </File>
             <File>
               <FileName>device.c</FileName>
@@ -1512,6 +1543,11 @@
               <FileName>time.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\components\libc\compilers\armlibc\time.c</FilePath>
+            </File>
+            <File>
+              <FileName>gmtime_r.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\components\libc\compilers\common\gmtime_r.c</FilePath>
             </File>
           </Files>
         </Group>

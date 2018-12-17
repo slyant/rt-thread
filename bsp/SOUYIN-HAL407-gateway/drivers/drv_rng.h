@@ -4,8 +4,8 @@
 #include <rtthread.h>
 
 int RNG_Init(void);
-rt_uint32_t RNG_Get_RandomNum(void);//µÃµ½Ëæ»úÊı
-int RNG_Get_RandomRange(int min,int max);//Éú³É[min,max]·¶Î§µÄËæ»úÊı
+rt_uint32_t RNG_Get_RandomNum(void);//å¾—åˆ°éšæœºæ•°
+int RNG_Get_RandomRange(int min,int max);//ç”Ÿæˆ[min,max]èŒƒå›´çš„éšæœºæ•°
 
 #endif
 

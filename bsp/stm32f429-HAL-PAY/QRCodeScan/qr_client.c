@@ -88,7 +88,7 @@ static void client_parser(qr_client_t client)
 			}
 			if(rt_memcmp(client->recv_buffer, client->last_buffer, client->cur_recv_len)!=0)
 			{
-				//·¢ËÍÏûÏ¢
+				//å‘é€æ¶ˆæ¯
 				rt_mq_send(client->qr_mq, client->recv_buffer, client->cur_recv_len);
 				rt_memcpy(client->last_buffer, client->recv_buffer, client->cur_recv_len);
 			}

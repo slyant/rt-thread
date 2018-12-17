@@ -41,6 +41,7 @@
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
 #define RT_CONSOLE_DEVICE_NAME "uart1"
+#define RT_VER_NUM 0x40000
 
 /* RT-Thread Components */
 
@@ -69,6 +70,12 @@
 
 /* Device virtual file system */
 
+#define RT_USING_DFS
+#define DFS_USING_WORKDIR
+#define DFS_FILESYSTEMS_MAX 2
+#define DFS_FILESYSTEM_TYPES_MAX 2
+#define DFS_FD_MAX 16
+#define RT_USING_DFS_DEVFS
 
 /* Device Drivers */
 
@@ -77,7 +84,30 @@
 #define RT_USING_SERIAL
 #define RT_USING_PIN
 #define RT_USING_RTC
+#define RT_USING_SDIO
+#define RT_SDIO_STACK_SIZE 512
+#define RT_SDIO_THREAD_PRIORITY 15
+#define RT_MMCSD_STACK_SIZE 1024
+#define RT_MMCSD_THREAD_PREORITY 22
+#define RT_MMCSD_MAX_PARTITION 16
 #define RT_USING_SPI
+
+/* Using WiFi */
+
+#define RT_USING_WIFI
+#define RT_WLAN_DEVICE_STA_NAME "wlan0"
+#define RT_WLAN_DEVICE_AP_NAME "wlan1"
+#define RT_WLAN_DEFAULT_PROT "lwip"
+#define RT_WLAN_SCAN_WAIT_MS 10000
+#define RT_WLAN_CONNECT_WAIT_MS 10000
+#define RT_WLAN_SSID_MAX_LENGTH 32
+#define RT_WLAN_PASSWORD_MAX_LENGTH 32
+#define RT_WLAN_SCAN_SORT
+#define RT_WLAN_CFG_INFO_MAX 3
+#define RT_WLAN_WORKQUEUE_THREAD_NAME "wlan_job"
+#define RT_WLAN_WORKQUEUE_THREAD_SIZE 2048
+#define RT_WLAN_WORKQUEUE_THREAD_PRIO 22
+#define RT_WLAN_DEV_EVENT_NUM 2
 
 /* Using USB */
 
@@ -85,20 +115,72 @@
 /* POSIX layer and C standard library */
 
 #define RT_USING_LIBC
+#define RT_USING_POSIX
 
 /* Network */
 
 /* Socket abstraction layer */
 
+#define RT_USING_SAL
+
+/* protocol stack implement */
+
+#define SAL_USING_LWIP
+#define SAL_USING_AT
+#define SAL_USING_TLS
+#define SAL_USING_POSIX
+#define SAL_PROTO_FAMILIES_NUM 4
 
 /* light weight TCP/IP stack */
 
+#define RT_USING_LWIP
+#define RT_USING_LWIP210
+#define RT_LWIP_IGMP
+#define RT_LWIP_ICMP
+#define RT_LWIP_DNS
+#define RT_LWIP_DHCP
+#define IP_SOF_BROADCAST 1
+#define IP_SOF_BROADCAST_RECV 1
+
+/* Static IPv4 Address */
+
+#define RT_LWIP_IPADDR "192.168.1.30"
+#define RT_LWIP_GWADDR "192.168.1.1"
+#define RT_LWIP_MSKADDR "255.255.255.0"
+#define RT_LWIP_UDP
+#define RT_LWIP_TCP
+#define RT_MEMP_NUM_NETCONN 8
+#define RT_LWIP_PBUF_NUM 16
+#define RT_LWIP_RAW_PCB_NUM 4
+#define RT_LWIP_UDP_PCB_NUM 4
+#define RT_LWIP_TCP_PCB_NUM 4
+#define RT_LWIP_TCP_SEG_NUM 40
+#define RT_LWIP_TCP_SND_BUF 8196
+#define RT_LWIP_TCP_WND 8196
+#define RT_LWIP_TCPTHREAD_PRIORITY 10
+#define RT_LWIP_TCPTHREAD_MBOX_SIZE 8
+#define RT_LWIP_TCPTHREAD_STACKSIZE 1024
+#define RT_LWIP_ETHTHREAD_PRIORITY 12
+#define RT_LWIP_ETHTHREAD_STACKSIZE 1024
+#define RT_LWIP_ETHTHREAD_MBOX_SIZE 8
+#define LWIP_NETIF_STATUS_CALLBACK 1
+#define SO_REUSE 1
+#define LWIP_SO_RCVTIMEO 1
+#define LWIP_SO_SNDTIMEO 1
+#define LWIP_SO_RCVBUF 1
+#define LWIP_NETIF_LOOPBACK 0
 
 /* Modbus master and slave stack */
 
 
 /* AT commands */
 
+#define RT_USING_AT
+#define AT_USING_CLIENT
+#define AT_CLIENT_NUM_MAX 1
+#define AT_USING_SOCKET
+#define AT_USING_CLI
+#define AT_SW_VERSION_NUM 0x10200
 
 /* VBUS(Virtual Software BUS) */
 
@@ -110,32 +192,58 @@
 
 /* IoT - internet of things */
 
-#define PKG_USING_NRF24L01_NETWORK
-#define PKG_USING_NRF24L01_NETWORK_LATEST_VERSION
-#define NRF_SPI_BUS_NAME "spi2"
-#define NRF_SPI_DEV_NAME "spi20"
-#define NRF_SPI_CS_PIN 81
-#define NRF_CE_PIN 80
-#define NRF_IRQ_PIN 82
-#define NRF24L01_USING_GATEWAY
-#define NRF24L01_USING_EXAMPLE
-#define NRF24L01_USING_NRF_LOG
+#define PKG_USING_WEBCLIENT
+#define WEBCLIENT_USING_MBED_TLS
+#define PKG_USING_WEBCLIENT_LATEST_VERSION
+#define PKG_USING_CJSON
+#define PKG_USING_CJSON_LATEST_VERSION
 
 /* Wi-Fi */
 
 /* Marvell WiFi */
 
+#define PKG_USING_WLANMARVELL
+#define PKG_USING_WLANMARVELL_LATEST_VERSION
+#define MARVELLWIFI_USING_UAP
 
 /* Wiced WiFi */
 
+#define PKG_USING_AT_DEVICE
+#define PKG_AT_INIT_BY_THREAD
+#define AT_DEVICE_ESP8266
+#define AT_DEVICE_SOCKETS_NUM 5
+#define AT_DEVICE_NAME "uart3"
+#define AT_DEVICE_RECV_BUFF_LEN 512
+#define AT_DEVICE_WIFI_SSID "HiWiFi_TestServer"
+#define AT_DEVICE_WIFI_PASSWORD "~18507151001~"
+#define PKG_USING_AT_DEVICE_LATEST_VERSION
 
 /* IoT Cloud */
 
 
 /* security packages */
 
+#define PKG_USING_MBEDTLS
+
+/* Select Root Certificate */
+
+#define PKG_USING_MBEDTLS_USE_ALL_CERTS
+#define PKG_USING_MBEDTLS_THAWTE_ROOT_CA
+#define PKG_USING_MBEDTLS_VERSIGN_PBULIC_ROOT_CA
+#define PKG_USING_MBEDTLS_VERSIGN_UNIVERSAL_ROOT_CA
+#define PKG_USING_MBEDTLS_GEOTRUST_ROOT_CA
+#define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
+#define PKG_USING_MBEDTLS_GODADDY_ROOT_CA
+#define PKG_USING_MBEDTLS_COMODOR_ROOT_CA
+#define PKG_USING_MBEDTLS_DST_ROOT_CA
+#define PKG_USING_MBEDTLS_CLOBALSIGN_ROOT_CA
+#define PKG_USING_MBEDTLS_ENTRUST_ROOT_CA
+#define MBEDTLS_AES_ROM_TABLES
+#define MBEDTLS_ECP_WINDOW_SIZE 2
+#define MBEDTLS_SSL_MAX_CONTENT_LEN 3584
+#define PKG_USING_MBEDTLS_LATEST_VERSION
 #define PKG_USING_TINYCRYPT
-#define PKG_USING_TINYCRYPT_V110
+#define PKG_USING_TINYCRYPT_V100
 #define TINY_CRYPT_MD5
 
 /* language packages */
@@ -155,11 +263,6 @@
 
 /* miscellaneous packages */
 
-#define PKG_USING_MULTIBUTTON
-#define PKG_USING_MULTIBUTTON_LATEST_VERSION
-
-/* MultiButton Options */
-
 
 /* sample package */
 
@@ -175,6 +278,7 @@
 /* Serial Select */
 
 #define RT_USING_UART1
+#define RT_USING_UART3
 
 /* SPI Select */
 

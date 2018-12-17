@@ -23,7 +23,7 @@ static int door_sw_init(void)
 	for(i=0;i<16;i++)
 	{
 		rt_pin_mode(sw_pin[i],PIN_MODE_INPUT);
-		door[i].door_sta = (uint16_t) rt_pin_read(sw_pin[i]);     //Îª0´¦ÓÚ¹ØÃÅ×´Ì¬
+		door[i].door_sta = (uint16_t) rt_pin_read(sw_pin[i]);     //ä¸º0å¤„äºå…³é—¨çŠ¶æ€
 		door[i].open_time = 0;
 	}
 	return 0;
@@ -64,14 +64,14 @@ static int door_hadle(void)
 INIT_APP_EXPORT(door_hadle);
 
 
-static void led_thread_entry(void* parameter)   //Ïß³Ì
+static void led_thread_entry(void* parameter)   //çº¿ç¨‹
 {
 	rt_pin_mode(LED,PIN_MODE_OUTPUT);
 	
 	while(1)
 	{
 		rt_pin_write(LED,PIN_LOW);
-		rt_thread_delay(500);                        //ÑÓÊ±500ms£¬¸Ãº¯Êı¸üĞÂ²Ù×÷ÏµÍ³
+		rt_thread_delay(500);                        //å»¶æ—¶500msï¼Œè¯¥å‡½æ•°æ›´æ–°æ“ä½œç³»ç»Ÿ
 		rt_pin_write(LED,PIN_HIGH);
 		rt_thread_delay(500);
 	}
@@ -80,12 +80,12 @@ static void led_thread_entry(void* parameter)   //Ïß³Ì
 static int led_tolget(void)
 {
 	rt_thread_t 
-	led_task = rt_thread_create("led",                       //Ïß³ÌÃû×Ö£¬ÔÚshellÀïÃæ¿ÉÒÔ¿´µ½
-					        led_thread_entry,                //Ïß³ÌÈë¿Úº¯Êı
-					        RT_NULL,                         //Ïß³ÌÈë¿Úº¯Êı²ÎÊı
-					        256,                             //Ïß³ÌÕ»´óĞ¡
-					        15,                              //Ïß³ÌµÄÓÅÏÈ¼¶
-					        20);                             //Ïß³ÌÊ±¼äÆ¬
+	led_task = rt_thread_create("led",                       //çº¿ç¨‹åå­—ï¼Œåœ¨shellé‡Œé¢å¯ä»¥çœ‹åˆ°
+					        led_thread_entry,                //çº¿ç¨‹å…¥å£å‡½æ•°
+					        RT_NULL,                         //çº¿ç¨‹å…¥å£å‡½æ•°å‚æ•°
+					        256,                             //çº¿ç¨‹æ ˆå¤§å°
+					        15,                              //çº¿ç¨‹çš„ä¼˜å…ˆçº§
+					        20);                             //çº¿ç¨‹æ—¶é—´ç‰‡
 	if(led_task != RT_NULL)
 		rt_thread_startup(led_task);
 	
@@ -96,7 +96,7 @@ INIT_APP_EXPORT(led_tolget);
 static int door_h595_init(void)
 {
 	rt_pin_mode(D595,PIN_MODE_OUTPUT);
-	rt_pin_mode(EN595,PIN_MODE_OUTPUT_OD);                     //¸ÃÒı½ÅÓĞÉÏÀ­
+	rt_pin_mode(EN595,PIN_MODE_OUTPUT_OD);                     //è¯¥å¼•è„šæœ‰ä¸Šæ‹‰
 	rt_pin_mode(OE595,PIN_MODE_OUTPUT);
 	rt_pin_mode(CK595,PIN_MODE_OUTPUT);
 	
@@ -113,21 +113,21 @@ void write_h595(uint16_t dat)
 {
 	uint8_t i;
 	
-	rt_pin_write(OE595,PIN_LOW);           //µÍµçÆ½ÆÚ¼äÒÆÎ»
+	rt_pin_write(OE595,PIN_LOW);           //ä½ç”µå¹³æœŸé—´ç§»ä½
 	gpio_delay_us(5);
 	for(i=0;i<16;i++)
 	{
 		rt_pin_write(D595,(uint8_t)(dat>>15));
 		gpio_delay_us(5);
-		rt_pin_write(CK595,PIN_HIGH);      //Ê±ÖÓÉÏÉıÑØÒÆÎ»
+		rt_pin_write(CK595,PIN_HIGH);      //æ—¶é’Ÿä¸Šå‡æ²¿ç§»ä½
 		dat = dat<<1;
 		gpio_delay_us(5);
-		rt_pin_write(CK595,PIN_LOW);       //Ê±ÖÓÏÂ½µ
+		rt_pin_write(CK595,PIN_LOW);       //æ—¶é’Ÿä¸‹é™
 		gpio_delay_us(5);
 	}
-	rt_pin_write(OE595,PIN_HIGH);          //ÉÏÉıÑØËø´æÊı¾İ
+	rt_pin_write(OE595,PIN_HIGH);          //ä¸Šå‡æ²¿é”å­˜æ•°æ®
 	gpio_delay_us(5);
-	rt_pin_write(EN595,PIN_LOW);           //Òı½ÅÊä³öÊı¾İ
+	rt_pin_write(EN595,PIN_LOW);           //å¼•è„šè¾“å‡ºæ•°æ®
 }
 
 static int nrf_addr_pin_init(void)
@@ -163,7 +163,7 @@ uint8_t get_nrf_addr(void)
 
 rt_sem_t beep_sem = RT_NULL;
 
-static void beep_entryt(void* parameter)
+static void beep_entry(void* parameter)
 {
 	rt_pin_mode(BEEP,PIN_MODE_OUTPUT_OD);
 	rt_pin_write(BEEP,PIN_HIGH);
@@ -185,7 +185,7 @@ static int beep_sound(void)
 	if(beep_sem == RT_NULL)
 		return 0;
 	
-	beep_task = rt_thread_create("beep",beep_entryt,
+	beep_task = rt_thread_create("beep",beep_entry,
 								  RT_NULL,256,15,100);
 	if(beep_task != RT_NULL )
 		rt_thread_startup(beep_task);

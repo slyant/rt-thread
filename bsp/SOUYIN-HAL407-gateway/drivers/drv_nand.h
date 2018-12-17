@@ -13,53 +13,53 @@
 #include <rtdevice.h>
      
 //********************************************************************************
-//Éı¼¶ËµÃ÷
+//å‡çº§è¯´æ˜
 //V1.1 20160520
-//1,ĞÂÔöÓ²¼şECCÖ§³Ö(½öÔÚÒÔNAND_ECC_SECTOR_SIZE´óĞ¡Îªµ¥Î»½øĞĞ¶ÁĞ´Ê±´¦Àí)
-//2,ĞÂÔöNAND_Delayº¯Êı,ÓÃÓÚµÈ´ıtADL/tWHR
-//3,ĞÂÔöNAND_WritePageConstº¯Êı,ÓÃÓÚËÑÑ°»µ¿é.
+//1,æ–°å¢ç¡¬ä»¶ECCæ”¯æŒ(ä»…åœ¨ä»¥NAND_ECC_SECTOR_SIZEå¤§å°ä¸ºå•ä½è¿›è¡Œè¯»å†™æ—¶å¤„ç†)
+//2,æ–°å¢NAND_Delayå‡½æ•°,ç”¨äºç­‰å¾…tADL/tWHR
+//3,æ–°å¢NAND_WritePageConstå‡½æ•°,ç”¨äºæœå¯»åå—.
 //V1.2 20160525
-//1,È¥µôNAND_SEC_SIZEºê¶¨Òå£¬ÓÉNAND_ECC_SECTOR_SIZEÌæ´ú
-//2,È¥µônand_dev½á¹¹ÌåÀïÃæµÄsecbufÖ¸Õë£¬ÓÃ²»µ½
+//1,å»æ‰NAND_SEC_SIZEå®å®šä¹‰ï¼Œç”±NAND_ECC_SECTOR_SIZEæ›¿ä»£
+//2,å»æ‰nand_devç»“æ„ä½“é‡Œé¢çš„secbufæŒ‡é’ˆï¼Œç”¨ä¸åˆ°
 ////////////////////////////////////////////////////////////////////////////////// 	
  
-#define NAND_MAX_PAGE_SIZE			4096		//¶¨ÒåNAND FLASHµÄ×î´óµÄPAGE´óĞ¡£¨²»°üÀ¨SPAREÇø£©£¬Ä¬ÈÏ4096×Ö½Ú
-#define NAND_ECC_SECTOR_SIZE		512			//Ö´ĞĞECC¼ÆËãµÄµ¥Ôª´óĞ¡£¬Ä¬ÈÏ512×Ö½Ú
+#define NAND_MAX_PAGE_SIZE			4096		//å®šä¹‰NAND FLASHçš„æœ€å¤§çš„PAGEå¤§å°ï¼ˆä¸åŒ…æ‹¬SPAREåŒºï¼‰ï¼Œé»˜è®¤4096å­—èŠ‚
+#define NAND_ECC_SECTOR_SIZE		512			//æ‰§è¡ŒECCè®¡ç®—çš„å•å…ƒå¤§å°ï¼Œé»˜è®¤512å­—èŠ‚
 
-//NANDÊôĞÔ½á¹¹Ìå
+//NANDå±æ€§ç»“æ„ä½“
 typedef struct
 {
-    uint16_t page_totalsize;     	//Ã¿Ò³×Ü´óĞ¡£¬mainÇøºÍspareÇø×ÜºÍ
-    uint16_t page_mainsize;      	//Ã¿Ò³µÄmainÇø´óĞ¡
-    uint16_t page_sparesize;     	//Ã¿Ò³µÄspareÇø´óĞ¡
-    uint8_t  block_pagenum;      	//Ã¿¸ö¿é°üº¬µÄÒ³ÊıÁ¿
-    uint16_t plane_blocknum;     	//Ã¿¸öplane°üº¬µÄ¿éÊıÁ¿
-    uint16_t block_totalnum;     	//×ÜµÄ¿éÊıÁ¿
-    uint16_t good_blocknum;      	//ºÃ¿éÊıÁ¿    
-    uint16_t valid_blocknum;     	//ÓĞĞ§¿éÊıÁ¿(¹©ÎÄ¼şÏµÍ³Ê¹ÓÃµÄºÃ¿éÊıÁ¿)
+    uint16_t page_totalsize;     	//æ¯é¡µæ€»å¤§å°ï¼ŒmainåŒºå’ŒspareåŒºæ€»å’Œ
+    uint16_t page_mainsize;      	//æ¯é¡µçš„mainåŒºå¤§å°
+    uint16_t page_sparesize;     	//æ¯é¡µçš„spareåŒºå¤§å°
+    uint8_t  block_pagenum;      	//æ¯ä¸ªå—åŒ…å«çš„é¡µæ•°é‡
+    uint16_t plane_blocknum;     	//æ¯ä¸ªplaneåŒ…å«çš„å—æ•°é‡
+    uint16_t block_totalnum;     	//æ€»çš„å—æ•°é‡
+    uint16_t good_blocknum;      	//å¥½å—æ•°é‡    
+    uint16_t valid_blocknum;     	//æœ‰æ•ˆå—æ•°é‡(ä¾›æ–‡ä»¶ç³»ç»Ÿä½¿ç”¨çš„å¥½å—æ•°é‡)
     uint32_t id;             		//NAND FLASH ID
-    uint16_t *lut;      			   	//LUT±í£¬ÓÃ×÷Âß¼­¿é-ÎïÀí¿é×ª»»
-	uint32_t ecc_hard;				//Ó²¼ş¼ÆËã³öÀ´µÄECCÖµ
-	uint32_t ecc_hdbuf[NAND_MAX_PAGE_SIZE/NAND_ECC_SECTOR_SIZE];//ECCÓ²¼ş¼ÆËãÖµ»º³åÇø  	
-	uint32_t ecc_rdbuf[NAND_MAX_PAGE_SIZE/NAND_ECC_SECTOR_SIZE];//ECC¶ÁÈ¡µÄÖµ»º³åÇø
+    uint16_t *lut;      			   	//LUTè¡¨ï¼Œç”¨ä½œé€»è¾‘å—-ç‰©ç†å—è½¬æ¢
+	uint32_t ecc_hard;				//ç¡¬ä»¶è®¡ç®—å‡ºæ¥çš„ECCå€¼
+	uint32_t ecc_hdbuf[NAND_MAX_PAGE_SIZE/NAND_ECC_SECTOR_SIZE];//ECCç¡¬ä»¶è®¡ç®—å€¼ç¼“å†²åŒº  	
+	uint32_t ecc_rdbuf[NAND_MAX_PAGE_SIZE/NAND_ECC_SECTOR_SIZE];//ECCè¯»å–çš„å€¼ç¼“å†²åŒº
 }nand_attriute;      
 
-extern nand_attriute nand_dev;				//nandÖØÒª²ÎÊı½á¹¹Ìå 
+extern nand_attriute nand_dev;				//nandé‡è¦å‚æ•°ç»“æ„ä½“ 
 
-//Î»´ø²Ù×÷,ÊµÏÖ51ÀàËÆµÄGPIO¿ØÖÆ¹¦ÄÜ
-//¾ßÌåÊµÏÖË¼Ïë,²Î¿¼<<CM3È¨ÍşÖ¸ÄÏ>>µÚÎåÕÂ(87Ò³~92Ò³).M4Í¬M3ÀàËÆ,Ö»ÊÇ¼Ä´æÆ÷µØÖ·±äÁË.
-//IO¿Ú²Ù×÷ºê¶¨Òå
+//ä½å¸¦æ“ä½œ,å®ç°51ç±»ä¼¼çš„GPIOæ§åˆ¶åŠŸèƒ½
+//å…·ä½“å®ç°æ€æƒ³,å‚è€ƒ<<CM3æƒå¨æŒ‡å—>>ç¬¬äº”ç« (87é¡µ~92é¡µ).M4åŒM3ç±»ä¼¼,åªæ˜¯å¯„å­˜å™¨åœ°å€å˜äº†.
+//IOå£æ“ä½œå®å®šä¹‰
 #define GPIOD_IDR_Addr    (GPIOD_BASE+16) //0x40020C10 
 #define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2)) 
 #define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) 
 #define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) 
-#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //ÊäÈë 
+#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //è¾“å…¥ 
 
-#define NAND_RB  				 PDin(6) 	//NAND FlashµÄÏĞ/Ã¦Òı½Å 
+#define NAND_RB  				 PDin(6) 	//NAND Flashçš„é—²/å¿™å¼•è„š 
 
-#define NAND_ADDRESS			((rt_uint32_t)0x80000000)	//nand flashµÄ·ÃÎÊµØÖ·,½ÓNCE3,µØÖ·Îª:0X8000 0000
-#define NAND_CMD				(uint32_t)(0x010000)		//·¢ËÍÃüÁî
-#define NAND_ADDR				(uint32_t)(0x020000)		//·¢ËÍµØÖ·
+#define NAND_ADDRESS			((rt_uint32_t)0x80000000)	//nand flashçš„è®¿é—®åœ°å€,æ¥NCE3,åœ°å€ä¸º:0X8000 0000
+#define NAND_CMD				(uint32_t)(0x010000)		//å‘é€å‘½ä»¤
+#define NAND_ADDR				(uint32_t)(0x020000)		//å‘é€åœ°å€
 
 
 //*((volatile rt_uint8_t *) 0X80000000)
@@ -67,11 +67,11 @@ extern nand_attriute nand_dev;				//nandÖØÒª²ÎÊı½á¹¹Ìå
 //*((volatile rt_uint8_t *) 0X80020000)
 
 
-//NAND FLASHÃüÁî
-#define NAND_READID         	0X90    	//¶ÁIDÖ¸Áî
-#define NAND_FEATURE			0XEF    	//ÉèÖÃÌØĞÔÖ¸Áî
-#define NAND_RESET          	0XFF    	//¸´Î»NAND
-#define NAND_READSTA        	0X70   	 	//¶Á×´Ì¬
+//NAND FLASHå‘½ä»¤
+#define NAND_READID         	0X90    	//è¯»IDæŒ‡ä»¤
+#define NAND_FEATURE			0XEF    	//è®¾ç½®ç‰¹æ€§æŒ‡ä»¤
+#define NAND_RESET          	0XFF    	//å¤ä½NAND
+#define NAND_READSTA        	0X70   	 	//è¯»çŠ¶æ€
 #define NAND_AREA_A         	0X00   
 #define NAND_AREA_TRUE1     	0X30  
 #define NAND_WRITE0        	 	0X80
@@ -83,15 +83,15 @@ extern nand_attriute nand_dev;				//nandÖØÒª²ÎÊı½á¹¹Ìå
 #define NAND_MOVEDATA_CMD2  	0X85
 #define NAND_MOVEDATA_CMD3  	0X10
 
-//NAND FLASH×´Ì¬
-#define NSTA_READY       	   	0X40		//nandÒÑ¾­×¼±¸ºÃ
-#define NSTA_ERROR				0X01		//nand´íÎó
-#define NSTA_TIMEOUT        	0X02		//³¬Ê±
-#define NSTA_ECC1BITERR       	0X03		//ECC 1bit´íÎó
-#define NSTA_ECC2BITERR       	0X04		//ECC 2bitÒÔÉÏ´íÎó
+//NAND FLASHçŠ¶æ€
+#define NSTA_READY       	   	0X40		//nandå·²ç»å‡†å¤‡å¥½
+#define NSTA_ERROR				0X01		//nandé”™è¯¯
+#define NSTA_TIMEOUT        	0X02		//è¶…æ—¶
+#define NSTA_ECC1BITERR       	0X03		//ECC 1bité”™è¯¯
+#define NSTA_ECC2BITERR       	0X04		//ECC 2bitä»¥ä¸Šé”™è¯¯
 
 
-//NAND FLASHĞÍºÅºÍ¶ÔÓ¦µÄIDºÅ
+//NAND FLASHå‹å·å’Œå¯¹åº”çš„IDå·
 #define MT29F4G08ABADA			0XDC909556	//MT29F4G08ABADA
 #define MT29F16G08ABABA			0X48002689	//MT29F16G08ABABA
 

@@ -2,6 +2,7 @@
 #define __SYSINFO_H__
 
 #include <na_queue.h>
+#include <sqlite3.h>
 
 typedef struct sysinfo_s{
 	unsigned int id;

@@ -11,6 +11,7 @@ rfic-manage.c
 app_uart.c
 gpio_oper.c
 pcf8563.c
+gps_user.c
 """)
 
 CPPPATH = [cwd, str(Dir('#'))]

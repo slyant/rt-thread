@@ -1,29 +1,28 @@
 
 #include <stm32f4xx_hal.h>
 #include <rtthread.h>
+#include "sysinfo.h"
 #include "lcd_oper.h"
 #include "cmd_queue.h"
 #include "gpio_oper.h"
 #include "rfic_oper.h"
 #include "rfic-manage.h"
 #include "nrf_gateway.h"
-//#include <stdlib.h>
-//#include <stdio.h>
 #include <string.h>
-//#include "spi_flash_gd.h"
 #include "pcf8563.h"
 
 
 #define tag_value				0x4923
 
-//static uint8_t update_en = 0;                          //¸üĞÂ±ê¼Ç
-//volatile uint32_t  timer_tick_count = 0;               //¶¨Ê±Æ÷½ÚÅÄ
+//static uint8_t update_en = 0;                          //æ›´æ–°æ ‡è®°
+//volatile uint32_t  timer_tick_count = 0;               //å®šæ—¶å™¨èŠ‚æ‹
 
 extern unsigned char lcd_update_en;
+extern uint8_t  cmd_buffer[CMD_MAX_SIZE];              //LCDæŒ‡ä»¤ç¼“å­˜
+extern uint8_t mcardwarning[];
+extern uint8_t mcardnum[];
 
-extern uint8_t  cmd_buffer[CMD_MAX_SIZE];              //LCDÖ¸Áî»º´æ
-
-volatile uint8_t UI=MAIN_INDEX;       //½çÃæ±êÊ¶·û£¬½ûÖ¹±àÒëÆ÷ÓÅ»¯¸Ã±äÁ¿
+volatile uint8_t UI=MAIN_INDEX;       //ç•Œé¢æ ‡è¯†ç¬¦ï¼Œç¦æ­¢ç¼–è¯‘å™¨ä¼˜åŒ–è¯¥å˜é‡
 static unsigned char lcd_update_time_count = 0;
 
 sys_status_t    sys_status_lcd;
@@ -35,18 +34,19 @@ card_t temp_card;
 const uint16_t utex[3] = {84,312,540};
 const uint16_t utey[2] = {230,372};
 
-const uint8_t  key_card_str[] = {0xC3, 0xDC, 0xD4, 0xBF, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //ÃÜÔ¿¿¨¹ÜÀí
-const uint8_t  cof_card_str[] = {0xC5, 0xE4, 0xD6, 0xC3, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //ÅäÖÃ¿¨
-const uint8_t  pri_card_str[] = {0xCC, 0xD8, 0xC8, 0xA8, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //ÌØÈ¨¿¨
-const uint8_t  nom_card_str[] = {0xC6, 0xD5, 0xCD, 0xA8, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED,0};    //ÆÕÍ¨¿¨  218£¬62 64µãÕó
+/*---------------------------    ä¸‹é¢çš„æ•°ç»„ä¸ºæ±‰å­—ç¼–ç ï¼Œå…¶å†…å®¹åœ¨åé¢æ³¨é‡Š  ----------------------------*/
+const uint8_t  cof_card_str[] = {0xC5, 0xE4, 0xD6, 0xC3, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED, 0};    //é…ç½®å¡
+const uint8_t  pri_card_str[] = {0xCC, 0xD8, 0xC8, 0xA8, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED, 0};    //ç‰¹æƒå¡
+const uint8_t  nom_card_str[] = {0xC6, 0xD5, 0xCD, 0xA8, 0xBF, 0xA8, 0xB9, 0xDC, 0xC0, 0xED, 0};    //æ™®é€šå¡  64ç‚¹é˜µ åæ ‡218,62 
 
-static uint8_t test_sta_char[] = {0xD7, 0xB4, 0xCC, 0xAC, 0xA3, 0xBA,0};     //"×´Ì¬"
-static uint8_t test_add_char[] = {0xB5, 0xD8, 0xD6, 0xB7, 0xA3, 0xBA,0};     //"µØÖ·"
+static uint8_t test_sta_char[] = {0xD7, 0xB4, 0xCC, 0xAC, 0xA3, 0xBA, 0};     //"çŠ¶æ€"
+static uint8_t test_add_char[] = {0xB5, 0xD8, 0xD6, 0xB7, 0xA3, 0xBA, 0};     //"åœ°å€"
 
-static uint8_t test_dor_open[] = {0xBF,0xAA,0};       //¿ª
-static uint8_t test_dor_close[] = {0xB9,0xD8,0};      //¹Ø
+static uint8_t test_dor_open[] = {0xBF,0xAA, 0};       //å¼€
+static uint8_t test_dor_close[] = {0xB9,0xD8, 0};      //å…³
+/*--------------------  ç¼–ç ç»“æŸ ç›´æ¥ä½¿ç”¨å¼•å·å‘é€å­—ç¬¦LCDæœ‰ä¹±ç ï¼Œä¸keilç¼–ç å…¼å®¹æœ‰å…³  ------------------*/
 
-typedef struct
+typedef struct       //æµ‹è¯•ç•Œé¢æŒ‰é’®ç»“æ„ä½“
 {
 	uint8_t sqet;
 	uint8_t addr;
@@ -54,11 +54,11 @@ typedef struct
 	uint8_t stat;
 }test_btn;
 
-test_btn t_button[5];
+test_btn t_button[5];    //æµ‹è¯•æŒ‰é’®
 
 uint8_t cur_btn=0;
 
-static void show_parment(uint8_t addr,uint8_t id)  
+static void show_parment(uint8_t addr,uint8_t id)  //æ˜¾ç¤ºèŠ‚ç‚¹å‚æ•°ï¼šèŠ‚ç‚¹åœ°å€ï¼Œå¼€å…³çŠ¶æ€ã€‚ idä¸ºæŒ‰é’®ç¼–å·
 {
 	uint8_t tmp[6],i;
 
@@ -67,28 +67,28 @@ static void show_parment(uint8_t addr,uint8_t id)
 		if(t_button[i].addr==addr && t_button[i].id==id) break;
 	}
 	tmp[0] = (addr/10)+'0'; tmp[1] = (addr%10)+'0'; tmp[2]=' '; 
-	tmp[3]=(t_button[i].id/10)+'0'; tmp[4]=(t_button[i].id%10)+'0'; tmp[5]=0;
+	tmp[3]=(t_button[i].id/10)+'0'; tmp[4]=(t_button[i].id%10)+'0'; tmp[5]=0;  //åœ°å€å­—ç¬¦ä¸²
 	
-	if(t_button[i].stat)
+	if(t_button[i].stat)      //æ˜¾ç¤ºé—¨çŠ¶æ€   utex,uteyä¸ºåæ ‡ï¼Œä»¥åƒç´ ç‚¹ä¸ºåŸºç¡€
 	{
 		show_string(TEST_UI,utex[i%3]+68,utey[i/3],1,6,(uint8_t*)test_dor_open);
 	}
 	else show_string(TEST_UI,utex[i%3]+68,utey[i/3],1,6,(uint8_t*)test_dor_close);
-	show_string(TEST_UI,utex[i%3]+68,utey[i/3]+26,1,6,(uint8_t*)tmp);
+	show_string(TEST_UI,utex[i%3]+68,utey[i/3]+26,1,6,(uint8_t*)tmp);       //æ˜¾ç¤ºåœ°å€
 	
 }
 
-void rev_parment(uint8_t src, uint8_t dor_id, uint8_t dor_s)
+void rev_parment(uint8_t src, uint8_t dor_id, uint8_t dor_s)    //srcæºèŠ‚ç‚¹ï¼Œdor_idé—¨ç¼–å·ï¼Œdor_sé—¨çŠ¶æ€
 {
 	uint8_t i;
-	for(i=0;i<5;i++)
+	for(i=0;i<5;i++)    //æ£€ç´¢
 	{
 		if(t_button[i].addr==src && t_button[i].id==dor_id)
 		{
 			t_button[i].stat = dor_s; goto exit;
 		}
 	}
-	t_button[cur_btn].sqet=cur_btn+1;
+	t_button[cur_btn].sqet=cur_btn+1;    //å¦‚æœæ²¡æœ‰æ£€ç´¢åˆ°åˆ™æ·»åŠ æ–°è®°å½•
 	t_button[cur_btn].addr=src; 
 	t_button[cur_btn].id=dor_id; 
 	t_button[cur_btn].stat=dor_s; 
@@ -96,12 +96,12 @@ void rev_parment(uint8_t src, uint8_t dor_id, uint8_t dor_s)
 	exit: show_parment(src,dor_id);
 }
 
-static void test_screen(void)
+static void test_screen(void)         //æµ‹è¯•ç•Œé¢æ˜¾ç¤º
 {
 	uint8_t i;
 	SetScreen(TEST_UI);
-	SetFcolor(0xFFFF); //Ç°¾°°×É«
-	for(i=0;i<3;i++)
+	SetFcolor(0xFFFF); //å‰æ™¯ç™½è‰²
+	for(i=0;i<3;i++)    //æ˜¾ç¤ºæŒ‰é’®æ–‡å­—
 	{
 		show_string(TEST_UI,utex[i],utey[0],0,6,test_sta_char);
 		show_string(TEST_UI,utex[i],utey[1],0,6,test_sta_char);
@@ -110,7 +110,7 @@ static void test_screen(void)
 	}
 }
 
-static void test_send_node(uint8_t dat)   
+static void test_send_node(uint8_t dat)   //å‘å¯¹åº”èŠ‚ç‚¹å‘é€æ§åˆ¶ï¼Œç”¨äºæ‰“å¼€æŸœé—¨
 {
 	#ifdef NRF24L01_USING_NODE
 		uint16_t tmp;
@@ -119,21 +119,21 @@ static void test_send_node(uint8_t dat)
 		rt_thread_delay(500);
 		write_h595(0xFFFF);
 	#else
-		nrf_send_data(t_button[dat-1].addr,&t_button[dat-1].id);      //Ïò½Úµã·¢ËÍÃüÁî
+		nrf_send_data(t_button[dat-1].addr,&t_button[dat-1].id);      //å‘èŠ‚ç‚¹å‘é€å‘½ä»¤
 	#endif
 }
 
 /*************************************************************************************************************************/
 
 /*! 
- *  \brief  ¶ÁÈ¡RTCÊ±¼ä£¬×¢Òâ·µ»ØµÄÊÇBCDÂë
- *  \param year Äê£¨BCD£©
- *  \param month ÔÂ£¨BCD£©
- *  \param week ĞÇÆÚ£¨BCD£©
- *  \param day ÈÕ£¨BCD£©
- *  \param hour Ê±£¨BCD£©
- *  \param minute ·Ö£¨BCD£©
- *  \param second Ãë£¨BCD£©
+ *  \brief  è¯»å–RTCæ—¶é—´ï¼Œæ³¨æ„è¿”å›çš„æ˜¯BCDç 
+ *  \param year å¹´ï¼ˆBCDï¼‰
+ *  \param month æœˆï¼ˆBCDï¼‰
+ *  \param week æ˜ŸæœŸï¼ˆBCDï¼‰
+ *  \param day æ—¥ï¼ˆBCDï¼‰
+ *  \param hour æ—¶ï¼ˆBCDï¼‰
+ *  \param minute åˆ†ï¼ˆBCDï¼‰
+ *  \param second ç§’ï¼ˆBCDï¼‰
  */
 static void NotifyReadRTC(unsigned char year,unsigned char month,unsigned char week,unsigned char day,unsigned char hour,unsigned char minute,unsigned char second)
 {
@@ -158,9 +158,9 @@ static void NotifyReadRTC(unsigned char year,unsigned char month,unsigned char w
 
 
 /*! 
- *  \brief  »­ÃæÇĞ»»Í¨Öª
- *  \details  µ±Ç°»­Ãæ¸Ä±äÊ±(»òµ÷ÓÃGetScreen)£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id µ±Ç°»­ÃæID
+ *  \brief  ç”»é¢åˆ‡æ¢é€šçŸ¥
+ *  \details  å½“å‰ç”»é¢æ”¹å˜æ—¶(æˆ–è°ƒç”¨GetScreen)ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id å½“å‰ç”»é¢ID
  */
 static void NotifyScreen(unsigned short screen_id)
 {
@@ -169,73 +169,73 @@ static void NotifyScreen(unsigned short screen_id)
 
 
 /*! 
-*  \brief  ÏûÏ¢´¦ÀíÁ÷³Ì
-*  \param msg ´ı´¦ÀíÏûÏ¢
-*  \param size ÏûÏ¢³¤¶È
+*  \brief  æ¶ˆæ¯å¤„ç†æµç¨‹
+*  \param msg å¾…å¤„ç†æ¶ˆæ¯
+*  \param size æ¶ˆæ¯é•¿åº¦
 */
 void ProcessMessage( PCTRL_MSG msg, uint16_t size )
 {
-    uint8_t cmd_type = msg->cmd_type;                                                  //Ö¸ÁîÀàĞÍ
-    uint8_t ctrl_msg = msg->ctrl_msg;                                                  //ÏûÏ¢µÄÀàĞÍ
-    uint8_t control_type = msg->control_type;                                          //¿Ø¼şÀàĞÍ
-    uint16_t screen_id = PTR2U16(&msg->screen_id_high);                                //»­ÃæID
-    uint16_t control_id = PTR2U16(&msg->control_id_high);                              //¿Ø¼şID
-    uint32_t value = PTR2U32(msg->param);                                              //ÊıÖµ
+    uint8_t cmd_type = msg->cmd_type;                                                  //æŒ‡ä»¤ç±»å‹
+    uint8_t ctrl_msg = msg->ctrl_msg;                                                  //æ¶ˆæ¯çš„ç±»å‹
+    uint8_t control_type = msg->control_type;                                          //æ§ä»¶ç±»å‹
+    uint16_t screen_id = PTR2U16(&msg->screen_id_high);                                //ç”»é¢ID
+    uint16_t control_id = PTR2U16(&msg->control_id_high);                              //æ§ä»¶ID
+    uint32_t value = PTR2U32(msg->param);                                              //æ•°å€¼
 
 
     switch(cmd_type)
     {  
-    case NOTIFY_TOUCH_PRESS:                                                        //´¥ÃşÆÁ°´ÏÂ      0x01
-    case NOTIFY_TOUCH_RELEASE:                                                      //´¥ÃşÆÁËÉ¿ª      0x03
+    case NOTIFY_TOUCH_PRESS:                                                        //è§¦æ‘¸å±æŒ‰ä¸‹      0x01
+    case NOTIFY_TOUCH_RELEASE:                                                      //è§¦æ‘¸å±æ¾å¼€      0x03
         NotifyTouchXY(cmd_buffer[1],PTR2U16(cmd_buffer+2),PTR2U16(cmd_buffer+4)); 
         break;                                                                    
-    case NOTIFY_WRITE_FLASH_OK:                                                     //Ğ´FLASH³É¹¦     0x0C 
+    case NOTIFY_WRITE_FLASH_OK:                                                     //å†™FLASHæˆåŠŸ     0x0C 
         NotifyWriteFlash(1);                                                      
         break;                                                                    
-    case NOTIFY_WRITE_FLASH_FAILD:                                                  //Ğ´FLASHÊ§°Ü     0x0D
+    case NOTIFY_WRITE_FLASH_FAILD:                                                  //å†™FLASHå¤±è´¥     0x0D
         NotifyWriteFlash(0);                                                      
         break;                                                                    
-    case NOTIFY_READ_FLASH_OK:                                                      //¶ÁÈ¡FLASH³É¹¦  0x0B
-        NotifyReadFlash(1,cmd_buffer+2,size-6);                                     //È¥³ıÖ¡Í·Ö¡Î²
+    case NOTIFY_READ_FLASH_OK:                                                      //è¯»å–FLASHæˆåŠŸ  0x0B
+        NotifyReadFlash(1,cmd_buffer+2,size-6);                                     //å»é™¤å¸§å¤´å¸§å°¾
         break;                                                                    
-    case NOTIFY_READ_FLASH_FAILD:                                                   //¶ÁÈ¡FLASHÊ§°Ü   0x0F
+    case NOTIFY_READ_FLASH_FAILD:                                                   //è¯»å–FLASHå¤±è´¥   0x0F
         NotifyReadFlash(0,0,0);                                                   
         break;                                                                    
-    case NOTIFY_READ_RTC:                                                           //¶ÁÈ¡RTCÊ±¼ä 0xF7
+    case NOTIFY_READ_RTC:                                                           //è¯»å–RTCæ—¶é—´ 0xF7
         NotifyReadRTC(cmd_buffer[2],cmd_buffer[3],cmd_buffer[4],cmd_buffer[5],cmd_buffer[6],cmd_buffer[7],cmd_buffer[8]);
         break;
     case NOTIFY_CONTROL:                 //0xB1
         {
-            if(ctrl_msg==MSG_GET_CURRENT_SCREEN)                                    //»­ÃæID±ä»¯Í¨Öª   0X01
+            if(ctrl_msg==MSG_GET_CURRENT_SCREEN)                                    //ç”»é¢IDå˜åŒ–é€šçŸ¥   0X01
             {
-                NotifyScreen(screen_id);                                            //»­ÃæÇĞ»»µ÷¶¯µÄº¯Êı
+                NotifyScreen(screen_id);                                            //ç”»é¢åˆ‡æ¢è°ƒåŠ¨çš„å‡½æ•°
             }
             else
             {
                 switch(control_type)
                 {
-                case kCtrlButton:                                                   //°´Å¥¿Ø¼ş
+                case kCtrlButton:                                                   //æŒ‰é’®æ§ä»¶
                     NotifyButton(screen_id,control_id,msg->param[1]);                  
                     break;                                                             
-                case kCtrlText:                                                     //ÎÄ±¾¿Ø¼ş
+                case kCtrlText:                                                     //æ–‡æœ¬æ§ä»¶
                     NotifyText(screen_id,control_id,msg->param);                       
                     break;                                                             
-                case kCtrlProgress:                                                 //½ø¶ÈÌõ¿Ø¼ş
+                case kCtrlProgress:                                                 //è¿›åº¦æ¡æ§ä»¶
                     NotifyProgress(screen_id,control_id,value);                        
                     break;                                                             
-                case kCtrlSlider:                                                   //»¬¶¯Ìõ¿Ø¼ş
+                case kCtrlSlider:                                                   //æ»‘åŠ¨æ¡æ§ä»¶
                     NotifySlider(screen_id,control_id,value);                          
                     break;                                                             
-                case kCtrlMeter:                                                    //ÒÇ±í¿Ø¼ş
+                case kCtrlMeter:                                                    //ä»ªè¡¨æ§ä»¶
                     NotifyMeter(screen_id,control_id,value);                           
                     break;                                                             
-                case kCtrlMenu:                                                     //²Ëµ¥¿Ø¼ş
+                case kCtrlMenu:                                                     //èœå•æ§ä»¶
                     NotifyMenu(screen_id,control_id,msg->param[0],msg->param[1]);      
                     break;                                                              
-                case kCtrlSelector:                                                 //Ñ¡Ôñ¿Ø¼ş
+                case kCtrlSelector:                                                 //é€‰æ‹©æ§ä»¶
                     NotifySelector(screen_id,control_id,msg->param[0]);                
                     break;                                                              
-                case kCtrlRTC:                                                      //µ¹¼ÆÊ±¿Ø¼ş
+                case kCtrlRTC:                                                      //å€’è®¡æ—¶æ§ä»¶
                     NotifyTimer(screen_id,control_id);
                     break;
                 default:
@@ -248,25 +248,26 @@ void ProcessMessage( PCTRL_MSG msg, uint16_t size )
         break;
     }
 }
-/*------------------------------------½ÚµãĞÅÏ¢´¦Àí¿é--------------------------------*/
+/*------------------------------------èŠ‚ç‚¹ä¿¡æ¯å¤„ç†å—--------------------------------*/
 
 SARK_MSG  sark_box[MAX_SARK];
 SARK_POINT sk_pt;
+SARK_PARM  sark_info;
 
-static void find_sark_cfg(void)     //²éÕÒ´ıÅäÖÃ½Úµã
+static void find_sark_cfg(void)     //æŸ¥æ‰¾å¾…é…ç½®èŠ‚ç‚¹
 {
 	uint8_t i;
 	for(i=0;i<MAX_SARK;i++)
 	{
-		if(sark_box[i].name[0]==0 && sark_box[i].node)  //²éÕÒ´ıÅäÖÃ½Úµã£¬
+		if(sark_box[i].name[0]==0 && sark_box[i].node)  //æŸ¥æ‰¾å¾…é…ç½®èŠ‚ç‚¹ï¼Œ
 		{
-			sk_pt.cofg = i+1; return;                   //ÕÒµ½
+			sk_pt.cofg = i+1; return;                   //æ‰¾åˆ°
 		}
-		sk_pt.cofg = 0;                                 //±éÀúºó¶¼Ã»ÓĞ£¬½«Ö¸ÕëÇå¿Õ
+		sk_pt.cofg = 0;                                 //éå†åéƒ½æ²¡æœ‰ï¼Œå°†æŒ‡é’ˆæ¸…ç©º
 	}
 }
 
-static void show_sark_list(void)
+static void show_sark_list(void)   //æ˜¾ç¤ºåœ¨çº¿é“¶æŸœä¿¡æ¯åˆ—è¡¨
 {
 	uint8_t i;
 	char str[16];
@@ -278,22 +279,22 @@ static void show_sark_list(void)
 	{
 		if(sark_box[i].node)
 		{
-			strncpy(str,sark_box[i].name,5);  //×Ö·û´®¿½±´
+			strncpy(str,sark_box[i].name,5);  //å­—ç¬¦ä¸²æ‹·è´
 			if(str[0]==0) str[0] = ' ';
 			if(str[1]==0) str[1] = ' ';
 			if(str[2]==0) str[2] = ' ';
 			if(str[3]==0) str[3] = ' ';
-			str[4] = ' ';  //¿Õ¸ñ·û
+			str[4] = ' ';  //ç©ºæ ¼ç¬¦
 			str[5] = sark_box[i].node/10+'0';
 			str[6] = sark_box[i].node%10+'0';
-			str[7] = ' ';  //¿Õ¸ñ·û
+			str[7] = ' ';  //ç©ºæ ¼ç¬¦
 			str[8] = sark_box[i].num%10+'0'; 
-			str[9] = ' ';  //¿Õ¸ñ·û
+			str[9] = ' ';  //ç©ºæ ¼ç¬¦
 			str[10] = sark_box[i].ov_time/10+'0';
 			str[11] = sark_box[i].ov_time%10+'0';
 			if(sk_pt.cofg==(i+1))
 			{
-				str[12] = ' '; str[13] = '<'; str[14] = '-'; str[15] = 0;
+				str[12] = ' '; str[13] = '<'; str[14] = '-'; str[15] = 0;   //æ˜¾ç¤ºå¾…é…ç½®èŠ‚ç‚¹çš„æ ‡è¯†ç¬¦<-
 			}
 			else str[12] = 0;
 			show_string(SARK_MANAGE,574,288+sk_pt.item*27,1,6,(uint8_t*)str);
@@ -302,7 +303,7 @@ static void show_sark_list(void)
 	}
 }
 
-void sark_msg_init(void)
+void sark_msg_init(void)      //åˆå§‹åŒ–é“¶æŸœä¿¡æ¯è®°å½•è¡¨
 {
 	uint8_t i;
 	sk_pt.del=0;
@@ -322,24 +323,24 @@ void sark_msg_init(void)
 	}
 }
 
-void sark_join_cfg(uint8_t node_ad)
+void sark_join_cfg(uint8_t node_ad)    //èŠ‚ç‚¹ä¸Šçº¿å¤„ç†
 {
 	uint8_t i,data[8];
 	
 	for(i=0;i<MAX_SARK;i++)
 	{
-		if(sark_box[i].node==node_ad && sark_box[i].name[0]!=0) return; //²éÑ¯ÊÇ·ñÒÑÔÚÏßÇÒÒÑÆ¥Åä±ğÃû
+		if(sark_box[i].node==node_ad && sark_box[i].name[0]!=0) return; //æŸ¥è¯¢æ˜¯å¦å·²åœ¨çº¿ä¸”å·²åŒ¹é…åˆ«å
 	}
 	
 	lcd_update_en = 1;
 	
-//	sark_param_read(node_ad,data);   //²éÑ¯flashÖĞÓĞÎŞ¸Ã½ÚµãĞÅÏ¢
+//	sark_param_read(node_ad,data);   //æŸ¥è¯¢flashä¸­æœ‰æ— è¯¥èŠ‚ç‚¹ä¿¡æ¯
 	
-	if(data[0] == node_ad)   //flashÓĞ¸Ã½ÚµãÔòÏòÏµÍ³»·¾³×¢Èë²ÎÊı£¨Ö¤Ã÷ÒÑÉèÖÃ¹ı¸Ã½Úµã£©
+	if(data[0] == node_ad)   //flashæœ‰è¯¥èŠ‚ç‚¹åˆ™å‘ç³»ç»Ÿç¯å¢ƒæ³¨å…¥å‚æ•°ï¼ˆè¯æ˜å·²è®¾ç½®è¿‡è¯¥èŠ‚ç‚¹ï¼‰
 	{
 		for(i=0;i<MAX_SARK;i++)
 		{
-			if(sark_box[i].node==0)  //½ÚµãÎª0
+			if(sark_box[i].node==0)  //èŠ‚ç‚¹ä¸º0
 			{
 				sark_box[i].node = data[0];
 				sark_box[i].num = data[1];
@@ -350,28 +351,28 @@ void sark_join_cfg(uint8_t node_ad)
 			}
 		}
 	}
-	else           //flashÖĞÃ»ÓĞ¸Ã½ÚµãĞÅÏ¢
+	else           //flashä¸­æ²¡æœ‰è¯¥èŠ‚ç‚¹ä¿¡æ¯
 	{
-		for(i=0;i<MAX_SARK;i++)     //²éÑ¯½ÚµãÓĞÃ»ÓĞ×¢²á¹ı
+		for(i=0;i<MAX_SARK;i++)     //æŸ¥è¯¢èŠ‚ç‚¹æœ‰æ²¡æœ‰æ³¨å†Œè¿‡
 		{
-			if(sark_box[i].node==node_ad) return;     //Èç¹ûÒÑ¾­×¢²á£¬Ôò²»ÖØ¸´
+			if(sark_box[i].node==node_ad) return;     //å¦‚æœå·²ç»æ³¨å†Œï¼Œåˆ™ä¸é‡å¤
 		}
-		for(i=0;i<MAX_SARK;i++)     //Ã»ÓĞ×¢²á ²éÕÒ¿ÕÏĞ
+		for(i=0;i<MAX_SARK;i++)     //æ²¡æœ‰æ³¨å†Œ æŸ¥æ‰¾ç©ºé—²
 		{
 			if(sark_box[i].node==0)
 			{
-				sark_box[i].node=node_ad;   //ÌîĞ´
+				sark_box[i].node=node_ad;   //å¡«å†™
 				sk_pt.lins++;  break;
 			}
 		}
 		if(sk_pt.cofg==0)
 		{
-			find_sark_cfg();	//ÉèÖÃÅäÖÃÖ¸Õë
+			find_sark_cfg();	//è®¾ç½®é…ç½®æŒ‡é’ˆ
 		}
 	}
 }
 
-void sark_discon_remov(uint8_t addr)
+void sark_discon_remov(uint8_t addr)  //èŠ‚ç‚¹æ‰çº¿ï¼Œä»åˆ—è¡¨ä¸­ç§»é™¤
 {
 	uint8_t i;
 	for(i=0;i<MAX_SARK;i++)
@@ -384,11 +385,11 @@ void sark_discon_remov(uint8_t addr)
 			lcd_update_en = 1;
 		}
 	}
-	lcd_update_en = 1;             //¸üĞÂLCD
-	find_sark_cfg();               //ÉèÖÃÅäÖÃÖ¸Õë
+	lcd_update_en = 1;             //æ›´æ–°LCD
+	find_sark_cfg();               //è®¾ç½®é…ç½®æŒ‡é’ˆ
 }
 
-static void sark_del_appoint(unsigned char *str)
+static void sark_del_appoint(unsigned char *str)  //èŠ‚ç‚¹åˆ é™¤çš„æŒ‡é’ˆ
 {
 	uint8_t i;
 	for(i=0;i<MAX_SARK;i++)
@@ -396,7 +397,7 @@ static void sark_del_appoint(unsigned char *str)
 		if(strcmp((char*)str,sark_box[i].name)==0)
 		{
 			sk_pt.del = i;
-			sk_pt.lins--;  break;
+			sk_pt.lins--;  break;         //æ›´æ–°åœ¨çº¿èŠ‚ç‚¹æ•°é‡
 		}
 	}
 }
@@ -412,96 +413,63 @@ static void sark_del_remov(void)
 	sark_box[sk_pt.del].name[4]=0;
 	sark_box[sk_pt.del].num = 0;
 	sark_box[sk_pt.del].ov_time = 0;
-	clesr_text(SARK_MANAGE,64);    //Çå³ıÉ¾³ıÎÄ×Ö¿Ø¼şĞÅÏ¢
-	lcd_update_en = 1;             //¸üĞÂLCD
-	find_sark_cfg();               //ÉèÖÃÅäÖÃÖ¸Õë
+	clesr_text(SARK_MANAGE,64);    //æ¸…é™¤åˆ é™¤æ–‡å­—æ§ä»¶ä¿¡æ¯
+	lcd_update_en = 1;             //æ›´æ–°LCD
+	find_sark_cfg();               //è®¾ç½®é…ç½®æŒ‡é’ˆ
 }
 
-static uint8_t sark_save_param(sark_msg_t tag)
+static uint8_t sark_save_param(SARK_PARM tag)    //ä¿å­˜é…ç½®å¥½çš„é“¶æŸœå‚æ•°ï¼Œæ›´æ–°æ•°æ®åº“
 {
-	if(tag->node>30 && tag->node<64)
+	sysinfo_t sysinfo;
+	int sysinfo_id;
+	if(tag.node_num<31 && tag.node_num>63) return 0;
+	if(tag.door_num==0 && tag.timrout==0)  return 0;
+	sysinfo_id=1;
+	if(sysinfo_get_by_id(&sysinfo, sysinfo_id)) //è¯»ç³»ç»Ÿæ•°æ®åº“ä¿¡æ¯
 	{
-		if(tag->num!=0 && tag->ov_time!=0 && tag->name[0] != 0)
-		{ 
-//			sark_param_store(tag); 
-			clesr_text(SARK_MANAGE,62);
-			clesr_text(SARK_MANAGE,65);
-			clesr_text(SARK_MANAGE,66);
-			lcd_update_en = 1;             //¸üĞÂLCD
-			find_sark_cfg();               //ÉèÖÃÅäÖÃÖ¸Õë
-			return 1; 
-		}
-	}
-	return 0;
+		sysinfo.door_count = tag.door_num;   tag.door_num=0;
+		sysinfo.node_count = tag.node_num;   tag.node_num=0;
+		sysinfo.open_timeout = tag.timrout;  tag.timrout=0;
+		sysinfo.id = sysinfo_id;
+		sysinfo_update(&sysinfo);
+		return 1;
+	}   return 0;
 }
 
-/*------------------------------ end -- ½ÚµãĞÅÏ¢´¦Àí¿é  ----------------------------*/
-
-static void card_manager_rst(void)
-{
-	switch(UI)
-	{
-		case SYS_KEY_CRCF:  key_card_init();       break;
-		case MANA_CARD_SET: manager_card_init();   break;
-		case PRIV_CARD_SET: privilege_card_init(); break;
-		case NORM_CARD_SET: normaal_card_init();   break;
-	}
-}
-
-static void card_manager_make(void)
-{
-	switch(UI)
-	{
-		case SYS_KEY_CRCF:   key_card_make();       break;
-		case MANA_CARD_SET:  manager_card_make();   break;
-		case PRIV_CARD_SET:  privilege_card_make(); break;
-		case NORM_CARD_SET:  normaal_card_make();   break;
-	}
-}
-
-static void card_manager_clear(void)
-{
-	switch(UI)
-	{
-		case SYS_KEY_CRCF:  key_card_clear();       break;
-		case MANA_CARD_SET: manager_card_clear();   break;
-		case PRIV_CARD_SET: privilege_card_clear(); break;
-		case NORM_CARD_SET: normaal_card_clear();   break;
-	}
-}
+/*------------------------------ end -- èŠ‚ç‚¹ä¿¡æ¯å¤„ç†å—  ----------------------------*/
 
 
 /*! 
- *  \brief  °´Å¥¿Ø¼şÍ¨Öª
- *  \details  µ±°´Å¥×´Ì¬¸Ä±ä(»òµ÷ÓÃGetControlValue)Ê±£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
- *  \param state °´Å¥×´Ì¬£º0µ¯Æğ£¬1°´ÏÂ
+ *  \brief  æŒ‰é’®æ§ä»¶é€šçŸ¥
+ *  \details  å½“æŒ‰é’®çŠ¶æ€æ”¹å˜(æˆ–è°ƒç”¨GetControlValue)æ—¶ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
+ *  \param state æŒ‰é’®çŠ¶æ€ï¼š0å¼¹èµ·ï¼Œ1æŒ‰ä¸‹
  */
 static void NotifyButton(unsigned short screen_id, unsigned short control_id, unsigned char  state)
 {
     switch(screen_id)
     {
-		case MAIN_INDEX   :   if(control_id == 10) { UI=TEST_UI; test_screen(); }
-							  else if(control_id == 11)	{ UI=SARK_MANAGE; show_sark_list(); }
-							  else if(control_id == 13) { UI=SYS_TIME_SETUP; SetScreen(SYS_TIME_SETUP); }
+		case MAIN_INDEX   :   if(control_id == 101) { UI=TEST_UI; test_screen(); }
+							  else if(control_id == 102)	{ UI = KEY_CARD_COF; SetScreen(KEY_CARD_COF); }
+							  else if(control_id == 103) { UI=SYS_TIME_SETUP; SetScreen(SYS_TIME_SETUP); }
 							  break;             
         case SYS_CFG_INDEX:
 				switch(control_id)
 				{
-					case 101: UI=MANA_CARD_SET; SetScreen(CARD_MANAG);   
-							  show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str); break;     //½øÈëÅäÖÃ¿¨
-					case 102: UI=PRIV_CARD_SET; SetScreen(CARD_MANAG);  
-							  show_string(CARD_MANAG,258,62,1,9,(uint8_t*)pri_card_str); break;     //½øÈëÌØÈ¨¿¨ÉèÖÃ
-					case 103: UI=NORM_CARD_SET; SetScreen(CARD_MANAG);  
-							  show_string(CARD_MANAG,258,62,1,9,(uint8_t*)nom_card_str); break;     //½øÈëÆÕÍ¨¿¨
-					case 104: UI=SYS_TIME_SETUP; SetScreen(SYS_TIME_SETUP); break;     //½øÈëÏµÍ³Ê±¼äÉèÖÃ
-					case 105: UI=SARK_MANAGE; show_sark_list();    break;     //¹ñÃÅ¹ÜÀí
-					case 106: UI=MAIN_INDEX; SetScreen(MAIN_INDEX);
+					case 11: UI=COF_CARD_SET; SetScreen(CARD_MANAG);   
+							 show_string(CARD_MANAG,228,62,1,9,(uint8_t*)cof_card_str); break;     //è¿›å…¥é…ç½®å¡ï¼Œæ˜¾ç¤ºæ ‡é¢˜
+					case 12: UI=MANA_CARD_SET; SetScreen(CARD_MANAG);  
+							 show_string(CARD_MANAG,228,62,1,9,(uint8_t*)pri_card_str); break;     //è¿›å…¥ç‰¹æƒå¡è®¾ç½®ï¼Œæ˜¾ç¤ºæ ‡é¢˜
+					case 13: UI=NORM_CARD_SET; SetScreen(CARD_MANAG);  
+							 show_string(CARD_MANAG,228,62,1,9,(uint8_t*)nom_card_str); break;     //è¿›å…¥æ™®é€šå¡ï¼Œæ˜¾ç¤ºæ ‡é¢˜
+					case 14: UI=SYS_TIME_SETUP; SetScreen(SYS_TIME_SETUP); break;     //è¿›å…¥ç³»ç»Ÿæ—¶é—´è®¾ç½®
+					case 15: UI=SARK_MANAGE; show_sark_list();    break;     //æŸœé—¨ç®¡ç†
+					case 16: UI=MAIN_INDEX; SetScreen(MAIN_INDEX);
 				}
 				break;
         case SYS_TIME_SETUP: 
-				if(control_id==208)
+				if(control_id==28)  //æ›´æ–°æ—¶é—´
 				{
 					sys_datetime.year = sys_status_lcd.setting_datetime.year;
 					if(sys_datetime.year==0) break;
@@ -514,14 +482,14 @@ static void NotifyButton(unsigned short screen_id, unsigned short control_id, un
 					sys_datetime.min = sys_status_lcd.setting_datetime.min;
 					if(sys_datetime.min==0) break;
 					sys_datetime.sec = sys_status_lcd.setting_datetime.sec;
-					if(rtc_set_time(&sys_datetime)==1) rt_kprintf("set time 0k !\n \n");
-					if(rtc_get_time(&sys_datetime)) rt_kprintf("get time ok !\n \n");
-//					rt_kprintf("setuptime£º%04dyy%02dmm%02dd %02dhour%02dmin%02dsec\r\n",sys_datetime.year,sys_datetime.month,sys_datetime.mday,sys_datetime.hour,sys_datetime.min,sys_datetime.sec);                    
+					if(rtc_set_time(&sys_datetime)==1) rt_kprintf("set time 0k !\n \n");  //å†™æ—¶é’ŸèŠ¯ç‰‡
+					if(rtc_get_time(&sys_datetime)) rt_kprintf("get time ok !\n \n");     //è¯»æ—¶é’ŸèŠ¯ç‰‡
+//					rt_kprintf("setuptimeï¼š%04dyy%02dmm%02dd %02dhour%02dmin%02dsec\r\n",sys_datetime.year,sys_datetime.month,sys_datetime.mday,sys_datetime.hour,sys_datetime.min,sys_datetime.sec);                    
 					SetRtc(sys_datetime.year,sys_datetime.month,sys_datetime.mday,sys_datetime.wday,sys_datetime.hour,sys_datetime.min,sys_datetime.sec);                    
 					sys_status_lcd.sys_state = sys_status_lcd.sys_last_state;
 					UI=MAIN_INDEX; SetScreen(MAIN_INDEX);
 				}
-				else if(control_id==207)
+				else if(control_id==27)   //
 				{
 					sys_status_lcd.sys_state = sys_status_lcd.sys_last_state;
 					UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX);
@@ -530,42 +498,47 @@ static void NotifyButton(unsigned short screen_id, unsigned short control_id, un
         case CARD_MANAG:  
 				switch(control_id)
 				{
-					case 31:  card_manager_rst();  break;          //³õÊ¼»¯¿¨£¬º¯ÊıÄÚÇø·Ö¿¨ÀàĞÍ£ºÔ¿³×¿¨£¬ÅäÖÃ¿¨µÈ
-					case 32:  card_manager_make();  break;         //ÖÆ×÷ÅäÖÃ¿¨
-					case 33:  card_manager_clear(); break;         //ÖØÖÃÖÆ×÷¿¨
-					case 34:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;
-					case 35:  complete_card_work();   break;	
+					case 31:  card_clear_fun(UI-7); break;         //åˆå§‹åŒ–å¡ï¼Œä¼ å‚ä¸ºå¡ç±»å‹ï¼šé…ç½®å¡ï¼Œç®¡ç†å¡ï¼Œé’¥åŒ™å¡ç­‰
+					case 32:  break;
+					case 33:  card_init_fun(UI-7);  break;         //åˆ¶ä½œé…ç½®å¡
+					case 34:  card_make_fun(UI-7);  break;         //é‡ç½®åˆ¶ä½œå¡
+					case 35:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;
+//					case 35:  complete_card_work();   break;	   //UIç•Œé¢å–æ¶ˆè¯¥æŒ‰é’®
 				}
 				break;
         case SARK_MANAGE:
 				switch(control_id)
 				{
-					case 61:  
-						#ifdef NRF24L01_USING_NODE	
-							test_send_node(5);
-						#else
-							nrf_assign_addr(0);
-							rt_kprintf("asign node address...\n");
-						#endif 
-						break;
-					case 63:  sark_del_remov();	  break;
-					case 67:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;
-					case 68:  sark_save_param((sark_msg_t)&sark_box[sk_pt.cofg-1]);  break;
+//					case 61:  
+//						#ifdef NRF24L01_USING_NODE	
+//							test_send_node(5);
+//						#else
+//							nrf_assign_addr(0);
+//							rt_kprintf("asign node address...\n");
+//						#endif 
+//						break;
+//					case 63:  sark_del_remov();	  break;
+					case 44:  UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX); break;
+					case 45:  if(sark_save_param((sark_info)))
+					          {UI=SYS_CFG_INDEX; SetScreen(SYS_CFG_INDEX);} break;
 				}
 				break;
 		case DOOR_OPEN_MANA:  
 				switch(control_id)
 				{
-					case 70:
-					case 71:
-					case 72:
-					case 73:
-					case 74:
-					case 75:
-					case 76:
-					case 77:
-					case 78:
-					case 79:  UI=MAIN_INDEX; SetScreen(MAIN_INDEX); break;
+					case 50:
+					case 51:
+					case 52:
+					case 53:
+					case 54:
+					case 55:
+					case 56:
+					case 57:
+					case 58:
+					case 59:  UI=MAIN_INDEX; SetScreen(MAIN_INDEX); break;
+					case 501:
+					case 502:
+					case 503: break;      //åé¢è¿˜æœ‰æŒ‰é’®ï¼Œå‚ç…§ç•Œé¢è®¾è®¡
 				}
 				break;
 		case TEST_UI:
@@ -579,11 +552,34 @@ static void NotifyButton(unsigned short screen_id, unsigned short control_id, un
 					case 86:  UI=MAIN_INDEX; SetScreen(MAIN_INDEX);  break;
 				}
 				break;
+		case KEY_CARD_COF:
+				switch(control_id)
+				{
+					case 71: key_card_init();     break;
+					case 72: key_card_make();     break;
+					case 73: key_card_clear();    break;
+					case 74: key_card_backup();   break;
+					case 75: key_card_recovery(); break;
+					case 76: if(check_cof_card_cun()<2)    //å¦‚æœé…ç½®å¡ä¸ç¬¦åˆè¦æ±‚
+							 {
+								SetScreen(CARD_MANAG);      //å¦‚æœé…ç½®å¡å°äº2åˆ™ç›´æ¥æ˜¾ç¤ºé…ç½®å¡ç•Œé¢
+								show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str);
+								UI = COF_CARD_SET;
+								show_string(COF_CARD_SET,20,440,0,6,mcardwarning);
+								show_string(COF_CARD_SET,20,410,0,6,mcardnum);
+								show_string(COF_CARD_SET,160,410,0,6,(uint8_t*)"0");
+							 }
+							 else{
+								UI=MAIN_INDEX; SetScreen(MAIN_INDEX);
+							 }
+							 break;
+//					case 77:   break;
+				}break;
     }        
 }
 
 
-//×Ö·û´®×ªÕûÊı
+//å­—ç¬¦ä¸²è½¬æ•´æ•°
 static long StringToInt32(unsigned char *str)
 {
 	long v = 0;
@@ -592,40 +588,50 @@ static long StringToInt32(unsigned char *str)
 }
 
 /*! 
- *  \brief  ÎÄ±¾¿Ø¼şÍ¨Öª
- *  \details  µ±ÎÄ±¾Í¨¹ı¼üÅÌ¸üĞÂ(»òµ÷ÓÃGetControlValue)Ê±£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
- *  \param str ÎÄ±¾¿Ø¼şÄÚÈİ
+ *  \brief  æ–‡æœ¬æ§ä»¶é€šçŸ¥
+ *  \details  å½“æ–‡æœ¬é€šè¿‡é”®ç›˜æ›´æ–°(æˆ–è°ƒç”¨GetControlValue)æ—¶ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
+ *  \param str æ–‡æœ¬æ§ä»¶å†…å®¹
  */
+
+extern char card_iden[];
+extern volatile uint8_t iden_over;
+
 static void NotifyText(unsigned short screen_id, unsigned short control_id, unsigned char *str)
 {
+	uint8_t len;
 	switch(screen_id)
     {
         case SYS_CFG_INDEX:   break;
-        case SYS_TIME_SETUP:                          //½ÓÊÕLCD´«À´µÄ²ÎÊı²¢»º´æ
+        case SYS_TIME_SETUP:                          //æ¥æ”¶LCDä¼ æ¥çš„å‚æ•°å¹¶ç¼“å­˜
 				 switch(control_id)
 				 {
-					 case 201: sys_status_lcd.setting_datetime.year = StringToInt32(str);  break;
-					 case 202: sys_status_lcd.setting_datetime.month = StringToInt32(str); break;
-					 case 203: sys_status_lcd.setting_datetime.mday = StringToInt32(str);  break;
-					 case 204: sys_status_lcd.setting_datetime.hour = StringToInt32(str);  break;
-					 case 205: sys_status_lcd.setting_datetime.min = StringToInt32(str);   break;
-					 case 206: sys_status_lcd.setting_datetime.sec = StringToInt32(str);   break;
+					 case 21: sys_status_lcd.setting_datetime.year = StringToInt32(str);  break;
+					 case 22: sys_status_lcd.setting_datetime.month = StringToInt32(str); break;
+					 case 23: sys_status_lcd.setting_datetime.mday = StringToInt32(str);  break;
+					 case 24: sys_status_lcd.setting_datetime.hour = StringToInt32(str);  break;
+					 case 25: sys_status_lcd.setting_datetime.min = StringToInt32(str);   break;
+					 case 26: sys_status_lcd.setting_datetime.sec = StringToInt32(str);   break;
 				 }
 				 break;
-        case MANA_CARD_SET:       break;
-        case PRIV_CARD_SET:	      break;
-		case NORM_CARD_SET:       break;
+        case CARD_MANAG:  if(control_id==36)
+						  {
+							  if(rt_strlen((char*)str)>10) len = 10; else len=rt_strlen((char*)str);
+							  rt_strncpy(card_iden,(char*)str,len);
+							  iden_over = 1;
+						  }
+						  break;
 		case SARK_MANAGE: 
 				switch(control_id)
 				{
-					case 62:  strncpy(sark_box[sk_pt.cofg-1].name,(char*)str,5); break; //±£´æ¹ñÃû(½«ÊÕµ½µÄ×Ö·û´®ÌîĞ´½øÒø¹ñµÄÃû³ÆÊı×é)
-					case 64:  sark_del_appoint(str);  break;
-					case 65:  sark_box[sk_pt.cofg-1].num =  StringToInt32(str); break;  //¹ñÃÅ×ÜÊı
-					case 66:  sark_box[sk_pt.cofg-1].ov_time = StringToInt32(str); break;  //¹ñÃÅ³¬Ê±Ê±¼ä
+//					case 62:  strncpy(sark_box[sk_pt.cofg-1].name,(char*)str,5); break; //ä¿å­˜æŸœå(å°†æ”¶åˆ°çš„å­—ç¬¦ä¸²å¡«å†™è¿›é“¶æŸœçš„åç§°æ•°ç»„)
+//					case 64:  sark_del_appoint(str);  break;
+					case 41:  sark_info.node_num =  StringToInt32(str); break;  //é“¶æŸœæ•°é‡
+					case 42:  sark_info.door_num =  StringToInt32(str); break;  //æŸœé—¨æ€»æ•°
+					case 43:  sark_info.timrout  = StringToInt32(str);  break;  //æŸœé—¨è¶…æ—¶æ—¶é—´
 				}
-				lcd_update_en = 1;   //¸üĞÂLCD
+				lcd_update_en = 1;   //æ›´æ–°LCD
 				break;
 		case DOOR_OPEN_MANA:      break;
     } 
@@ -633,22 +639,22 @@ static void NotifyText(unsigned short screen_id, unsigned short control_id, unsi
 
 
 /*! 
- *  \brief  Ğ´ÓÃ»§FLASH×´Ì¬·µ»Ø
- *  \param status 0Ê§°Ü£¬1³É¹¦
+ *  \brief  å†™ç”¨æˆ·FLASHçŠ¶æ€è¿”å›
+ *  \param status 0å¤±è´¥ï¼Œ1æˆåŠŸ
  */
 static void NotifyWriteFlash(unsigned char status)
 {
 }
 
 /*! 
- *  \brief  ´¥Ãş×ø±êÊÂ¼şÏìÓ¦
- *  \param press 1°´ÏÂ´¥ÃşÆÁ£¬3ËÉ¿ª´¥ÃşÆÁ
- *  \param x x×ø±ê
- *  \param y y×ø±ê
+ *  \brief  è§¦æ‘¸åæ ‡äº‹ä»¶å“åº”
+ *  \param press 1æŒ‰ä¸‹è§¦æ‘¸å±ï¼Œ3æ¾å¼€è§¦æ‘¸å±
+ *  \param x xåæ ‡
+ *  \param y yåæ ‡
  */
 static void NotifyTouchXY(unsigned char press,unsigned short x,unsigned short y)
 {
-	//TODO: Ìí¼ÓÓÃ»§´úÂë
+	//TODO: æ·»åŠ ç”¨æˆ·ä»£ç 
 }
 
 static void NotifyProgress(unsigned short screen_id, unsigned short control_id, unsigned long value)
@@ -657,11 +663,11 @@ static void NotifyProgress(unsigned short screen_id, unsigned short control_id, 
 
 
 /*! 
- *  \brief  »¬¶¯Ìõ¿Ø¼şÍ¨Öª
- *  \details  µ±»¬¶¯Ìõ¸Ä±ä(»òµ÷ÓÃGetControlValue)Ê±£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
- *  \param value Öµ
+ *  \brief  æ»‘åŠ¨æ¡æ§ä»¶é€šçŸ¥
+ *  \details  å½“æ»‘åŠ¨æ¡æ”¹å˜(æˆ–è°ƒç”¨GetControlValue)æ—¶ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
+ *  \param value å€¼
  */
 static void NotifySlider(unsigned short screen_id, unsigned short control_id, unsigned long value)
 {
@@ -669,59 +675,59 @@ static void NotifySlider(unsigned short screen_id, unsigned short control_id, un
 
 
 /*! 
- *  \brief  ¶ÁÈ¡ÓÃ»§FLASH×´Ì¬·µ»Ø
- *  \param status 0Ê§°Ü£¬1³É¹¦
- *  \param _data ·µ»ØÊı¾İ
- *  \param length Êı¾İ³¤¶È
+ *  \brief  è¯»å–ç”¨æˆ·FLASHçŠ¶æ€è¿”å›
+ *  \param status 0å¤±è´¥ï¼Œ1æˆåŠŸ
+ *  \param _data è¿”å›æ•°æ®
+ *  \param length æ•°æ®é•¿åº¦
  */
 static void NotifyReadFlash(unsigned char status,unsigned char *_data,unsigned short length)
 {
 }
 
 /*! 
- *  \brief  ÒÇ±í¿Ø¼şÍ¨Öª
- *  \details  µ÷ÓÃGetControlValueÊ±£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
- *  \param value Öµ
+ *  \brief  ä»ªè¡¨æ§ä»¶é€šçŸ¥
+ *  \details  è°ƒç”¨GetControlValueæ—¶ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
+ *  \param value å€¼
  */
 static void NotifyMeter(unsigned short screen_id, unsigned short control_id, unsigned long value)
 {
 }
 
 /*! 
- *  \brief  ²Ëµ¥¿Ø¼şÍ¨Öª
- *  \details  µ±²Ëµ¥Ïî°´ÏÂ»òËÉ¿ªÊ±£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
- *  \param item ²Ëµ¥ÏîË÷Òı
- *  \param state °´Å¥×´Ì¬£º0ËÉ¿ª£¬1°´ÏÂ
+ *  \brief  èœå•æ§ä»¶é€šçŸ¥
+ *  \details  å½“èœå•é¡¹æŒ‰ä¸‹æˆ–æ¾å¼€æ—¶ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
+ *  \param item èœå•é¡¹ç´¢å¼•
+ *  \param state æŒ‰é’®çŠ¶æ€ï¼š0æ¾å¼€ï¼Œ1æŒ‰ä¸‹
  */
 static void NotifyMenu(unsigned short screen_id, unsigned short control_id, unsigned char  item, unsigned char  state)
 {
 }
 
 /*! 
- *  \brief  Ñ¡Ôñ¿Ø¼şÍ¨Öª
- *  \details  µ±Ñ¡Ôñ¿Ø¼ş±ä»¯Ê±£¬Ö´ĞĞ´Ëº¯Êı
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
- *  \param item µ±Ç°Ñ¡Ïî
+ *  \brief  é€‰æ‹©æ§ä»¶é€šçŸ¥
+ *  \details  å½“é€‰æ‹©æ§ä»¶å˜åŒ–æ—¶ï¼Œæ‰§è¡Œæ­¤å‡½æ•°
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
+ *  \param item å½“å‰é€‰é¡¹
  */
 static void NotifySelector(unsigned short screen_id, unsigned short control_id, unsigned char  item)
 {
 }
 
 /*! 
- *  \brief  ¶¨Ê±Æ÷³¬Ê±Í¨Öª´¦Àí
- *  \param screen_id »­ÃæID
- *  \param control_id ¿Ø¼şID
+ *  \brief  å®šæ—¶å™¨è¶…æ—¶é€šçŸ¥å¤„ç†
+ *  \param screen_id ç”»é¢ID
+ *  \param control_id æ§ä»¶ID
  */
 static void NotifyTimer(unsigned short screen_id, unsigned short control_id)
 {
 }
 /*! 
-*  \brief  ¸üĞÂÊı¾İ
+*  \brief  æ›´æ–°æ•°æ®
 */ 
 
 void UpdateUI(void)
@@ -734,7 +740,7 @@ void UpdateUI(void)
 //     if(sys_status_lcd.config_card_count<CONFIG_CARD_MAX_COUNT)
 //    {
 //        sys_status_lcd.sys_last_state = sys_status_lcd.sys_state = make_config_card_state;
-////        SetTextValue(SYS_INIT_INDEX,255,(unsigned char*)"ÌáÊ¾£ºÇë½«IC¿¨·ÅÖÃÔÚ¸ĞÓ¦Çø²»ÒªÒÆ¶¯£¡");
+////        SetTextValue(SYS_INIT_INDEX,255,(unsigned char*)"æç¤ºï¼šè¯·å°†ICå¡æ”¾ç½®åœ¨æ„Ÿåº”åŒºä¸è¦ç§»åŠ¨ï¼");
 ////        SetScreen(SYS_INIT_INDEX);
 //    }
 //    else
@@ -758,7 +764,7 @@ static void lcd_updata_entry(void* param)
 			lcd_update_en = 0;
 		}
 		if(lcd_update_time_count<100) 
-		{lcd_update_time_count++;}    //¸Ã±äÁ¿¼ÓÖÁ100Ê±ÔÊĞí¸üĞÂÆÁÄ»
+		{lcd_update_time_count++;}    //è¯¥å˜é‡åŠ è‡³100æ—¶å…è®¸æ›´æ–°å±å¹•
 		rt_thread_delay(10);
 	}
 }
@@ -773,7 +779,52 @@ static int lcd_updata(void)
 }
 INIT_APP_EXPORT(lcd_updata);
 
-
+extern int init_data(void);
+extern uint8_t sys_key_a[6];
+extern uint8_t sys_key_b[6];
+void sys_lcd_startup(void)
+{
+	uint8_t i,ts,sysinfo_id,tmp[2];
+	sysinfo_t sysinfo;
+	SetFcolor(0xFFE0);//å‰æ™¯è‰²è®¾ç½®æˆé»„è‰²
+	SetBcolor(0x52AA);
+	
+	sysinfo_id = 1; ts=0;
+	if(sysinfo_get_by_id(&sysinfo, sysinfo_id)==0) //è¯»å–ç³»ç»Ÿä¿¡æ¯å¤±è´¥
+	{
+		init_data();
+		goto into_key_card_cof;        //è¿›å…¥å¯†é’¥å¡è®¾ç½®
+	}
+	for(i=0;i<6;i++)                   //æ£€æŸ¥å¯†é’¥
+	{
+		if(sysinfo.key_a[i]!=0xFF) ts++;
+		if(sysinfo.key_b[i]!=0xFF) ts++;
+	}
+	if(ts==0)  goto into_key_card_cof;   //å¦‚æœæ•°æ®åº“å†…æ²¡æœ‰æœ‰ç³»ç»Ÿå¯†é’¥,
+	for(i=0;i<6;i++)                  //ç³»ç»Ÿå·¥ä½œå¯†é’¥åˆå§‹åŒ–
+	{
+		sys_key_a[i]=sysinfo.key_a[i];
+		sys_key_b[i]=sysinfo.key_b[i];
+	}
+	tmp[0] = check_cof_card_cun();
+	if(tmp[0]<2) //å¦‚æœé…ç½®å¡ä¸ç¬¦åˆè¦æ±‚      
+	{
+		SetScreen(CARD_MANAG);      //å¦‚æœé…ç½®å¡å°äº2åˆ™ç›´æ¥æ˜¾ç¤ºé…ç½®å¡ç•Œé¢
+		show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str);
+		UI = COF_CARD_SET; tmp[0]+=0x30; tmp[1]=0;
+		show_string(CARD_MANAG,20,440,1,6,mcardwarning);
+		show_string(CARD_MANAG,20,410,1,6,mcardnum);
+		show_string(CARD_MANAG,160,410,1,6,(uint8_t*)tmp);
+	}
+	else 
+	{
+		SetScreen(MAIN_INDEX); UI = MAIN_INDEX;
+	}
+	return;
+into_key_card_cof:	
+	UI = KEY_CARD_COF;
+	SetScreen(KEY_CARD_COF);    //è¿›å…¥å¯†é’¥å¡ç®¡ç†
+}
 
 
 

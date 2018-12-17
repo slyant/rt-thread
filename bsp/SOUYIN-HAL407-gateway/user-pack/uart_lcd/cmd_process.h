@@ -1,55 +1,55 @@
 #ifndef _CMD_PROCESS_H
 #define _CMD_PROCESS_H
 
-#define NOTIFY_TOUCH_PRESS      0X01   //����������֪ͨ
-#define NOTIFY_TOUCH_RELEASE  0X03  //�������ɿ�֪ͨ
-#define NOTIFY_WRITE_FLASH_OK  0X0C  //дFLASH�ɹ�
-#define NOTIFY_WRITE_FLASH_FAILD  0X0D  //дFLASHʧ��
-#define NOTIFY_READ_FLASH_OK  0X0B  //��FLASH�ɹ�
-#define NOTIFY_READ_FLASH_FAILD  0X0F  //��FLASHʧ��
-#define NOTIFY_MENU                        0X14  //�˵��¼�֪ͨ
-#define NOTIFY_TIMER                       0X43  //��ʱ����ʱ֪ͨ
-#define NOTIFY_CONTROL                0XB1  //�ؼ�����֪ͨ
-#define NOTIFY_READ_RTC               0XF7  //��ȡRTCʱ��
-#define MSG_GET_CURRENT_SCREEN 0X01//����ID�仯֪ͨ
-#define MSG_GET_DATA                            0X11//�ؼ�����֪ͨ
+#define NOTIFY_TOUCH_PRESS      0X01   //触摸屏按下通知
+#define NOTIFY_TOUCH_RELEASE  0X03  //触摸屏松开通知
+#define NOTIFY_WRITE_FLASH_OK  0X0C  //写FLASH成功
+#define NOTIFY_WRITE_FLASH_FAILD  0X0D  //写FLASH失败
+#define NOTIFY_READ_FLASH_OK  0X0B  //读FLASH成功
+#define NOTIFY_READ_FLASH_FAILD  0X0F  //读FLASH失败
+#define NOTIFY_MENU                        0X14  //菜单事件通知
+#define NOTIFY_TIMER                       0X43  //定时器超时通知
+#define NOTIFY_CONTROL                0XB1  //控件更新通知
+#define NOTIFY_READ_RTC               0XF7  //读取RTC时间
+#define MSG_GET_CURRENT_SCREEN 0X01//画面ID变化通知
+#define MSG_GET_DATA                            0X11//控件数据通知
 
-#define PTR2U16(PTR) ((((unsigned char *)(PTR))[0]<<8)|((unsigned char *)(PTR))[1])  //�ӻ�����ȡ16λ����
-#define PTR2U32(PTR) ((((unsigned char *)(PTR))[0]<<24)|(((unsigned char *)(PTR))[1]<<16)|(((unsigned char *)(PTR))[2]<<8)|((unsigned char *)(PTR))[3])  //�ӻ�����ȡ32λ����
+#define PTR2U16(PTR) ((((unsigned char *)(PTR))[0]<<8)|((unsigned char *)(PTR))[1])  //从缓冲区取16位数据
+#define PTR2U32(PTR) ((((unsigned char *)(PTR))[0]<<24)|(((unsigned char *)(PTR))[1]<<16)|(((unsigned char *)(PTR))[2]<<8)|((unsigned char *)(PTR))[3])  //从缓冲区取32位数据
 
 enum CtrlType
 {
 	kCtrlUnknown=0x0,
-	kCtrlButton=0x10,  //��ť
-	kCtrlText,  //�ı�
-	kCtrlProgress,  //������
-	kCtrlSlider,    //������
-	kCtrlMeter,  //�Ǳ�
-	kCtrlDropList, //�����б�
-	kCtrlAnimation, //����
-	kCtrlRTC, //ʱ����ʾ
-	kCtrlGraph, //����ͼ�ؼ�
-	kCtrlTable, //����ؼ�
-	kCtrlMenu,//�˵��ؼ�
-	kCtrlSelector,//ѡ��ؼ�
-	kCtrlQRCode,//��ά��
+	kCtrlButton=0x10,  //按钮
+	kCtrlText,  //文本
+	kCtrlProgress,  //进度条
+	kCtrlSlider,    //滑动条
+	kCtrlMeter,  //仪表
+	kCtrlDropList, //下拉列表
+	kCtrlAnimation, //动画
+	kCtrlRTC, //时间显示
+	kCtrlGraph, //曲线图控件
+	kCtrlTable, //表格控件
+	kCtrlMenu,//菜单控件
+	kCtrlSelector,//选择控件
+	kCtrlQRCode,//二维码
 };
 
 typedef struct
 {
-	unsigned char    cmd_head;  //֡ͷ
+	unsigned char    cmd_head;  //帧头
 
-	unsigned char    cmd_type;  //��������(UPDATE_CONTROL)	
-	unsigned char    ctrl_msg;   //CtrlMsgType-ָʾ��Ϣ������
-	unsigned char    screen_id_high;  //������Ϣ�Ļ���ID
+	unsigned char    cmd_type;  //命令类型(UPDATE_CONTROL)	
+	unsigned char    ctrl_msg;   //CtrlMsgType-指示消息的类型
+	unsigned char    screen_id_high;  //产生消息的画面ID
 	unsigned char    screen_id_low;
-	unsigned char    control_id_high;  //������Ϣ�Ŀؼ�ID
+	unsigned char    control_id_high;  //产生消息的控件ID
 	unsigned char    control_id_low;
-	unsigned char    control_type; //�ؼ�����
+	unsigned char    control_type; //控件类型
 
-	unsigned char    param[256];//�ɱ䳤�Ȳ��������256���ֽ�
+	unsigned char    param[256];//可变长度参数，最多256个字节
 
-	unsigned char    cmd_tail[4];   //֡β
+	unsigned char    cmd_tail[4];   //帧尾
 }CTRL_MSG,*PCTRL_MSG;
 
 //static void ProcessMessage( PCTRL_MSG msg, unsigned short size );

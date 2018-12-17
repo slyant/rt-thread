@@ -34,14 +34,14 @@ void HAL_RNG_MspDeInit(RNG_HandleTypeDef* rngHandle)
   }
 } 
 
-//µÃµ½Ëæ»úÊı
-//·µ»ØÖµ:»ñÈ¡µ½µÄËæ»úÊı
+//å¾—åˆ°éšæœºæ•°
+//è¿”å›å€¼:è·å–åˆ°çš„éšæœºæ•°
 rt_uint32_t RNG_Get_RandomNum(void)
 {
     return HAL_RNG_GetRandomNumber(&hrng);
 }
 
-//Éú³É[min,max]·¶Î§µÄËæ»úÊı
+//ç”Ÿæˆ[min,max]èŒƒå›´çš„éšæœºæ•°
 int RNG_Get_RandomRange(int min,int max)
 { 
    return HAL_RNG_GetRandomNumber(&hrng)%(max-min+1) +min;

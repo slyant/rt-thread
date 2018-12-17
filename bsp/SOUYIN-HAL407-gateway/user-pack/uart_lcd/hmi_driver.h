@@ -1,9 +1,9 @@
 /*! 
  *  \file hmi_driver.h
- *  \brief ´®¿ÚÆÁÇı¶¯ÎÄ¼ş
+ *  \brief ä¸²å£å±é©±åŠ¨æ–‡ä»¶
  *  \version 1.0
  *  \date 2012-2015
- *  \copyright ¹ãÖİ´ó²Ê¹âµç¿Æ¼¼ÓĞÏŞ¹«Ë¾
+ *  \copyright å¹¿å·å¤§å½©å…‰ç”µç§‘æŠ€æœ‰é™å…¬å¸
  */
 
 #include <rtthread.h>
@@ -12,697 +12,697 @@
 #ifndef _HMI_DRIVER_
 #define _HMI_DRIVER_
 
-#define FIRMWARE_VER 917   //ÆÁÄ»¹Ì¼ş°æ±¾ºÅ
+#define FIRMWARE_VER 917   //å±å¹•å›ºä»¶ç‰ˆæœ¬å·
 
-#define CRC16_ENABLE 0         /*!< Èç¹ûĞèÒªCRC16Ğ£Ñé¹¦ÄÜ£¬ĞŞ¸Ä´ËºêÎª1(´ËÊ±ĞèÒªÔÚVisualTFT¹¤³ÌÖĞÅäCRCĞ£Ñé)*/
-#define CMD_MAX_SIZE 64        /*!<µ¥ÌõÖ¸Áî´óĞ¡£¬¸ù¾İĞèÒªµ÷Õû£¬¾¡Á¿ÉèÖÃ´óÒ»Ğ©*/
-#define QUEUE_MAX_SIZE 512   /*!< Ö¸Áî½ÓÊÕ»º³åÇø´óĞ¡£¬¸ù¾İĞèÒªµ÷Õû£¬¾¡Á¿ÉèÖÃ´óÒ»Ğ©*/
+#define CRC16_ENABLE 0         /*!< å¦‚æœéœ€è¦CRC16æ ¡éªŒåŠŸèƒ½ï¼Œä¿®æ”¹æ­¤å®ä¸º1(æ­¤æ—¶éœ€è¦åœ¨VisualTFTå·¥ç¨‹ä¸­é…CRCæ ¡éªŒ)*/
+#define CMD_MAX_SIZE 64        /*!<å•æ¡æŒ‡ä»¤å¤§å°ï¼Œæ ¹æ®éœ€è¦è°ƒæ•´ï¼Œå°½é‡è®¾ç½®å¤§ä¸€äº›*/
+#define QUEUE_MAX_SIZE 512   /*!< æŒ‡ä»¤æ¥æ”¶ç¼“å†²åŒºå¤§å°ï¼Œæ ¹æ®éœ€è¦è°ƒæ•´ï¼Œå°½é‡è®¾ç½®å¤§ä¸€äº›*/
 
 /*! 
- *  \brief  ¼ì²éÊı¾İÊÇ·ñ·ûºÏCRC16Ğ£Ñé
- *  \param buffer ´ıĞ£ÑéµÄÊı¾İ£¬Ä©Î²´æ´¢CRC16
- *  \param n Êı¾İ³¤¶È£¬°üº¬CRC16
- *  \return Ğ£ÑéÍ¨¹ı·µ»Ø1£¬·ñÔò·µ»Ø0
+ *  \brief  æ£€æŸ¥æ•°æ®æ˜¯å¦ç¬¦åˆCRC16æ ¡éªŒ
+ *  \param buffer å¾…æ ¡éªŒçš„æ•°æ®ï¼Œæœ«å°¾å­˜å‚¨CRC16
+ *  \param n æ•°æ®é•¿åº¦ï¼ŒåŒ…å«CRC16
+ *  \return æ ¡éªŒé€šè¿‡è¿”å›1ï¼Œå¦åˆ™è¿”å›0
  */
 unsigned short CheckCRC16(unsigned char *buffer,unsigned short n);
 
 /*! 
- *  \brief  Ëø¶¨Éè±¸ÅäÖÃ£¬Ëø¶¨Ö®ºóĞèÒª½âËø£¬²ÅÄÜĞŞ¸Ä²¨ÌØÂÊ¡¢´¥ÃşÆÁ¡¢·äÃùÆ÷¹¤×÷·½Ê½
+ *  \brief  é”å®šè®¾å¤‡é…ç½®ï¼Œé”å®šä¹‹åéœ€è¦è§£é”ï¼Œæ‰èƒ½ä¿®æ”¹æ³¢ç‰¹ç‡ã€è§¦æ‘¸å±ã€èœ‚é¸£å™¨å·¥ä½œæ–¹å¼
  */
 void LockDeviceConfig(void);
 
 /*! 
- *  \brief  ½âËøÉè±¸ÅäÖÃ
+ *  \brief  è§£é”è®¾å¤‡é…ç½®
  */
 void UnlockDeviceConfig(void);
 
 /*! 
- *  \brief     ĞŞ¸Ä´®¿ÚÆÁµÄ²¨ÌØÂÊ
- *  \details  ²¨ÌØÂÊÑ¡Ïî·¶Î§[0~14]£¬¶ÔÓ¦Êµ¼Ê²¨ÌØÂÊ
+ *  \brief     ä¿®æ”¹ä¸²å£å±çš„æ³¢ç‰¹ç‡
+ *  \details  æ³¢ç‰¹ç‡é€‰é¡¹èŒƒå›´[0~14]ï¼Œå¯¹åº”å®é™…æ³¢ç‰¹ç‡
                    {1200,2400,4800,9600,19200,38400,57600,115200,1000000,2000000,218750,437500,875000,921800,2500000}
- *  \param  option ²¨ÌØÂÊÑ¡Ïî
+ *  \param  option æ³¢ç‰¹ç‡é€‰é¡¹
  */
 void SetCommBps(unsigned char option);
 
 /*! 
- *  \brief  ·¢ËÍÎÕÊÖÃüÁî
+ *  \brief  å‘é€æ¡æ‰‹å‘½ä»¤
  */
 void SetHandShake(void);
 
 /*! 
- *  \brief  ÉèÖÃÇ°¾°É«
- *  \param  color Ç°¾°É«
+ *  \brief  è®¾ç½®å‰æ™¯è‰²
+ *  \param  color å‰æ™¯è‰²
  */
 void SetFcolor(unsigned short color);
 
 /*! 
- *  \brief  ÉèÖÃ±³¾°É«
- *  \param  color ±³¾°É«
+ *  \brief  è®¾ç½®èƒŒæ™¯è‰²
+ *  \param  color èƒŒæ™¯è‰²
  */
 void SetBcolor(unsigned short color);
 
 /*! 
- *  \brief  Çå³ı»­Ãæ
+ *  \brief  æ¸…é™¤ç”»é¢
  */
 void GUI_CleanScreen(void);
 
 /*! 
- *  \brief  ÉèÖÃÎÄ×Ö¼ä¸ô
- *  \param  x_w ºáÏò¼ä¸ô
-  *  \param  y_w ×İÏò¼ä¸ô
+ *  \brief  è®¾ç½®æ–‡å­—é—´éš”
+ *  \param  x_w æ¨ªå‘é—´éš”
+  *  \param  y_w çºµå‘é—´éš”
  */
 void SetTextSpace(unsigned char x_w, unsigned char y_w);
 
 /*! 
- *  \brief  ÉèÖÃÎÄ×ÖÏÔÊ¾ÏŞÖÆ
- *  \param  enable ÊÇ·ñÆôÓÃÏŞÖÆ
- *  \param  width ¿í¶È
- *  \param  height ¸ß¶È
+ *  \brief  è®¾ç½®æ–‡å­—æ˜¾ç¤ºé™åˆ¶
+ *  \param  enable æ˜¯å¦å¯ç”¨é™åˆ¶
+ *  \param  width å®½åº¦
+ *  \param  height é«˜åº¦
  */
 void SetFont_Region(unsigned char enable,unsigned short width,unsigned short height );
 
 /*! 
- *  \brief  ÉèÖÃ¹ıÂËÉ«
- *  \param  fillcolor_dwon ÑÕÉ«ÏÂ½ç
- *  \param  fillcolor_up ÑÕÉ«ÉÏ½ç
+ *  \brief  è®¾ç½®è¿‡æ»¤è‰²
+ *  \param  fillcolor_dwon é¢œè‰²ä¸‹ç•Œ
+ *  \param  fillcolor_up é¢œè‰²ä¸Šç•Œ
  */
 void SetFilterColor(unsigned short fillcolor_dwon, unsigned short fillcolor_up);
 
 /*! 
- *  \brief  ÉèÖÃ¹ıÂËÉ«
- *  \param  x Î»ÖÃX×ø±ê
- *  \param  y Î»ÖÃY×ø±ê
- *  \param  back ÑÕÉ«ÉÏ½ç
- *  \param  font ×ÖÌå
- *  \param  strings ×Ö·û´®ÄÚÈİ
+ *  \brief  è®¾ç½®è¿‡æ»¤è‰²
+ *  \param  x ä½ç½®Xåæ ‡
+ *  \param  y ä½ç½®Yåæ ‡
+ *  \param  back é¢œè‰²ä¸Šç•Œ
+ *  \param  font å­—ä½“
+ *  \param  strings å­—ç¬¦ä¸²å†…å®¹
  */
 void DisText(unsigned short x, unsigned short y,unsigned char back,unsigned char font,unsigned char *strings );
 
 /*! 
- *  \brief    ÏÔÊ¾¹â±ê
- *  \param  enable ÊÇ·ñÏÔÊ¾
- *  \param  x Î»ÖÃX×ø±ê
- *  \param  y Î»ÖÃY×ø±ê
- *  \param  width ¿í¶È
- *  \param  height ¸ß¶È
+ *  \brief    æ˜¾ç¤ºå…‰æ ‡
+ *  \param  enable æ˜¯å¦æ˜¾ç¤º
+ *  \param  x ä½ç½®Xåæ ‡
+ *  \param  y ä½ç½®Yåæ ‡
+ *  \param  width å®½åº¦
+ *  \param  height é«˜åº¦
  */
 void DisCursor(unsigned char enable,unsigned short x, unsigned short y,unsigned char width,unsigned char height );
 
 /*! 
- *  \brief      ÏÔÊ¾È«ÆÁÍ¼Æ¬
- *  \param  image_id Í¼Æ¬Ë÷Òı
- *  \param  masken ÊÇ·ñÆôÓÃÍ¸Ã÷ÑÚÂë
+ *  \brief      æ˜¾ç¤ºå…¨å±å›¾ç‰‡
+ *  \param  image_id å›¾ç‰‡ç´¢å¼•
+ *  \param  masken æ˜¯å¦å¯ç”¨é€æ˜æ©ç 
  */
 void DisFull_Image(unsigned short image_id,unsigned char masken);
 
 /*! 
- *  \brief      Ö¸¶¨Î»ÖÃÏÔÊ¾Í¼Æ¬
- *  \param  x Î»ÖÃX×ø±ê
- *  \param  y Î»ÖÃY×ø±ê
- *  \param  image_id Í¼Æ¬Ë÷Òı
- *  \param  masken ÊÇ·ñÆôÓÃÍ¸Ã÷ÑÚÂë
+ *  \brief      æŒ‡å®šä½ç½®æ˜¾ç¤ºå›¾ç‰‡
+ *  \param  x ä½ç½®Xåæ ‡
+ *  \param  y ä½ç½®Yåæ ‡
+ *  \param  image_id å›¾ç‰‡ç´¢å¼•
+ *  \param  masken æ˜¯å¦å¯ç”¨é€æ˜æ©ç 
  */
 void DisArea_Image(unsigned short x,unsigned short y,unsigned short image_id,unsigned char masken);
 
 /*! 
- *  \brief      ÏÔÊ¾²Ã¼ôÍ¼Æ¬
- *  \param  x Î»ÖÃX×ø±ê
- *  \param  y Î»ÖÃY×ø±ê
- *  \param  image_id Í¼Æ¬Ë÷Òı
- *  \param  image_x Í¼Æ¬²Ã¼ôÎ»ÖÃX×ø±ê
- *  \param  image_y Í¼Æ¬²Ã¼ôÎ»ÖÃY×ø±ê
- *  \param  image_l Í¼Æ¬²Ã¼ô³¤¶È
- *  \param  image_w Í¼Æ¬²Ã¼ô¸ß¶È
- *  \param  masken ÊÇ·ñÆôÓÃÍ¸Ã÷ÑÚÂë
+ *  \brief      æ˜¾ç¤ºè£å‰ªå›¾ç‰‡
+ *  \param  x ä½ç½®Xåæ ‡
+ *  \param  y ä½ç½®Yåæ ‡
+ *  \param  image_id å›¾ç‰‡ç´¢å¼•
+ *  \param  image_x å›¾ç‰‡è£å‰ªä½ç½®Xåæ ‡
+ *  \param  image_y å›¾ç‰‡è£å‰ªä½ç½®Yåæ ‡
+ *  \param  image_l å›¾ç‰‡è£å‰ªé•¿åº¦
+ *  \param  image_w å›¾ç‰‡è£å‰ªé«˜åº¦
+ *  \param  masken æ˜¯å¦å¯ç”¨é€æ˜æ©ç 
  */
 void DisCut_Image(unsigned short x,unsigned short y,unsigned short image_id,unsigned short image_x,unsigned short image_y,
                    unsigned short image_l, unsigned short image_w,unsigned char masken);
 
 /*! 
- *  \brief      ÏÔÊ¾GIF¶¯»­
- *  \param  x Î»ÖÃX×ø±ê
- *  \param  y Î»ÖÃY×ø±ê
- *  \param  flashimage_id Í¼Æ¬Ë÷Òı
- *  \param  enable ÊÇ·ñÏÔÊ¾
- *  \param  playnum ²¥·Å´ÎÊı
+ *  \brief      æ˜¾ç¤ºGIFåŠ¨ç”»
+ *  \param  x ä½ç½®Xåæ ‡
+ *  \param  y ä½ç½®Yåæ ‡
+ *  \param  flashimage_id å›¾ç‰‡ç´¢å¼•
+ *  \param  enable æ˜¯å¦æ˜¾ç¤º
+ *  \param  playnum æ’­æ”¾æ¬¡æ•°
  */
 void DisFlashImage(unsigned short x,unsigned short y,unsigned short flashimage_id,unsigned char enable,unsigned char playnum);
 
 /*! 
- *  \brief      »­µã
- *  \param  x Î»ÖÃX×ø±ê
- *  \param  y Î»ÖÃY×ø±ê
+ *  \brief      ç”»ç‚¹
+ *  \param  x ä½ç½®Xåæ ‡
+ *  \param  y ä½ç½®Yåæ ‡
  */
 void GUI_Dot(unsigned short x,unsigned short y);
 
 /*! 
- *  \brief      »­Ïß
- *  \param  x0 ÆğÊ¼Î»ÖÃX×ø±ê
- *  \param  y0 ÆğÊ¼Î»ÖÃY×ø±ê
- *  \param  x1 ½áÊøÎ»ÖÃX×ø±ê
- *  \param  y1 ½áÊøÎ»ÖÃY×ø±ê
+ *  \brief      ç”»çº¿
+ *  \param  x0 èµ·å§‹ä½ç½®Xåæ ‡
+ *  \param  y0 èµ·å§‹ä½ç½®Yåæ ‡
+ *  \param  x1 ç»“æŸä½ç½®Xåæ ‡
+ *  \param  y1 ç»“æŸä½ç½®Yåæ ‡
  */
 void GUI_Line(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1);
 
 /*! 
- *  \brief      »­ÕÛÏß
- *  \param  mode Ä£Ê½
- *  \param  dot Êı¾İµã
- *  \param  dot_cnt µãÊı
+ *  \brief      ç”»æŠ˜çº¿
+ *  \param  mode æ¨¡å¼
+ *  \param  dot æ•°æ®ç‚¹
+ *  \param  dot_cnt ç‚¹æ•°
  */
 void GUI_ConDots(unsigned char mode,unsigned short *dot,unsigned short dot_cnt);
 
 /*! 
- *  \brief      »­¿ÕĞÄÔ²
- *  \param  x0 Ô²ĞÄÎ»ÖÃX×ø±ê
- *  \param  y0 Ô²ĞÄÎ»ÖÃY×ø±ê
- *  \param  r °ë¾¶
+ *  \brief      ç”»ç©ºå¿ƒåœ†
+ *  \param  x0 åœ†å¿ƒä½ç½®Xåæ ‡
+ *  \param  y0 åœ†å¿ƒä½ç½®Yåæ ‡
+ *  \param  r åŠå¾„
  */
 void GUI_Circle(unsigned short x0, unsigned short y0, unsigned short r);
 
 /*! 
- *  \brief      »­ÊµĞÄÔ²
- *  \param  x0 Ô²ĞÄÎ»ÖÃX×ø±ê
- *  \param  y0 Ô²ĞÄÎ»ÖÃY×ø±ê
- *  \param  r °ë¾¶
+ *  \brief      ç”»å®å¿ƒåœ†
+ *  \param  x0 åœ†å¿ƒä½ç½®Xåæ ‡
+ *  \param  y0 åœ†å¿ƒä½ç½®Yåæ ‡
+ *  \param  r åŠå¾„
  */
 void GUI_CircleFill(unsigned short x0, unsigned short y0, unsigned short r);
 
 /*! 
- *  \brief      »­»¡Ïß
- *  \param  x0 Ô²ĞÄÎ»ÖÃX×ø±ê
- *  \param  y0 Ô²ĞÄÎ»ÖÃY×ø±ê
- *  \param  r °ë¾¶
- *  \param  sa ÆğÊ¼½Ç¶È
- *  \param  ea ÖÕÖ¹½Ç¶È
+ *  \brief      ç”»å¼§çº¿
+ *  \param  x0 åœ†å¿ƒä½ç½®Xåæ ‡
+ *  \param  y0 åœ†å¿ƒä½ç½®Yåæ ‡
+ *  \param  r åŠå¾„
+ *  \param  sa èµ·å§‹è§’åº¦
+ *  \param  ea ç»ˆæ­¢è§’åº¦
  */
 void GUI_Arc(unsigned short x,unsigned short y, unsigned short r,unsigned short sa, unsigned short ea);
 
 /*! 
- *  \brief      »­¿ÕĞÄ¾ØĞÎ
- *  \param  x0 ÆğÊ¼Î»ÖÃX×ø±ê
- *  \param  y0 ÆğÊ¼Î»ÖÃY×ø±ê
- *  \param  x1 ½áÊøÎ»ÖÃX×ø±ê
- *  \param  y1 ½áÊøÎ»ÖÃY×ø±ê
+ *  \brief      ç”»ç©ºå¿ƒçŸ©å½¢
+ *  \param  x0 èµ·å§‹ä½ç½®Xåæ ‡
+ *  \param  y0 èµ·å§‹ä½ç½®Yåæ ‡
+ *  \param  x1 ç»“æŸä½ç½®Xåæ ‡
+ *  \param  y1 ç»“æŸä½ç½®Yåæ ‡
  */
 void GUI_Rectangle(unsigned short x0, unsigned short y0, unsigned short x1,unsigned short y1 );
 
 /*! 
- *  \brief      »­ÊµĞÄ¾ØĞÎ
- *  \param  x0 ÆğÊ¼Î»ÖÃX×ø±ê
- *  \param  y0 ÆğÊ¼Î»ÖÃY×ø±ê
- *  \param  x1 ½áÊøÎ»ÖÃX×ø±ê
- *  \param  y1 ½áÊøÎ»ÖÃY×ø±ê
+ *  \brief      ç”»å®å¿ƒçŸ©å½¢
+ *  \param  x0 èµ·å§‹ä½ç½®Xåæ ‡
+ *  \param  y0 èµ·å§‹ä½ç½®Yåæ ‡
+ *  \param  x1 ç»“æŸä½ç½®Xåæ ‡
+ *  \param  y1 ç»“æŸä½ç½®Yåæ ‡
  */
 void GUI_RectangleFill(unsigned short x0, unsigned short y0, unsigned short x1,unsigned short y1 );
 
 /*! 
- *  \brief      »­¿ÕĞÄÍÖÔ²
- *  \param  x0 ÆğÊ¼Î»ÖÃX×ø±ê
- *  \param  y0 ÆğÊ¼Î»ÖÃY×ø±ê
- *  \param  x1 ½áÊøÎ»ÖÃX×ø±ê
- *  \param  y1 ½áÊøÎ»ÖÃY×ø±ê
+ *  \brief      ç”»ç©ºå¿ƒæ¤­åœ†
+ *  \param  x0 èµ·å§‹ä½ç½®Xåæ ‡
+ *  \param  y0 èµ·å§‹ä½ç½®Yåæ ‡
+ *  \param  x1 ç»“æŸä½ç½®Xåæ ‡
+ *  \param  y1 ç»“æŸä½ç½®Yåæ ‡
  */
 void GUI_Ellipse (unsigned short x0, unsigned short y0, unsigned short x1,unsigned short y1 );
 
 /*! 
- *  \brief      »­ÊµĞÄÍÖÔ²
- *  \param  x0 ÆğÊ¼Î»ÖÃX×ø±ê
- *  \param  y0 ÆğÊ¼Î»ÖÃY×ø±ê
- *  \param  x1 ½áÊøÎ»ÖÃX×ø±ê
- *  \param  y1 ½áÊøÎ»ÖÃY×ø±ê
+ *  \brief      ç”»å®å¿ƒæ¤­åœ†
+ *  \param  x0 èµ·å§‹ä½ç½®Xåæ ‡
+ *  \param  y0 èµ·å§‹ä½ç½®Yåæ ‡
+ *  \param  x1 ç»“æŸä½ç½®Xåæ ‡
+ *  \param  y1 ç»“æŸä½ç½®Yåæ ‡
  */
 void GUI_EllipseFill (unsigned short x0, unsigned short y0, unsigned short x1,unsigned short y1 );
 
 /*! 
- *  \brief      »­Ïß
- *  \param  x0 ÆğÊ¼Î»ÖÃX×ø±ê
- *  \param  y0 ÆğÊ¼Î»ÖÃY×ø±ê
- *  \param  x1 ½áÊøÎ»ÖÃX×ø±ê
- *  \param  y1 ½áÊøÎ»ÖÃY×ø±ê
+ *  \brief      ç”»çº¿
+ *  \param  x0 èµ·å§‹ä½ç½®Xåæ ‡
+ *  \param  y0 èµ·å§‹ä½ç½®Yåæ ‡
+ *  \param  x1 ç»“æŸä½ç½®Xåæ ‡
+ *  \param  y1 ç»“æŸä½ç½®Yåæ ‡
  */
 void SetBackLight(unsigned char light_level);
 
 /*! 
- *  \brief   ·äÃùÆ÷ÉèÖÃ
- *  \time  time ³ÖĞøÊ±¼ä(ºÁÃëµ¥Î»)
+ *  \brief   èœ‚é¸£å™¨è®¾ç½®
+ *  \time  time æŒç»­æ—¶é—´(æ¯«ç§’å•ä½)
  */
 void SetBuzzer(unsigned char time);
 
 /*! 
- *  \brief   ´¥ÃşÆÁÉèÖÃ
- *  \param enable ´¥ÃşÊ¹ÄÜ
- *  \param beep_on ´¥Ãş·äÃùÆ÷
- *  \param work_mode ´¥Ãş¹¤×÷Ä£Ê½£º0°´ÏÂ¾ÍÉÏ´«£¬1ËÉ¿ª²ÅÉÏ´«£¬2²»¶ÏÉÏ´«×ø±êÖµ£¬3°´ÏÂºÍËÉ¿ª¾ùÉÏ´«Êı¾İ
- *  \param press_calibration Á¬Ğøµã»÷´¥ÃşÆÁ20ÏÂĞ£×¼´¥ÃşÆÁ£º0½ûÓÃ£¬1ÆôÓÃ
+ *  \brief   è§¦æ‘¸å±è®¾ç½®
+ *  \param enable è§¦æ‘¸ä½¿èƒ½
+ *  \param beep_on è§¦æ‘¸èœ‚é¸£å™¨
+ *  \param work_mode è§¦æ‘¸å·¥ä½œæ¨¡å¼ï¼š0æŒ‰ä¸‹å°±ä¸Šä¼ ï¼Œ1æ¾å¼€æ‰ä¸Šä¼ ï¼Œ2ä¸æ–­ä¸Šä¼ åæ ‡å€¼ï¼Œ3æŒ‰ä¸‹å’Œæ¾å¼€å‡ä¸Šä¼ æ•°æ®
+ *  \param press_calibration è¿ç»­ç‚¹å‡»è§¦æ‘¸å±20ä¸‹æ ¡å‡†è§¦æ‘¸å±ï¼š0ç¦ç”¨ï¼Œ1å¯ç”¨
  */
 void SetTouchPaneOption(unsigned char enbale,unsigned char beep_on,unsigned char work_mode,unsigned char press_calibration);
 
 /*! 
- *  \brief   Ğ£×¼´¥ÃşÆÁ
+ *  \brief   æ ¡å‡†è§¦æ‘¸å±
  */
 void	CalibrateTouchPane(void);
 
 /*! 
- *  \brief  ´¥ÃşÆÁ²âÊÔ
+ *  \brief  è§¦æ‘¸å±æµ‹è¯•
  */
 void TestTouchPane(void);
 
 /*! 
- *  \brief      ÉèÖÃµ±Ç°Ğ´ÈëÍ¼²ã
- *  \details  Ò»°ãÓÃÓÚÊµÏÖË«»º´æĞ§¹û(»æÍ¼Ê±±ÜÃâÉÁË¸)£º
+ *  \brief      è®¾ç½®å½“å‰å†™å…¥å›¾å±‚
+ *  \details  ä¸€èˆ¬ç”¨äºå®ç°åŒç¼“å­˜æ•ˆæœ(ç»˜å›¾æ—¶é¿å…é—ªçƒ)ï¼š
  *  \details  unsigned char layer = 0;
- *  \details  WriteLayer(layer);    //ÉèÖÃĞ´Èë²ã
- *  \details  ClearLayer(layer);    //Ê¹Í¼²ã±äÍ¸Ã÷
- *  \details  //Ìí¼ÓÒ»ÏµÁĞ»æÍ¼Ö¸Áî
+ *  \details  WriteLayer(layer);    //è®¾ç½®å†™å…¥å±‚
+ *  \details  ClearLayer(layer);    //ä½¿å›¾å±‚å˜é€æ˜
+ *  \details  //æ·»åŠ ä¸€ç³»åˆ—ç»˜å›¾æŒ‡ä»¤
  *  \details  //DisText(100,100,0,4,"hello hmi!!!");
- *  \details  DisplyLayer(layer);  //ÇĞ»»ÏÔÊ¾²ã
- *  \details  layer = (layer+1)%2;  //Ë«»º´æÇĞ»»
+ *  \details  DisplyLayer(layer);  //åˆ‡æ¢æ˜¾ç¤ºå±‚
+ *  \details  layer = (layer+1)%2;  //åŒç¼“å­˜åˆ‡æ¢
  *  \see DisplyLayer
  *  \see ClearLayer
- *  \param  layer Í¼²ã±àºÅ
+ *  \param  layer å›¾å±‚ç¼–å·
  */
 void WriteLayer(unsigned char layer);
 
 /*! 
- *  \brief      ÉèÖÃµ±Ç°ÏÔÊ¾Í¼²ã
- *  \param  layer Í¼²ã±àºÅ
+ *  \brief      è®¾ç½®å½“å‰æ˜¾ç¤ºå›¾å±‚
+ *  \param  layer å›¾å±‚ç¼–å·
  */
 void DisplyLayer(unsigned char layer);
 
 /*! 
- *  \brief      Çå³ıÍ¼²ã£¬Ê¹Í¼²ã±ä³ÉÍ¸Ã÷
- *  \param  layer Í¼²ã±àºÅ
+ *  \brief      æ¸…é™¤å›¾å±‚ï¼Œä½¿å›¾å±‚å˜æˆé€æ˜
+ *  \param  layer å›¾å±‚ç¼–å·
  */
 void ClearLayer(unsigned char layer);
 
 /*! 
- *  \brief  Ğ´Êı¾İµ½´®¿ÚÆÁÓÃ»§´æ´¢Çø
- *  \param  startAddress ÆğÊ¼µØÖ·
- *  \param  length ×Ö½ÚÊı
- *  \param  _data ´ıĞ´ÈëµÄÊı¾İ
+ *  \brief  å†™æ•°æ®åˆ°ä¸²å£å±ç”¨æˆ·å­˜å‚¨åŒº
+ *  \param  startAddress èµ·å§‹åœ°å€
+ *  \param  length å­—èŠ‚æ•°
+ *  \param  _data å¾…å†™å…¥çš„æ•°æ®
  */
 void WriteUserFlash(unsigned long startAddress,unsigned short length,unsigned char *_data);
 
 /*! 
- *  \brief  ´Ó´®¿ÚÆÁÓÃ»§´æ´¢Çø¶ÁÈ¡Êı¾İ
- *  \param  startAddress ÆğÊ¼µØÖ·
- *  \param  length ×Ö½ÚÊı
+ *  \brief  ä»ä¸²å£å±ç”¨æˆ·å­˜å‚¨åŒºè¯»å–æ•°æ®
+ *  \param  startAddress èµ·å§‹åœ°å€
+ *  \param  length å­—èŠ‚æ•°
  */
 void ReadUserFlash(unsigned long startAddress,unsigned short length);
 
 /*! 
- *  \brief      ¿½±´Í¼²ã
- *  \param  src_layer Ô­Ê¼Í¼²ã
- *  \param  dest_layer Ä¿±êÍ¼²ã
+ *  \brief      æ‹·è´å›¾å±‚
+ *  \param  src_layer åŸå§‹å›¾å±‚
+ *  \param  dest_layer ç›®æ ‡å›¾å±‚
  */
 void CopyLayer(unsigned char src_layer,unsigned char dest_layer);
 
 /*! 
- *  \brief      ÉèÖÃµ±Ç°»­Ãæ
- *  \param  screen_id »­ÃæID
+ *  \brief      è®¾ç½®å½“å‰ç”»é¢
+ *  \param  screen_id ç”»é¢ID
  */
 void SetScreen(unsigned short screen_id);
 
 /*! 
- *  \brief      »ñÈ¡µ±Ç°»­Ãæ
+ *  \brief      è·å–å½“å‰ç”»é¢
  */
 void GetScreen(void);
 
 /*! 
- *  \brief     ½ûÓÃ\ÆôÓÃ»­Ãæ¸üĞÂ
- *  \details ½ûÓÃ\ÆôÓÃÒ»°ã³É¶ÔÊ¹ÓÃ£¬ÓÃÓÚ±ÜÃâÉÁË¸¡¢Ìá¸ßË¢ĞÂËÙ¶È
- *  \details ÓÃ·¨£º
- *	\details SetScreenUpdateEnable(0);//½ûÖ¹¸üĞÂ
- *	\details Ò»ÏµÁĞ¸üĞÂ»­ÃæµÄÖ¸Áî
- *	\details SetScreenUpdateEnable(1);//Á¢¼´¸üĞÂ
- *  \param  enable 0½ûÓÃ£¬1ÆôÓÃ
+ *  \brief     ç¦ç”¨\å¯ç”¨ç”»é¢æ›´æ–°
+ *  \details ç¦ç”¨\å¯ç”¨ä¸€èˆ¬æˆå¯¹ä½¿ç”¨ï¼Œç”¨äºé¿å…é—ªçƒã€æé«˜åˆ·æ–°é€Ÿåº¦
+ *  \details ç”¨æ³•ï¼š
+ *	\details SetScreenUpdateEnable(0);//ç¦æ­¢æ›´æ–°
+ *	\details ä¸€ç³»åˆ—æ›´æ–°ç”»é¢çš„æŒ‡ä»¤
+ *	\details SetScreenUpdateEnable(1);//ç«‹å³æ›´æ–°
+ *  \param  enable 0ç¦ç”¨ï¼Œ1å¯ç”¨
  */
 void SetScreenUpdateEnable(unsigned char enable);
 
 /*! 
- *  \brief     ÉèÖÃ¿Ø¼şÊäÈë½¹µã
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  focus ÊÇ·ñ¾ßÓĞÊäÈë½¹µã
+ *  \brief     è®¾ç½®æ§ä»¶è¾“å…¥ç„¦ç‚¹
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  focus æ˜¯å¦å…·æœ‰è¾“å…¥ç„¦ç‚¹
  */
 void SetControlFocus(unsigned short screen_id,unsigned short control_id,unsigned char focus);
 
 /*! 
- *  \brief     ÏÔÊ¾\Òş²Ø¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  visible ÊÇ·ñÏÔÊ¾
+ *  \brief     æ˜¾ç¤º\éšè—æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  visible æ˜¯å¦æ˜¾ç¤º
  */
 void SetControlVisiable(unsigned short screen_id,unsigned short control_id,unsigned char visible);
 
 /*! 
- *  \brief     ÉèÖÃ´¥Ãş¿Ø¼şÊ¹ÄÜ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  enable ¿Ø¼şÊÇ·ñÊ¹ÄÜ
+ *  \brief     è®¾ç½®è§¦æ‘¸æ§ä»¶ä½¿èƒ½
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  enable æ§ä»¶æ˜¯å¦ä½¿èƒ½
  */
 void SetControlEnable(unsigned short screen_id,unsigned short control_id,unsigned char enable);
 
 /*! 
- *  \brief     »ñÈ¡¿Ø¼şÖµ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     è·å–æ§ä»¶å€¼
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void GetControlValue(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ÉèÖÃ°´Å¥×´Ì¬
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  value °´Å¥×´Ì¬
+ *  \brief     è®¾ç½®æŒ‰é’®çŠ¶æ€
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æŒ‰é’®çŠ¶æ€
  */
 void SetButtonValue(unsigned short screen_id,unsigned short control_id,unsigned char value);
 
 /*! 
- *  \brief     ÉèÖÃÎÄ±¾Öµ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  str ÎÄ±¾Öµ
+ *  \brief     è®¾ç½®æ–‡æœ¬å€¼
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  str æ–‡æœ¬å€¼
  */
 void SetTextValue(unsigned short screen_id,unsigned short control_id,unsigned char *str);
 
 #if FIRMWARE_VER>=908
 
 /*! 
- *  \brief     ÉèÖÃÎÄ±¾ÎªÕûÊıÖµ£¬ÒªÇóFIRMWARE_VER>=908
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÎÄ±¾ÊıÖµ
- *  \param  sign 0-ÎŞ·ûºÅ£¬1-ÓĞ·ûºÅ
- *  \param  fill_zero Êı×ÖÎ»Êı£¬²»×ãÊ±×ó²à²¹Áã
+ *  \brief     è®¾ç½®æ–‡æœ¬ä¸ºæ•´æ•°å€¼ï¼Œè¦æ±‚FIRMWARE_VER>=908
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ–‡æœ¬æ•°å€¼
+ *  \param  sign 0-æ— ç¬¦å·ï¼Œ1-æœ‰ç¬¦å·
+ *  \param  fill_zero æ•°å­—ä½æ•°ï¼Œä¸è¶³æ—¶å·¦ä¾§è¡¥é›¶
  */
 void SetTextInt32(unsigned short screen_id,unsigned short control_id,unsigned long value,unsigned char sign,unsigned char fill_zero);
 
 /*! 
- *  \brief     ÉèÖÃÎÄ±¾µ¥¾«¶È¸¡µãÖµ£¬ÒªÇóFIRMWARE_VER>=908
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÎÄ±¾ÊıÖµ
- *  \param  precision Ğ¡ÊıÎ»Êı
- *  \param  show_zeros Îª1Ê±£¬ÏÔÊ¾Ä©Î²0
+ *  \brief     è®¾ç½®æ–‡æœ¬å•ç²¾åº¦æµ®ç‚¹å€¼ï¼Œè¦æ±‚FIRMWARE_VER>=908
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ–‡æœ¬æ•°å€¼
+ *  \param  precision å°æ•°ä½æ•°
+ *  \param  show_zeros ä¸º1æ—¶ï¼Œæ˜¾ç¤ºæœ«å°¾0
  */
 void SetTextFloat(unsigned short screen_id,unsigned short control_id,float value,unsigned char precision,unsigned char show_zeros);
 
 #endif
 
 /*! 
- *  \brief      ÉèÖÃ½ø¶ÈÖµ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief      è®¾ç½®è¿›åº¦å€¼
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void SetProgressValue(unsigned short screen_id,unsigned short control_id,unsigned long value);
 
 /*! 
- *  \brief     ÉèÖÃÒÇ±íÖµ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief     è®¾ç½®ä»ªè¡¨å€¼
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void SetMeterValue(unsigned short screen_id,unsigned short control_id,unsigned long value);
 
 /*! 
- *  \brief      ÉèÖÃ»¬¶¯Ìõ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief      è®¾ç½®æ»‘åŠ¨æ¡
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void SetSliderValue(unsigned short screen_id,unsigned short control_id,unsigned long value);
 
 /*! 
- *  \brief      ÉèÖÃÑ¡Ôñ¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  item µ±Ç°Ñ¡Ïî
+ *  \brief      è®¾ç½®é€‰æ‹©æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  item å½“å‰é€‰é¡¹
  */
 void SetSelectorValue(unsigned short screen_id,unsigned short control_id,unsigned char item);
 
 /*! 
- *  \brief      ¿ªÊ¼²¥·Å¶¯»­
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief      å¼€å§‹æ’­æ”¾åŠ¨ç”»
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void AnimationStart(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief      Í£Ö¹²¥·Å¶¯»­
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief      åœæ­¢æ’­æ”¾åŠ¨ç”»
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void AnimationStop(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief      ÔİÍ£²¥·Å¶¯»­
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief      æš‚åœæ’­æ”¾åŠ¨ç”»
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void AnimationPause(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ²¥·ÅÖÆ¶¨Ö¡
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  frame_id Ö¡ID
+ *  \brief     æ’­æ”¾åˆ¶å®šå¸§
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  frame_id å¸§ID
  */
 void AnimationPlayFrame(unsigned short screen_id,unsigned short control_id,unsigned char frame_id);
 
 /*! 
- *  \brief     ²¥·ÅÉÏÒ»Ö¡
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     æ’­æ”¾ä¸Šä¸€å¸§
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void AnimationPlayPrev(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ²¥·ÅÏÂÒ»Ö¡
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     æ’­æ”¾ä¸‹ä¸€å¸§
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void AnimationPlayNext(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ÇúÏß¿Ø¼ş-Ìí¼ÓÍ¨µÀ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  channel Í¨µÀºÅ
- *  \param  color ÑÕÉ«
+ *  \brief     æ›²çº¿æ§ä»¶-æ·»åŠ é€šé“
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  channel é€šé“å·
+ *  \param  color é¢œè‰²
  */
 void GraphChannelAdd(unsigned short screen_id,unsigned short control_id,unsigned char channel,unsigned short color);
 
 /*! 
- *  \brief     ÇúÏß¿Ø¼ş-É¾³ıÍ¨µÀ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  channel Í¨µÀºÅ
+ *  \brief     æ›²çº¿æ§ä»¶-åˆ é™¤é€šé“
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  channel é€šé“å·
  */
 void GraphChannelDel(unsigned short screen_id,unsigned short control_id,unsigned char channel);
 
 /*! 
- *  \brief     ÇúÏß¿Ø¼ş-Ìí¼ÓÊı¾İ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  channel Í¨µÀºÅ
- *  \param  pData ÇúÏßÊı¾İ
- *  \param  nDataLen Êı¾İ¸öÊı
+ *  \brief     æ›²çº¿æ§ä»¶-æ·»åŠ æ•°æ®
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  channel é€šé“å·
+ *  \param  pData æ›²çº¿æ•°æ®
+ *  \param  nDataLen æ•°æ®ä¸ªæ•°
  */
 void GraphChannelDataAdd(unsigned short screen_id,unsigned short control_id,unsigned char channel,unsigned char *pData,unsigned short nDataLen);
 
 /*! 
- *  \brief     ÇúÏß¿Ø¼ş-Çå³ıÊı¾İ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  channel Í¨µÀºÅ
+ *  \brief     æ›²çº¿æ§ä»¶-æ¸…é™¤æ•°æ®
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  channel é€šé“å·
  */
 void GraphChannelDataClear(unsigned short screen_id,unsigned short control_id,unsigned char channel);
 
 /*! 
- *  \brief     ÇúÏß¿Ø¼ş-ÉèÖÃÊÓÍ¼´°¿Ú
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  x_offset Ë®Æ½Æ«ÒÆ
- *  \param  x_mul Ë®Æ½Ëõ·ÅÏµÊı
- *  \param  y_offset ´¹Ö±Æ«ÒÆ
- *  \param  y_mul ´¹Ö±Ëõ·ÅÏµÊı
+ *  \brief     æ›²çº¿æ§ä»¶-è®¾ç½®è§†å›¾çª—å£
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  x_offset æ°´å¹³åç§»
+ *  \param  x_mul æ°´å¹³ç¼©æ”¾ç³»æ•°
+ *  \param  y_offset å‚ç›´åç§»
+ *  \param  y_mul å‚ç›´ç¼©æ”¾ç³»æ•°
  */
 void GraphSetViewport(unsigned short screen_id,unsigned short control_id,short x_offset,unsigned short x_mul,short y_offset,unsigned short y_mul);
 
 /*! 
- *  \brief     ¿ªÊ¼ÅúÁ¿¸üĞÂ
- *  \param  screen_id »­ÃæID
+ *  \brief     å¼€å§‹æ‰¹é‡æ›´æ–°
+ *  \param  screen_id ç”»é¢ID
  */
 void BatchBegin(unsigned short screen_id);
 
 /*! 
- *  \brief     ÅúÁ¿¸üĞÂ°´Å¥¿Ø¼ş
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief     æ‰¹é‡æ›´æ–°æŒ‰é’®æ§ä»¶
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void BatchSetButtonValue(unsigned short control_id,unsigned char state);
 
 /*! 
- *  \brief     ÅúÁ¿¸üĞÂ½ø¶ÈÌõ¿Ø¼ş
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief     æ‰¹é‡æ›´æ–°è¿›åº¦æ¡æ§ä»¶
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void BatchSetProgressValue(unsigned short control_id,unsigned long value);
 
 /*! 
- *  \brief     ÅúÁ¿¸üĞÂ»¬¶¯Ìõ¿Ø¼ş
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief     æ‰¹é‡æ›´æ–°æ»‘åŠ¨æ¡æ§ä»¶
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void BatchSetSliderValue(unsigned short control_id,unsigned long value);
 
 /*! 
- *  \brief     ÅúÁ¿¸üĞÂÒÇ±í¿Ø¼ş
- *  \param  control_id ¿Ø¼şID
- *  \param  value ÊıÖµ
+ *  \brief     æ‰¹é‡æ›´æ–°ä»ªè¡¨æ§ä»¶
+ *  \param  control_id æ§ä»¶ID
+ *  \param  value æ•°å€¼
  */
 void BatchSetMeterValue(unsigned short control_id,unsigned long value);
 
 /*! 
- *  \brief     ÅúÁ¿¸üĞÂÎÄ±¾¿Ø¼ş
- *  \param  control_id ¿Ø¼şID
- *  \param  strings ×Ö·û´®
+ *  \brief     æ‰¹é‡æ›´æ–°æ–‡æœ¬æ§ä»¶
+ *  \param  control_id æ§ä»¶ID
+ *  \param  strings å­—ç¬¦ä¸²
  */
 void BatchSetText(unsigned short control_id,unsigned char *strings);
 void BatchSetValueInt32(unsigned short control_id,long value);
 /*! 
- *  \brief     ÅúÁ¿¸üĞÂ¶¯»­\Í¼±ê¿Ø¼ş
- *  \param  control_id ¿Ø¼şID
- *  \param  frame_id Ö¡ID
+ *  \brief     æ‰¹é‡æ›´æ–°åŠ¨ç”»\å›¾æ ‡æ§ä»¶
+ *  \param  control_id æ§ä»¶ID
+ *  \param  frame_id å¸§ID
  */
 void BatchSetFrame(unsigned short control_id,unsigned short frame_id);
 
 #if FIRMWARE_VER>=908
 
 /*! 
- *  \brief     ÅúÁ¿ÉèÖÃ¿Ø¼ş¿É¼û
- *  \param  control_id ¿Ø¼şID
- *  \param  visible Ö¡ID
+ *  \brief     æ‰¹é‡è®¾ç½®æ§ä»¶å¯è§
+ *  \param  control_id æ§ä»¶ID
+ *  \param  visible å¸§ID
  */
 void BatchSetVisible(unsigned short control_id,unsigned char visible);
 
 /*! 
- *  \brief     ÅúÁ¿ÉèÖÃ¿Ø¼şÊ¹ÄÜ
- *  \param  control_id ¿Ø¼şID
- *  \param  enable Ö¡ID
+ *  \brief     æ‰¹é‡è®¾ç½®æ§ä»¶ä½¿èƒ½
+ *  \param  control_id æ§ä»¶ID
+ *  \param  enable å¸§ID
  */
 void BatchSetEnable(unsigned short control_id,unsigned char enable);
 
 #endif
 
 /*! 
- *  \brief    ½áÊøÅúÁ¿¸üĞÂ
+ *  \brief    ç»“æŸæ‰¹é‡æ›´æ–°
  */
 void BatchEnd(void);
 
 /*! 
- *  \brief     ÉèÖÃµ¹¼ÆÊ±¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  timeout µ¹¼ÆÊ±(Ãë)
+ *  \brief     è®¾ç½®å€’è®¡æ—¶æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  timeout å€’è®¡æ—¶(ç§’)
  */
 void SeTimer(unsigned short screen_id,unsigned short control_id,unsigned long timeout);
 
 /*! 
- *  \brief     ¿ªÆôµ¹¼ÆÊ±¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     å¼€å¯å€’è®¡æ—¶æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void StartTimer(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     Í£Ö¹µ¹¼ÆÊ±¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     åœæ­¢å€’è®¡æ—¶æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void StopTimer(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ÔİÍ£µ¹¼ÆÊ±¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     æš‚åœå€’è®¡æ—¶æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void PauseTimer(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ÉèÖÃ¿Ø¼ş±³¾°É«
- *  \details  Ö§³Ö¿Ø¼ş£º½ø¶ÈÌõ¡¢ÎÄ±¾
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  color ±³¾°É«
+ *  \brief     è®¾ç½®æ§ä»¶èƒŒæ™¯è‰²
+ *  \details  æ”¯æŒæ§ä»¶ï¼šè¿›åº¦æ¡ã€æ–‡æœ¬
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  color èƒŒæ™¯è‰²
  */
 void SetControlBackColor(unsigned short screen_id,unsigned short control_id,unsigned short color);
 
 /*! 
- *  \brief     ÉèÖÃ¿Ø¼şÇ°¾°É«
-  * \details  Ö§³Ö¿Ø¼ş£º½ø¶ÈÌõ
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  color Ç°¾°É«
+ *  \brief     è®¾ç½®æ§ä»¶å‰æ™¯è‰²
+  * \details  æ”¯æŒæ§ä»¶ï¼šè¿›åº¦æ¡
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  color å‰æ™¯è‰²
  */
 void SetControlForeColor(unsigned short screen_id,unsigned short control_id,unsigned short color);
 
 /*! 
- *  \brief     ÏÔÊ¾\Òş²Øµ¯³ö²Ëµ¥¿Ø¼ş
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
- *  \param  show ÊÇ·ñÏÔÊ¾£¬Îª0Ê±focus_control_idÎŞĞ§
- *  \param  focus_control_id ¹ØÁªµÄÎÄ±¾¿Ø¼ş(²Ëµ¥¿Ø¼şµÄÄÚÈİÊä³öµ½ÎÄ±¾¿Ø¼ş)
+ *  \brief     æ˜¾ç¤º\éšè—å¼¹å‡ºèœå•æ§ä»¶
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
+ *  \param  show æ˜¯å¦æ˜¾ç¤ºï¼Œä¸º0æ—¶focus_control_idæ— æ•ˆ
+ *  \param  focus_control_id å…³è”çš„æ–‡æœ¬æ§ä»¶(èœå•æ§ä»¶çš„å†…å®¹è¾“å‡ºåˆ°æ–‡æœ¬æ§ä»¶)
  */
 void ShowPopupMenu(unsigned short screen_id,unsigned short control_id,unsigned char show,unsigned short focus_control_id);
 
 /*! 
- *  \brief     ÏÔÊ¾\Òş²ØÏµÍ³¼üÅÌ
- *  \param  show 0Òş²Ø£¬1ÏÔÊ¾
- *  \param  x ¼üÅÌÏÔÊ¾Î»ÖÃX×ø±ê
- *  \param  y ¼üÅÌÏÔÊ¾Î»ÖÃY×ø±ê
- *  \param  type 0Ğ¡¼üÅÌ£¬1È«¼üÅÌ
- *  \param  option 0Õı³£×Ö·û£¬1ÃÜÂë£¬2Ê±¼äÉèÖÃ
- *  \param  max_len ¼üÅÌÂ¼Èë×Ö·û³¤¶ÈÏŞÖÆ
+ *  \brief     æ˜¾ç¤º\éšè—ç³»ç»Ÿé”®ç›˜
+ *  \param  show 0éšè—ï¼Œ1æ˜¾ç¤º
+ *  \param  x é”®ç›˜æ˜¾ç¤ºä½ç½®Xåæ ‡
+ *  \param  y é”®ç›˜æ˜¾ç¤ºä½ç½®Yåæ ‡
+ *  \param  type 0å°é”®ç›˜ï¼Œ1å…¨é”®ç›˜
+ *  \param  option 0æ­£å¸¸å­—ç¬¦ï¼Œ1å¯†ç ï¼Œ2æ—¶é—´è®¾ç½®
+ *  \param  max_len é”®ç›˜å½•å…¥å­—ç¬¦é•¿åº¦é™åˆ¶
  */
 void ShowKeyboard(unsigned char show,unsigned short x,unsigned short y,unsigned char type,unsigned char option,unsigned char max_len);
 
 #if FIRMWARE_VER>=914
 /*! 
- *  \brief     ¶àÓïÑÔÉèÖÃ
- *  \param  ui_lang ÓÃ»§½çÃæÓïÑÔ0~9
- *  \param  sys_lang ÏµÍ³¼üÅÌÓïÑÔ-0ÖĞÎÄ£¬1Ó¢ÎÄ
+ *  \brief     å¤šè¯­è¨€è®¾ç½®
+ *  \param  ui_lang ç”¨æˆ·ç•Œé¢è¯­è¨€0~9
+ *  \param  sys_lang ç³»ç»Ÿé”®ç›˜è¯­è¨€-0ä¸­æ–‡ï¼Œ1è‹±æ–‡
  */
 void SetLanguage(unsigned char ui_lang,unsigned char sys_lang);
 #endif
 
 #if FIRMWARE_VER>=917
 /*! 
- *  \brief     ¿ªÊ¼±£´æ¿Ø¼şÊıÖµµ½FLASH
- *  \param  version Êı¾İ°æ±¾ºÅ£¬¿ÉÈÎÒâÖ¸¶¨£¬¸ß16Î»ÎªÖ÷°æ±¾ºÅ£¬µÍ16Î»Îª´Î°æ±¾ºÅ
- *  \param  address Êı¾İÔÚÓÃ»§´æ´¢ÇøµÄ´æ·ÅµØÖ·£¬×¢Òâ·ÀÖ¹µØÖ·ÖØµş¡¢³åÍ»
+ *  \brief     å¼€å§‹ä¿å­˜æ§ä»¶æ•°å€¼åˆ°FLASH
+ *  \param  version æ•°æ®ç‰ˆæœ¬å·ï¼Œå¯ä»»æ„æŒ‡å®šï¼Œé«˜16ä½ä¸ºä¸»ç‰ˆæœ¬å·ï¼Œä½16ä½ä¸ºæ¬¡ç‰ˆæœ¬å·
+ *  \param  address æ•°æ®åœ¨ç”¨æˆ·å­˜å‚¨åŒºçš„å­˜æ”¾åœ°å€ï¼Œæ³¨æ„é˜²æ­¢åœ°å€é‡å ã€å†²çª
  */
 void FlashBeginSaveControl(unsigned long version,unsigned long address);
 
 /*! 
- *  \brief     ±£´æÄ³¸ö¿Ø¼şµÄÊıÖµµ½FLASH
- *  \param  screen_id »­ÃæID
- *  \param  control_id ¿Ø¼şID
+ *  \brief     ä¿å­˜æŸä¸ªæ§ä»¶çš„æ•°å€¼åˆ°FLASH
+ *  \param  screen_id ç”»é¢ID
+ *  \param  control_id æ§ä»¶ID
  */
 void FlashSaveControl(unsigned short screen_id,unsigned short control_id);
 
 /*! 
- *  \brief     ±£´æ½áÊø
+ *  \brief     ä¿å­˜ç»“æŸ
  */
 void FlashEndSaveControl(void);
 
 /*! 
- *  \brief     ´ÓFLASHÖĞ»Ö¸´¿Ø¼şÊı¾İ
- *  \param  version Êı¾İ°æ±¾ºÅ£¬Ö÷°æ±¾ºÅ±ØĞëÓë´æ´¢Ê±Ò»ÖÂ£¬·ñÔò»á¼ÓÔØÊ§°Ü
- *  \param  address Êı¾İÔÚÓÃ»§´æ´¢ÇøµÄ´æ·ÅµØÖ·
+ *  \brief     ä»FLASHä¸­æ¢å¤æ§ä»¶æ•°æ®
+ *  \param  version æ•°æ®ç‰ˆæœ¬å·ï¼Œä¸»ç‰ˆæœ¬å·å¿…é¡»ä¸å­˜å‚¨æ—¶ä¸€è‡´ï¼Œå¦åˆ™ä¼šåŠ è½½å¤±è´¥
+ *  \param  address æ•°æ®åœ¨ç”¨æˆ·å­˜å‚¨åŒºçš„å­˜æ”¾åœ°å€
  */
 void FlashRestoreControl(unsigned long version,unsigned long address);
 #endif

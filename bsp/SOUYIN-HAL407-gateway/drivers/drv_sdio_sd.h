@@ -6,12 +6,12 @@
 #include <rtdevice.h>
 
 
-#define SD_TIMEOUT ((uint32_t)100000000)            //³¬Ê±Ê±¼ä
+#define SD_TIMEOUT ((uint32_t)100000000)            //è¶…æ—¶æ—¶é—´
 
-#define SD_DMA_MODE    		0	//1£ºDMAÄ£Ê½£¬0£º²éÑ¯Ä£Ê½   
+#define SD_DMA_MODE    		0	//1ï¼šDMAæ¨¡å¼ï¼Œ0ï¼šæŸ¥è¯¢æ¨¡å¼   
 
-extern SD_HandleTypeDef        SDCARD_Handler;     //SD¿¨¾ä±ú
-extern HAL_SD_CardInfoTypedef  SDCardInfo;         //SD¿¨ĞÅÏ¢½á¹¹Ìå
+extern SD_HandleTypeDef        SDCARD_Handler;     //SDå¡å¥æŸ„
+extern HAL_SD_CardInfoTypedef  SDCardInfo;         //SDå¡ä¿¡æ¯ç»“æ„ä½“
 
 rt_uint8_t SD_Init(void);
 rt_uint8_t SD_GetCardInfo(HAL_SD_CardInfoTypedef *cardinfo);

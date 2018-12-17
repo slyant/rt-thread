@@ -355,27 +355,27 @@ static uint8_t pcd_reset_ex(void)
 	
     write_raw_rc_ex(MODE_REG,0x3D);            //和Mifare卡通讯，CRC初始值0x6363
 	data = read_raw_rc_ex(MODE_REG);
-	if(data!=0x3D){RFIC_LOG(" read 0x%x \n",data); tmp++;}
+	if(data!=0x3D){RFIC_LOG(" read 0x%x \n",data); tmp++;}  //调试信息，可删除
 	
     write_raw_rc_ex(T_RELOAD_REG_L,30);
 	data = read_raw_rc_ex(T_RELOAD_REG_L);
-	if(data!=30) {RFIC_LOG(" read 0x%x \n",data); tmp++;}
+	if(data!=30) {RFIC_LOG(" read 0x%x \n",data); tmp++;}    //调试信息，可删除
 	
     write_raw_rc_ex(T_RELOAD_REG_H,0);
 	data = read_raw_rc_ex(T_RELOAD_REG_H);
-	if(data!=0) {RFIC_LOG(" read 0x%x \n",data); tmp++;}
+	if(data!=0) {RFIC_LOG(" read 0x%x \n",data); tmp++;}     //调试信息，可删除
 	
     write_raw_rc_ex(TMOD_REG,0x8D);
 	data = read_raw_rc_ex(TMOD_REG);
-	if(data!=0x8D) {RFIC_LOG(" read 0x%x \n",data); tmp++;}
+	if(data!=0x8D) {RFIC_LOG(" read 0x%x \n",data); tmp++;}   //调试信息，可删除
 	
     write_raw_rc_ex(T_PRESCALER_REG,0x3E);
 	data = read_raw_rc_ex(T_PRESCALER_REG);
-	if(data!=0x3E) {RFIC_LOG(" read 0x%x \n",data); tmp++;}
+	if(data!=0x3E) {RFIC_LOG(" read 0x%x \n",data); tmp++;}   //调试信息，可删除
 	
     write_raw_rc_ex(TX_AUTO_REG,0x40);   
 	data = read_raw_rc_ex(TX_AUTO_REG);
-	if(data!=0x40) {RFIC_LOG(" read 0x%x \n",data); tmp++;}	
+	if(data!=0x40) {RFIC_LOG(" read 0x%x \n",data); tmp++;}	  //调试信息，可删除
 	
 	return tmp;
 }
@@ -449,7 +449,7 @@ static int m599_pcd_config_isotype_ex(unsigned char type)
 	return MI_OK;
 }
 
-static int rt_hw_card_init(void)
+static int rt_hw_card_init(void)     //卡驱动初始化函数
 {
 	rt_uint8_t i;
 	
@@ -486,7 +486,7 @@ static int rt_hw_card_init(void)
 	
 #ifndef RC_BUS_IIC
 
-	if(rfic_device==RT_NULL) { RFIC_LOG("RFIC device not found ! \n");	return RT_ERROR; }
+	if(rfic_device==RT_NULL) { RFIC_LOG("RFIC device not found ! \n");	return RT_ERROR; }  //没有定义IIC总线则检查rt_device
 	
 #endif
 
@@ -549,11 +549,7 @@ static int rt_hw_card_init(void)
 #ifdef RC_BUS_SPI	
 	rfic_unlock();
 #endif
-	
-//	rt_thread_t rfic_test_thread= rt_thread_create("rfic_test",rfic_test_entry,RT_NULL,
-//													512, 10, 5);
-//	if(rfic_test_thread!= RT_NULL) rt_thread_startup(rfic_test_thread);
-		
+
 	return RT_EOK;
 }
 INIT_DEVICE_EXPORT(rt_hw_card_init);

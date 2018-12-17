@@ -6,15 +6,15 @@
 #include <rtdevice.h>
 #include <rthw.h>
 
-//PCF8574¸÷¸öIOµÄ¹¦ÄÜ
-#define BEEP_IO         0		//·äÃùÆ÷¿ØÖÆÒı½Å  	P0
-#define AP_INT_IO       1   	//AP3216CÖĞ¶ÏÒı½Å	P1
-#define DCMI_PWDN_IO    2    	//DCMIµÄµçÔ´¿ØÖÆÒı½Å	P2
-#define USB_PWR_IO      3    	//USBµçÔ´¿ØÖÆÒı½Å	P3
-#define EX_IO      		4    	//À©Õ¹IO,×Ô¶¨ÒåÊ¹ÓÃ 	P4
-#define MPU_INT_IO      5   	//MPU9250ÖĞ¶ÏÒı½Å	P5
-#define RS485_RE_IO     6    	//RS485_REÒı½Å		P6
-#define ETH_RESET_IO    7    	//ÒÔÌ«Íø¸´Î»Òı½Å		P7
+//PCF8574å„ä¸ªIOçš„åŠŸèƒ½
+#define BEEP_IO         0		//èœ‚é¸£å™¨æ§åˆ¶å¼•è„š  	P0
+#define AP_INT_IO       1   	//AP3216Cä¸­æ–­å¼•è„š	P1
+#define DCMI_PWDN_IO    2    	//DCMIçš„ç”µæºæ§åˆ¶å¼•è„š	P2
+#define USB_PWR_IO      3    	//USBç”µæºæ§åˆ¶å¼•è„š	P3
+#define EX_IO      		4    	//æ‰©å±•IO,è‡ªå®šä¹‰ä½¿ç”¨ 	P4
+#define MPU_INT_IO      5   	//MPU9250ä¸­æ–­å¼•è„š	P5
+#define RS485_RE_IO     6    	//RS485_REå¼•è„š		P6
+#define ETH_RESET_IO    7    	//ä»¥å¤ªç½‘å¤ä½å¼•è„š		P7
 
 void rt_pcf8574_write_bit(rt_uint8_t bit, rt_uint8_t state);
 rt_uint8_t rt_pcf8574_read_bit(rt_uint8_t bit);

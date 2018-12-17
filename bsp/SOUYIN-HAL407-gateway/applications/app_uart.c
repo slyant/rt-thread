@@ -1,7 +1,6 @@
 
 #include <rthw.h>
 #include <rtthread.h>
-
 #include "app_uart.h"
 #include "cmd_queue.h"
 #include "hmi_driver.h"
@@ -11,22 +10,18 @@
 
 #define UART_RX_EVENT (1<<0)                  //串口接收事件标志
 
-static struct rt_event event;                   //事件控制块
+static struct rt_event lcd_event;               //事件控制块
 static rt_device_t uart_lcd_device = RT_NULL;   //串口设备句柄
 
 
 unsigned char   cmd_buffer[CMD_MAX_SIZE];
 unsigned char lcd_update_en = 0;
 
-
-
-static uint8_t card_temp_num=0;
-
 //rt_mq_t lcd_mq = RT_NULL;      //LCD消息队列控制块
 
-uint8_t mcardwarning[] = {0xC5,0xE4,0xD6,0xC3,0xBF,0xA8,0xB2,0xBB,     //“配置卡不足，请配置”
+const char mcardwarning[] = {0xC5,0xE4,0xD6,0xC3,0xBF,0xA8,0xB2,0xBB,     //“配置卡不足，请配置”
 					       0xD7,0xE3,0xA3,0xAC,0xC7,0xEB,0xC5,0xE4,0xD6,0xC3,0};
-uint8_t mcardnum[] = {0xC5,0xE4,0xD6,0xC3,0xBF,0xA8,                   //显示“配置卡数量：”
+const char mcardnum[] = {0xC5,0xE4,0xD6,0xC3,0xBF,0xA8,                   //显示“配置卡数量：”
 						0xCA,0xFD,0xC1,0xBF,0xA3,0xBA,0};
 
 
@@ -66,7 +61,7 @@ static void lcd_delay_ms(rt_uint32_t nms)
 /* 回调函数 */
 static rt_err_t uart_lcd_intput(rt_device_t dev, rt_size_t size)
 {
-    rt_event_send(&event, UART_RX_EVENT);       //接收事件 
+    rt_event_send(&lcd_event, UART_RX_EVENT);       //接收事件 
     return RT_EOK;
 }
 
@@ -76,7 +71,7 @@ uint8_t uart_rev_byte(void)
 	uint8_t  ch=0;
 	while(rt_device_read(uart_lcd_device,0,&ch,1)!=1)
 	{
-		rt_event_recv(&event,UART_RX_EVENT,RT_EVENT_FLAG_AND |
+		rt_event_recv(&lcd_event,UART_RX_EVENT,RT_EVENT_FLAG_AND |
                       RT_EVENT_FLAG_CLEAR,RT_WAITING_FOREVER, &e);
 	}
 	return ch;
@@ -113,7 +108,7 @@ static int lcd_init(void)
         }
 		else rt_kprintf("open uart device init OK ! \n");
 		 /* 初始化事件对象 */
-        rt_event_init(&event, "event", RT_IPC_FLAG_FIFO); 
+        rt_event_init(&lcd_event, "event", RT_IPC_FLAG_FIFO); 
 		
 		lcd_delay_ms(10);
 		
@@ -122,27 +117,7 @@ static int lcd_init(void)
 		/*延时等待串口屏初始化完毕,必须等待300ms*/
 		lcd_delay_ms(300);
 		
-		SetFcolor(0xFFE0);//前景色设置成黄色
-		SetBcolor(0x52AA);
-
-		if(sys_key_a[0]==RT_NULL && sys_key_b[0]==RT_NULL)    //没有做密钥设置
-		{
-			SetScreen(CARD_MANAG);    //进入密钥卡管理
-			show_string(CARD_MANAG,258,62,1,9,(uint8_t*)key_card_str);
-			UI = SYS_KEY_CRCF;
-		}
-		else if(card_temp_num<2)
-		{
-			SetScreen(CARD_MANAG);      //如果配置卡小于2则直接显示配置卡假面
-			show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str);
-			UI = MANA_CARD_SET;
-			show_string(MANA_CARD_SET,20,440,0,6,mcardwarning);
-			show_string(MANA_CARD_SET,20,410,0,6,mcardnum);
-			show_string(MANA_CARD_SET,160,410,0,6,(uint8_t*)"0");
-		}
-		else SetScreen(MAIN_INDEX);
-		
-		return 0;
+		return RT_EOK;
 	}
 	else
 	{
@@ -157,12 +132,13 @@ static void uart_handle_entry(void* param)
 	rt_uint32_t e,i;
 	static uint16_t rxsize=0;
 	qsize  size = 0;
+	
 	while(1)
 	{
 		while(rxsize==0)               //读串口数据。阻塞状态
 		{
 			rxsize = rt_device_read(uart_lcd_device,0,cmd_buffer,CMD_MAX_SIZE);
-			rt_event_recv(&event, UART_RX_EVENT,RT_EVENT_FLAG_AND |
+			rt_event_recv(&lcd_event, UART_RX_EVENT,RT_EVENT_FLAG_AND |
 						  RT_EVENT_FLAG_CLEAR,RT_WAITING_FOREVER, &e);      
 		}
 /********************************************************************************************/

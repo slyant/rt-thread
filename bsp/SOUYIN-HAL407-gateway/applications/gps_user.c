@@ -11,16 +11,16 @@
 
 #define  GPS_RX_EVENT  (1<<0)
 
-static struct rt_event gps_evt;                   //ÊÂ¼ş¿ØÖÆ¿é
-static rt_device_t uart_gps_dev = RT_NULL;        //´®¿ÚÉè±¸¾ä±ú
+static struct rt_event gps_evt;                   //äº‹ä»¶æ§åˆ¶å—
+static rt_device_t uart_gps_dev = RT_NULL;        //ä¸²å£è®¾å¤‡å¥æŸ„
 
 char gps_buf[128]={0};
 
 
-/* »Øµ÷º¯Êı */
+/* å›è°ƒå‡½æ•° */
 static rt_err_t uart_gps_rev(rt_device_t dev, rt_size_t size)
 {
-    rt_event_send(&gps_evt, GPS_RX_EVENT);       //½ÓÊÕÊÂ¼ş 
+    rt_event_send(&gps_evt, GPS_RX_EVENT);       //æ¥æ”¶äº‹ä»¶ 
     return RT_EOK;
 }
 
@@ -39,18 +39,18 @@ static uint8_t gps_getchar(void)
 static int gps_init(void)
 {
 	rt_err_t res;
-	uart_gps_dev = rt_device_find("uart1"); //²éÕÒÏµÍ³ÖĞµÄ´®¿ÚÉè±¸
+	uart_gps_dev = rt_device_find("uart1"); //æŸ¥æ‰¾ç³»ç»Ÿä¸­çš„ä¸²å£è®¾å¤‡
 	if(uart_gps_dev != RT_NULL)
 	{
 		res = rt_device_set_rx_indicate(uart_gps_dev, uart_gps_rev);
-		if (res != RT_EOK)   //¼ì²é·µ»ØÖµ  
+		if (res != RT_EOK)   //æ£€æŸ¥è¿”å›å€¼  
 		{
 			rt_kprintf("set uart1 rx indicate error.%d\n",res);
 			return -RT_ERROR;
 		}
-		/* ´ò¿ªÉè±¸£¬ÒÔ¿É¶ÁĞ´¡¢ÖĞ¶Ï·½Ê½ */
+		/* æ‰“å¼€è®¾å¤‡ï¼Œä»¥å¯è¯»å†™ã€ä¸­æ–­æ–¹å¼ */
         res = rt_device_open(uart_gps_dev, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX );
-		 /* ³õÊ¼»¯ÊÂ¼ş¶ÔÏó */
+		 /* åˆå§‹åŒ–äº‹ä»¶å¯¹è±¡ */
         rt_event_init(&gps_evt, "gps-evt", RT_IPC_FLAG_FIFO);
 		if(res == RT_EOK)
 		{
@@ -67,12 +67,12 @@ static void gps_data_parse(uint8_t len)
 {
 	static uint16_t cfg_time=300,upday=0;
 	
-	if(cfg_time==0) cfg_time=300;    //Ã¿5·ÖÖÓ¼ì²éÒ»´ÎÊ±¼ä
+	if(cfg_time==0) cfg_time=300;    //æ¯5åˆ†é’Ÿæ£€æŸ¥ä¸€æ¬¡æ—¶é—´
 	else return;
 	
 	uint8_t i,t,ds[3]={0},sec;
 	
-	rtc_get_time(&sys_datetime);     //»ñÈ¡ÏµÍ³Ê±ÖÓ
+	rtc_get_time(&sys_datetime);     //è·å–ç³»ç»Ÿæ—¶é’Ÿ
 	sec = sys_datetime.sec;
 	
 	t=0;
@@ -105,8 +105,8 @@ static void gps_data_parse(uint8_t len)
 		sys_datetime.year  +=  (gps_buf[t]-'0')+2000;
 		
 		if(upday==0) upday = sys_datetime.mday;
-		else if(upday != sys_datetime.mday || abs(sys_datetime.sec-sec)>2)     //Èç¹ûÈÕÆÚ²»¶Ô£¬»òÕßÓëÏµÍ³Ê±ÖÓµÄÊ±¼äÏà²î´óÓÚ2s
-		{                                                                      //¸üĞÂÏµÍ³Ê±ÖÓÒÔ¼°´®¿ÚÆÁÊ±ÖÓ
+		else if(upday != sys_datetime.mday || abs(sys_datetime.sec-sec)>2)     //å¦‚æœæ—¥æœŸä¸å¯¹ï¼Œæˆ–è€…ä¸ç³»ç»Ÿæ—¶é’Ÿçš„æ—¶é—´ç›¸å·®å¤§äº2s
+		{                                                                      //æ›´æ–°ç³»ç»Ÿæ—¶é’Ÿä»¥åŠä¸²å£å±æ—¶é’Ÿ
 			rt_kprintf("------------   updata system time ! ----------------\n");
 			rtc_set_time(&sys_datetime);
 			SetRtc(sys_datetime.year,sys_datetime.month,sys_datetime.mday,sys_datetime.wday,sys_datetime.hour,sys_datetime.min,sys_datetime.sec);
@@ -142,7 +142,7 @@ static void uart_handle_entry(void* param)
 static int gps_handle(void)
 {
 	rt_thread_t gps_dat = rt_thread_create("gps-tag",uart_handle_entry,
-											RT_NULL,1024,12,50);
+											RT_NULL,256,12,50);
 	if(gps_dat!=RT_NULL)
 		rt_thread_startup(gps_dat);
 	return 0;

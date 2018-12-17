@@ -11,16 +11,16 @@ struct na_queue_s {
 };
 
 
-/* ³õÊ¼»¯¶ÓÁĞ */
+/* åˆå§‹åŒ–é˜Ÿåˆ— */
 #define na_queue_init(q)                      \
   (q)->prev = (q);        \
   (q)->next = (q)
 
-/* ÅĞ¶Ï¶ÓÁĞÊÇ·ñÎª¿Õ */
+/* åˆ¤æ–­é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º */
 #define na_queue_empty(h) \
   ((h) == (h)->prev)
 
-/* ´ÓÍ·²åÈë½Úµã */
+/* ä»å¤´æ’å…¥èŠ‚ç‚¹ */
 #define na_queue_insert_head(h,x)     \
   (x)->next = (h)->next;              \
   (x)->next->prev = (x);              \
@@ -29,7 +29,7 @@ struct na_queue_s {
 
 #define na_queue_insert_after na_queue_insert_head
 
-/* ´ÓÄ©Î²²åÈë½Úµã */
+/* ä»æœ«å°¾æ’å…¥èŠ‚ç‚¹ */
 #define na_queue_insert_tail(h,x)      \
   (x)->prev = (h)->prev;               \
   (x)->prev->next = x;                 \
@@ -37,32 +37,32 @@ struct na_queue_s {
   (h)->prev = x 
 
 
-/* Í·Ö¸Õë¶ÔÓ¦µÄÍ·½Úµã */
+/* å¤´æŒ‡é’ˆå¯¹åº”çš„å¤´èŠ‚ç‚¹ */
 #define na_queue_head(h) (h)->next
 
-/* ×îºóÒ»¸ö½Úµã */
+/* æœ€åä¸€ä¸ªèŠ‚ç‚¹ */
 #define na_queue_last(h) (h)->prev
 
 
 #define na_queue_sentinel(h) (h)
 
-/*ÏÂÒ»¸ö½Úµã*/
+/*ä¸‹ä¸€ä¸ªèŠ‚ç‚¹*/
 #define na_queue_next(q) (q)->next
 
-/* Ç°Ò»¸ö½Úµã */
+/* å‰ä¸€ä¸ªèŠ‚ç‚¹ */
 #define na_queue_prev(q) (q)->prev
 
-/* ÒÆ³ıÒ»¸ö½Úµã */
+/* ç§»é™¤ä¸€ä¸ªèŠ‚ç‚¹ */
 #define na_queue_remove(x)             \
   (x)->next->prev = (x)->prev;         \
   (x)->prev->next = (x)->next;         \
   (x)->prev = NULL;                    \
   (x)->next = NULL
 
-/* ÇĞ·ÖÒ»¸ö¶ÓÁĞ
- * h Í·Ö¸Õë
- * q ĞèÒª²ğ·ÖµÄÍ·Ö¸Õë
- * n ²ğ·ÖÍê³ÉºóÁíÍâÒ»¸ö¶ÓÁĞµÄÍ·Ö¸Õë
+/* åˆ‡åˆ†ä¸€ä¸ªé˜Ÿåˆ—
+ * h å¤´æŒ‡é’ˆ
+ * q éœ€è¦æ‹†åˆ†çš„å¤´æŒ‡é’ˆ
+ * n æ‹†åˆ†å®Œæˆåå¦å¤–ä¸€ä¸ªé˜Ÿåˆ—çš„å¤´æŒ‡é’ˆ
  */
 #define na_queue_split(h,q,n)           \
     (n)->prev = (h)->prev;              \
@@ -72,33 +72,33 @@ struct na_queue_s {
     (h)->prev->next = h;                \
     (q)->prev = n;
 
-/* ºÏ²¢Á½¸ö¶ÓÁĞ */
+/* åˆå¹¶ä¸¤ä¸ªé˜Ÿåˆ— */
 #define na_queue_add(h,n)               \
   (h)->prev->next = (n)->next;          \
   (n)->next->prev = (h)->prev;          \
   (h)->prev = (n)->prev;                \
   (h)->prev->next = (h);
 
-/* ¸ù¾İ¶ÓÁĞÖ¸Õë£¬µÃµ½°üº¬´Ë¶ÓÁĞÖ¸ÕëµÄ½á¹¹Ìå
- * q ¶ÓÁĞÖ¸Õë
- * type ·µ»ØµÄÊı¾İÀàĞÍ
- * link Êı¾İÏîÖĞ¶ÔÓ¦µÄ¶ÓÁĞÏîÃû×Ö
+/* æ ¹æ®é˜Ÿåˆ—æŒ‡é’ˆï¼Œå¾—åˆ°åŒ…å«æ­¤é˜Ÿåˆ—æŒ‡é’ˆçš„ç»“æ„ä½“
+ * q é˜Ÿåˆ—æŒ‡é’ˆ
+ * type è¿”å›çš„æ•°æ®ç±»å‹
+ * link æ•°æ®é¡¹ä¸­å¯¹åº”çš„é˜Ÿåˆ—é¡¹åå­—
  */
 #define na_queue_data(q, type, link)   \
     (type *) ((unsigned char *) q - offsetof(type, link))
 
-/* ²éÕÒÖĞ¼ä½Úµã */
+/* æŸ¥æ‰¾ä¸­é—´èŠ‚ç‚¹ */
 na_queue_t *
 na_queue_middle(na_queue_t * queue);
 
-/* ¶Ô¶ÓÁĞÅÅĞò */
+/* å¯¹é˜Ÿåˆ—æ’åº */
 void na_queue_sort(na_queue_t *queue,int (*cmp)(const na_queue_t *, const na_queue_t *));
 
-/*±éÀú¶ÓÁĞÖĞ½ÚµãµÄÊı¾İ
- *q:´«ÈëµÄ°üº¬¶ÓÁĞÀàĞÍµÄ½á¹¹ÌåÖ¸Õë
- *s:¶ÓÁĞµÄÉÚ±øÖ¸Õë
- *type:°üº¬¶ÓÁĞµÄ½á¹¹ÌåÀàĞÍ
- *link:¶ÓÁĞÔÚ½á¹¹ÌåÖĞµÄÃû×Ö
+/*éå†é˜Ÿåˆ—ä¸­èŠ‚ç‚¹çš„æ•°æ®
+ *q:ä¼ å…¥çš„åŒ…å«é˜Ÿåˆ—ç±»å‹çš„ç»“æ„ä½“æŒ‡é’ˆ
+ *s:é˜Ÿåˆ—çš„å“¨å…µæŒ‡é’ˆ
+ *type:åŒ…å«é˜Ÿåˆ—çš„ç»“æ„ä½“ç±»å‹
+ *link:é˜Ÿåˆ—åœ¨ç»“æ„ä½“ä¸­çš„åå­—
 */
 #define na_queue_foreach(q,s,type,link)          \
   na_queue_t * _head_ =NULL;                         \

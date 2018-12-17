@@ -7,11 +7,11 @@
     #define I2CDEBUG(...)
 #endif
 
-#define I2C_DEV_ADDR		(0xA0>>1)	/* I2CÉè±¸Æ÷¼şµØÖ·,²»º¬¶ÁĞ´Î» */
-#define I2C_DEV_BUS_NAME	"i2c2"		/* I2CÉè±¸Ãû³Æ,±ØĞëºÍdrv_i2c.c×¢²áµÄI2CÉè±¸Ãû³ÆÒ»ÖÂ */
+#define I2C_DEV_ADDR		(0xA0>>1)	/* I2Cè®¾å¤‡å™¨ä»¶åœ°å€,ä¸å«è¯»å†™ä½ */
+#define I2C_DEV_BUS_NAME	"i2c2"		/* I2Cè®¾å¤‡åç§°,å¿…é¡»å’Œdrv_i2c.cæ³¨å†Œçš„I2Cè®¾å¤‡åç§°ä¸€è‡´ */
 #define EEPROM_NAME	"eeprom0"
 static struct rt_device ee_dev;
-static struct rt_i2c_bus_device *dev_i2c_bus;    /* I2CÉè±¸¾ä±ú */
+static struct rt_i2c_bus_device *dev_i2c_bus;    /* I2Cè®¾å¤‡å¥æŸ„ */
 
 static rt_err_t i2c_dev_read_bytes(rt_uint8_t memAddr, rt_uint8_t *buf, rt_uint16_t len);
 static rt_err_t i2c_dev_write_bytes(rt_uint8_t memAddr, rt_uint8_t *data, rt_uint16_t len);
@@ -20,8 +20,8 @@ static rt_err_t i2c_dev_write_buffer(rt_uint8_t memAddr, const rt_uint8_t *buffe
 static rt_err_t i2c_dev_read_buffer(rt_uint8_t memAddr, rt_uint8_t *buffer, rt_uint16_t len);
 
 /*
-METHOD == 0£ºÊ¹ÓÃrt_i2c_transfer()µÄ·â×°
-METHOD == 1£ºÊ¹ÓÃrt_i2c_master_send()»òÕßrt_i2c_master_recv()µÄ·â×°
+METHOD == 0ï¼šä½¿ç”¨rt_i2c_transfer()çš„å°è£…
+METHOD == 1ï¼šä½¿ç”¨rt_i2c_master_send()æˆ–è€…rt_i2c_master_recv()çš„å°è£…
 */
 #define METHOD 0
 
@@ -43,9 +43,9 @@ static rt_err_t i2c_dev_write_bytes(rt_uint8_t memAddr, rt_uint8_t *data, rt_uin
 		flags |= RT_I2C_ADDR_10BIT;
 	}
 	
-    msgs.addr  = I2C_DEV_ADDR;    /* ´Ó»úµØÖ· */
-    msgs.flags = flags|RT_I2C_WR; /* Ğ´±êÖ¾ */
-    msgs.buf   = buf;             /* ·¢ËÍÊı¾İÖ¸Õë */
+    msgs.addr  = I2C_DEV_ADDR;    /* ä»æœºåœ°å€ */
+    msgs.flags = flags|RT_I2C_WR; /* å†™æ ‡å¿— */
+    msgs.buf   = buf;             /* å‘é€æ•°æ®æŒ‡é’ˆ */
     msgs.len   = len+1;
 
     if (rt_i2c_transfer(dev_i2c_bus, &msgs, 1) == 1)
@@ -66,15 +66,15 @@ static rt_err_t i2c_dev_read_bytes(rt_uint8_t memAddr, rt_uint8_t *buf, rt_uint1
 		flags |= RT_I2C_ADDR_10BIT;
 	}
 
-    msgs[0].addr  = I2C_DEV_ADDR;    /* ´Ó»úµØÖ· */
-    msgs[0].flags = RT_I2C_WR;       /* Ğ´±êÖ¾ */
-    msgs[0].buf   = &memAddr;        /* ´Ó»ú¼Ä´æÆ÷µØÖ· */
-    msgs[0].len   = 1;               /* ·¢ËÍÊı¾İ×Ö½ÚÊı */
+    msgs[0].addr  = I2C_DEV_ADDR;    /* ä»æœºåœ°å€ */
+    msgs[0].flags = RT_I2C_WR;       /* å†™æ ‡å¿— */
+    msgs[0].buf   = &memAddr;        /* ä»æœºå¯„å­˜å™¨åœ°å€ */
+    msgs[0].len   = 1;               /* å‘é€æ•°æ®å­—èŠ‚æ•° */
 
-    msgs[1].addr  = I2C_DEV_ADDR;    /* ´Ó»úµØÖ· */
-    msgs[1].flags = flags|RT_I2C_RD; /* ¶Á±êÖ¾ */
-    msgs[1].buf   = buf;             /* ¶ÁÈ¡Êı¾İÖ¸Õë */
-    msgs[1].len   = len;             /* ¶ÁÈ¡Êı¾İ×Ö½ÚÊı */
+    msgs[1].addr  = I2C_DEV_ADDR;    /* ä»æœºåœ°å€ */
+    msgs[1].flags = flags|RT_I2C_RD; /* è¯»æ ‡å¿— */
+    msgs[1].buf   = buf;             /* è¯»å–æ•°æ®æŒ‡é’ˆ */
+    msgs[1].len   = len;             /* è¯»å–æ•°æ®å­—èŠ‚æ•° */
 
     if (rt_i2c_transfer(dev_i2c_bus, msgs, 2) == 2)
     {
@@ -218,10 +218,10 @@ static rt_err_t ee24LCxx_control(rt_device_t dev, int cmd, void *args)
 	return RT_EOK;
 }
 
-//I2C_DEVÓ²¼ş³õÊ¼»¯
+//I2C_DEVç¡¬ä»¶åˆå§‹åŒ–
 int i2c_dev_hw_init(void)
 {
-    dev_i2c_bus = rt_i2c_bus_device_find(I2C_DEV_BUS_NAME);  /*²éÕÒI2CÉè±¸*/
+    dev_i2c_bus = rt_i2c_bus_device_find(I2C_DEV_BUS_NAME);  /*æŸ¥æ‰¾I2Cè®¾å¤‡*/
     if (dev_i2c_bus == RT_NULL)
     {
         I2CDEBUG("can't find i2c_dev %s device\r\n", I2C_DEV_BUS_NAME);

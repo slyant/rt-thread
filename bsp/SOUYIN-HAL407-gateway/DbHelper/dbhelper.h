@@ -7,23 +7,23 @@
 #define DB_SQL_MAX_LEN 1024
 void db_helper_init(void);
 int db_create_database(const char* sqlstr);
-//Ö´ĞĞÃ»ÓĞ·µ»ØµÄSQLÓï¾ä
+//æ‰§è¡Œæ²¡æœ‰è¿”å›çš„SQLè¯­å¥
 int db_nonquery_operator(const char *sqlstr,int (*bind)(sqlite3_stmt *,int index,void * arg),void *param);
-//Ö´ĞĞÃ»ÓĞ·µ»ØµÄSQLÓï¾äµÄ¶àÖµ´«²Î
+//æ‰§è¡Œæ²¡æœ‰è¿”å›çš„SQLè¯­å¥çš„å¤šå€¼ä¼ å‚
 int db_nonquery_by_varpara(const char *sql,const char *fmt,...);
-//Ö´ĞĞÃ»ÓĞ·µ»ØµÄSQLÓï¾ä
+//æ‰§è¡Œæ²¡æœ‰è¿”å›çš„SQLè¯­å¥
 int db_nonquery_transaction(int (*exec_sqls)(sqlite3 *db,void * arg),void *arg);
-//Ö´ĞĞ¶àÖµ´«²ÎµÄ²éÑ¯Óï¾ä
+//æ‰§è¡Œå¤šå€¼ä¼ å‚çš„æŸ¥è¯¢è¯­å¥
 int db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...);
-//Ö´ĞĞ²éÑ¯²¢·µ»Ø²éÑ¯½á¹û¼¯µÄÌõÊı
+//æ‰§è¡ŒæŸ¥è¯¢å¹¶è¿”å›æŸ¥è¯¢ç»“æœé›†çš„æ¡æ•°
 int db_query_count_result(const char *sql);
-//¶Ôsqlite3_column_blobµÄ¶ş´Î·â×°
+//å¯¹sqlite3_column_blobçš„äºŒæ¬¡å°è£…
 int db_stmt_get_blob(sqlite3_stmt *stmt,int index,unsigned char *out);
-//¶Ôsqlite3_column_textµÄ¶ş´Î·â×°
+//å¯¹sqlite3_column_textçš„äºŒæ¬¡å°è£…
 int db_stmt_get_text(sqlite3_stmt *stmt,int index,char *out);
-//¶Ôsqlite3_column_intµÄ¶ş´Î·â×°
+//å¯¹sqlite3_column_intçš„äºŒæ¬¡å°è£…
 int db_stmt_get_int(sqlite3_stmt *stmt,int index);
-//¶Ôsqlite3_column_doubleµÄ¶ş´Î·â×°
+//å¯¹sqlite3_column_doubleçš„äºŒæ¬¡å°è£…
 double db_stmt_get_double(sqlite3_stmt *stmt,int index);
 
 #endif
