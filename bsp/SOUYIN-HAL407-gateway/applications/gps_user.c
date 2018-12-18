@@ -147,5 +147,5 @@ static int gps_handle(void)
 		rt_thread_startup(gps_dat);
 	return 0;
 }
-INIT_APP_EXPORT(gps_handle);
+//INIT_APP_EXPORT(gps_handle);
 

@@ -61,7 +61,7 @@ static int door_hadle(void)
 		rt_thread_startup(tas_door);
 	return 0;
 }
-INIT_APP_EXPORT(door_hadle);
+//INIT_APP_EXPORT(door_hadle);
 
 
 static void led_thread_entry(void* parameter)   //线程
@@ -71,9 +71,9 @@ static void led_thread_entry(void* parameter)   //线程
 	while(1)
 	{
 		rt_pin_write(LED,PIN_LOW);
-		rt_thread_delay(500);                        //延时500ms，该函数更新操作系统
+		rt_thread_mdelay(500);                        //延时500ms，该函数更新操作系统
 		rt_pin_write(LED,PIN_HIGH);
-		rt_thread_delay(500);
+		rt_thread_mdelay(500);
 	}
 }
 
@@ -171,9 +171,9 @@ static void beep_entry(void* parameter)
 	{
 		rt_sem_take(beep_sem,RT_WAITING_FOREVER);
 		rt_pin_write(BEEP,PIN_LOW);
-		rt_thread_delay(100);
+		rt_thread_mdelay(100);
 		rt_pin_write(BEEP,PIN_HIGH);
-		rt_thread_delay(10);
+		rt_thread_mdelay(10);
 	}
 }
 
@@ -192,17 +192,4 @@ static int beep_sound(void)
 	
 	return 0;
 }	
-INIT_APP_EXPORT(beep_sound);
-
-
-
-
-
-
-
-
-
-
-
-
-
+//INIT_APP_EXPORT(beep_sound);

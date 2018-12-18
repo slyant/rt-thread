@@ -5,5 +5,7 @@
 
 #include "sysinfo.h"
 #include "cardinfo.h"
+#include "doorinfo.h"
+#include "loginfo.h"
 
 #endif

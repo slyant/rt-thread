@@ -74,25 +74,36 @@ void rfid_thread_entry(void* param)
 		card_typ = rfid_scan_handle();
 		switch(card_typ)
 		{
-			case ROOT_CARD:     UI = KEY_CARD_COF; SetScreen(KEY_CARD_COF); break;
-			case SYS_COF_CARD:  UI = SYS_COF_CARD; SetScreen(CARD_MANAG); 
-								show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str); 
-								cof_num[0] = check_cof_card_cun(); 
-								cof_num[1] = 0;
-								if(cof_num[0]<2) //如果配置卡不符合要求
-								{
-									show_string(CARD_MANAG,20,440,1,6,(uint8_t*)mcardwarning);
-									show_string(CARD_MANAG,20,410,1,6,(uint8_t*)mcardnum);
-									show_string(CARD_MANAG,160,410,1,6,(uint8_t*)cof_num);
-								}
-								break;
+			case ROOT_CARD:    
+				UI = KEY_CARD_COF; 
+				SetScreen(KEY_CARD_COF); 
+				break;
+			case SYS_COF_CARD:  
+				UI = SYS_COF_CARD; 
+				SetScreen(CARD_MANAG); 
+				show_string(CARD_MANAG,258,62,1,9,(uint8_t*)cof_card_str); 
+				cof_num[0] = check_cof_card_cun(); 
+				cof_num[1] = 0;
+				if(cof_num[0]<2) //如果配置卡不符合要求
+				{
+					show_string(CARD_MANAG,20,440,1,6,(uint8_t*)mcardwarning);
+					show_string(CARD_MANAG,20,410,1,6,(uint8_t*)mcardnum);
+					show_string(CARD_MANAG,160,410,1,6,(uint8_t*)cof_num);
+				}
+				break;
 			case MANAG_CARD:
+				break;
 			case NORMNA_CARD:
+				break;
 			case SPACE_CARD:
-			case OTHER_CARD:  break;
+				break;
+			case OTHER_CARD:
+				break;
+			default:
+				break;
 		}
 		
-		rt_thread_delay(50);
+		rt_thread_delay(100);
 	/***************************************************************************************************************/
 	}
 }
@@ -107,6 +118,6 @@ static int rfid_handle(void)
 		rt_thread_startup(rftid);
 	return 0;
 }
-INIT_APP_EXPORT(rfid_handle);
+//INIT_APP_EXPORT(rfid_handle);
 
 

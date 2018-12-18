@@ -1,7 +1,7 @@
 
 #include <stm32f4xx_hal.h>
 #include <rtthread.h>
-#include "sysinfo.h"
+#include <db_include.h>
 #include "lcd_oper.h"
 #include "cmd_queue.h"
 #include "gpio_oper.h"
@@ -11,14 +11,13 @@
 #include <string.h>
 #include "pcf8563.h"
 
-
 #define tag_value				0x4923
 
 //static uint8_t update_en = 0;                          //更新标记
 //volatile uint32_t  timer_tick_count = 0;               //定时器节拍
 
-extern unsigned char lcd_update_en;
-extern uint8_t  cmd_buffer[CMD_MAX_SIZE];              //LCD指令缓存
+unsigned char lcd_update_en = 1;
+//extern uint8_t  cmd_buffer[CMD_MAX_SIZE];              //LCD指令缓存
 extern uint8_t mcardwarning[];
 extern uint8_t mcardnum[];
 
@@ -173,15 +172,15 @@ static void NotifyScreen(unsigned short screen_id)
 *  \param msg 待处理消息
 *  \param size 消息长度
 */
-void ProcessMessage( PCTRL_MSG msg, uint16_t size )
+void ProcessMessage(PCTRL_MSG msg, uint16_t size)
 {
     uint8_t cmd_type = msg->cmd_type;                                                  //指令类型
     uint8_t ctrl_msg = msg->ctrl_msg;                                                  //消息的类型
     uint8_t control_type = msg->control_type;                                          //控件类型
     uint16_t screen_id = PTR2U16(&msg->screen_id_high);                                //画面ID
     uint16_t control_id = PTR2U16(&msg->control_id_high);                              //控件ID
-    uint32_t value = PTR2U32(msg->param);                                              //数值
-
+    uint32_t value = PTR2U32(msg->param);
+	uint8_t* cmd_buffer = (uint8_t*)msg;
 
     switch(cmd_type)
     {  
@@ -779,20 +778,18 @@ static int lcd_updata(void)
 }
 INIT_APP_EXPORT(lcd_updata);
 
-extern int init_data(void);
 extern uint8_t sys_key_a[6];
 extern uint8_t sys_key_b[6];
 void sys_lcd_startup(void)
 {
-	uint8_t i,ts,sysinfo_id,tmp[2];
+	uint8_t i,ts,tmp[2];
 	sysinfo_t sysinfo;
 	SetFcolor(0xFFE0);//前景色设置成黄色
 	SetBcolor(0x52AA);
 	
-	sysinfo_id = 1; ts=0;
-	if(sysinfo_get_by_id(&sysinfo, sysinfo_id)==0) //读取系统信息失败
+	ts=0;
+	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)==0) //读取系统信息失败
 	{
-		init_data();
 		goto into_key_card_cof;        //进入密钥卡设置
 	}
 	for(i=0;i<6;i++)                   //检查密钥
@@ -825,7 +822,3 @@ into_key_card_cof:
 	UI = KEY_CARD_COF;
 	SetScreen(KEY_CARD_COF);    //进入密钥卡管理
 }
-
-
-
-

@@ -1,10 +1,10 @@
 #include <rtthread.h>
 #include <dfs_posix.h>
-#include <dbinclude.h>
-#include <sysinfo.h>
+#include <db_include.h>
 #include "lcd_oper.h"
 
-#define SYSINFO_ID	1
+#define APP_SQLITE_DEBUG	1
+
 const char* SYS_TITLE = "公交自助收银管理系统 V2.0";
 const unsigned char DEFAULT_KEY_A[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char DEFAULT_KEY_B[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -61,11 +61,11 @@ static int create_sqlite_db(void)
 }
 MSH_CMD_EXPORT(create_sqlite_db, create sqlite db);
 
-int init_data(void)
+static int init_data(void)
 {
 	sysinfo_t e;
 	rt_memset(&e,0x00,sizeof(sysinfo_t));
-	e.id = SYSINFO_ID;
+	e.id = SYSINFO_DB_KEY_ID;
 	rt_strncpy(e.sys_title, SYS_TITLE, rt_strlen(SYS_TITLE));
 	e.open_timeout = 60;
 	e.node_count = 3;
@@ -76,64 +76,22 @@ int init_data(void)
 }
 MSH_CMD_EXPORT(init_data, init sqlite db data);
 
-//遍历处理
-void sysinfo_for_hd(sysinfo_t* e)
-{
-	rt_kprintf("\nsysinfo_for_hd->\nid:%d\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\n",e->id, e->sys_title, e->open_timeout, e->door_count);
-}
-
-int app_sqlite_init(void)
+void app_sqlite_init(void)
 {	
 	db_helper_init();
-
 	//创建数据库的例子
 	create_sqlite_db();
-/*	
-	// sysinfo添加一条记录的例子：
-	if(db_query_count_result("select count(id) from sysinfo where id=1")==0)
-	{//如果id=1的记录不存在，则添加
+	
+	if(sysinfo_get_count_by_id(SYSINFO_DB_KEY_ID)==0)
+	{//如果id=SYSINFO_DB_KEY_ID的记录不存在，则添加
 		init_data();
 	}
 	
-	// 获取一条记录的例子：
+
 	sysinfo_t sysinfo;
-	sysinfo_get_by_id(&sysinfo, SYSINFO_ID);
-	rt_kprintf("\nid:%d\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\n",sysinfo.id, sysinfo.sys_title, sysinfo.open_timeout, sysinfo.door_count);			
-	
-	// 自定义查询的例子：
-	na_queue_t *q = rt_calloc(sizeof(sysinfo_t), 1);
-	int rcount = db_query_by_varpara("select * from sysinfo where id=? and door_count=?", sysinfo_queue_bind, q, "%d%d", SYSINFO_ID, 8);
-	rt_kprintf("\nrcount:%d\n", rcount);
-	sysinfo_foreach(q, sysinfo_for_hd);
-	sysinfo_free_queue(q);
-	rt_free(q);
-
-	// nodeinfo添加一条记录
-	nodeinfo_t nodeinfo;
-	if(db_query_count_result("select count(address) from nodeinfo where address=31")==0)
-	{//如果address=31的记录不存在，则添加		
-		nodeinfo.address = 31;
-		rt_strncpy(nodeinfo.name, "A1", 2);
-		nodeinfo_add(&nodeinfo);
-	}
-	else
-	{//如果存在，则更新
-		if(nodeinfo_get_by_id(&nodeinfo, 31)>0)
-		{
-			rt_strncpy(nodeinfo.name, "B1", 2);
-			nodeinfo_update(&nodeinfo);
-		}
-	}
-
-	// 查询
-	if(nodeinfo_get_by_id(&nodeinfo, 31)>0)
-	{
-		rt_kprintf("address:%d\nname:%s\n", nodeinfo.address, nodeinfo.name);
-	}
-*/
-	sys_lcd_startup();
-	return 0;
+	int count = sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID);
+	RT_ASSERT(count>0);
+	#if(APP_SQLITE_DEBUG)
+	rt_kprintf("\nsysinfo->\nid:%d\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\r\n",sysinfo.id, sysinfo.sys_title, sysinfo.open_timeout, sysinfo.door_count);
+	#endif
 }
-INIT_APP_EXPORT(app_sqlite_init);
-
-

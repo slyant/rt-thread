@@ -10,10 +10,8 @@
 
 
 #include <rtthread.h>
-#include <dbinclude.h>
+#include <db_include.h>
 #include <stdio.h>
-#include "sysinfo.h"
-#include <cardinfo.h>
 #include "rfic-manage.h"
 #include "ic_card_protocol.h"
 #include "dev_rfic.h"
@@ -119,17 +117,16 @@ uint8_t decode_json(char *json)   //函数仅对密钥卡进行判定，所有�
 	cJSON *root=cJSON_Parse(json); // 获取根目录
 	if(root==RT_NULL) {rt_kprintf("json root get faulted ! \n"); return 0;}
 	
-	cJSON*typ=cJSON_GetObjectItem(root,"Type");         //获取Type对象的成员
-	cJSON*pwd=cJSON_GetObjectItem(root,"Pwd");
-	cJSON*iden=cJSON_GetObjectItem(root,"Iden");
-	
-	rt_kprintf(pwd->valuestring); rt_kprintf("\n");
+	cJSON*typ=cJSON_GetObjectItem(root,"Type");         //获取Type对象的成员	
 	
 	card_arg.typ = typ->valueint;
 	if(card_arg.typ != ROOT_CARD)
 	{
+		cJSON*pwd=cJSON_GetObjectItem(root,"Pwd");
+		cJSON*iden=cJSON_GetObjectItem(root,"Iden");
 		rt_memcpy(card_arg.jspwd,pwd->valuestring,rt_strlen(pwd->valuestring));
 		rt_memcpy(card_arg.jsiden,iden->valuestring,rt_strlen(iden->valuestring));
+		rt_kprintf(pwd->valuestring); rt_kprintf("\n");
 	}
 	
 	cJSON*fileds=cJSON_GetObjectItem(root,"Filed");     //fileds对象
@@ -301,16 +298,14 @@ void key_card_backup(void)       //备份
 
 void key_card_recovery(void)    //恢复数据库的密钥
 {
-	uint8_t sysinfo_id;
 	sysinfo_t sysinfo;
 	if(read_json_from_card()==(ROOT_CARD+1)) //成功解析密钥卡,在密钥卡以及系统数据库信息丢失时，只要系统重新上电则永久不可恢复
 	{  
 		rt_memcpy(card_arg.jskeya,sys_key_a,6);
 		rt_memcpy(card_arg.jskeyb,sys_key_b,6);
-		if(db_query_count_result("select count(id) from sysinfo where id=1")==0)    //向数据库更新系统信息
+		if(sysinfo_get_by_id(&sysinfo,SYSINFO_DB_KEY_ID)>0)    //向数据库更新系统信息
 		{
-			sysinfo_id = 1;
-			sysinfo.id = sysinfo_id;
+			sysinfo.id = SYSINFO_DB_KEY_ID;
 			rt_memcpy(sysinfo.key_a,sys_key_a,6);
 			rt_memcpy(sysinfo.key_b,sys_key_b,6);
 			sysinfo_update(&sysinfo);                           //更新
@@ -404,7 +399,7 @@ void card_make_fun(uint8_t typ)   //收到LCD字符串存在card_iden数组内�
 	iden_over = 0;
 	
 	sscanf((char*)card_iden,"%d",&iden);        //编号，用户输入
-	if(cardinfo_get_by_id(&cardinfo, iden))  return; //读数据库信息，有记录=1，无记录=0
+	if(cardinfo_get_by_num(&cardinfo, iden))  return; //读数据库信息，有记录=1，无记录=0
 		 
 	pjson = card_make_inf(typ);  //返回json信息串，函数内生成卡信息结构体成员的值
 	rt_memset(card_iden,0,16);
@@ -463,7 +458,7 @@ uint8_t card_service_fun(uint8_t typ)   //在数据库中查找符合条件的�
 		return 1;
 	}
 	sscanf((char*)card_iden,"%d",&iden);       //取编号
-	gs=cardinfo_get_by_id(&cardinfo, iden);    //依据输入的编号查询数据库的记录
+	gs = cardinfo_get_by_num(&cardinfo, iden);    //依据输入的编号查询数据库的记录
 	if(gs==0) {rt_kprintf("system is not record !\n");return 0;}  //如果没有记录，返回
 	cardinfo_del(iden);                        //如果有则删除该条记录
 	rt_memset(card_iden,0,16);

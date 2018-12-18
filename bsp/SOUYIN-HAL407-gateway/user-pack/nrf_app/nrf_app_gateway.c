@@ -108,10 +108,8 @@ static void nrfsend(int argc, char** argv)
 }
 MSH_CMD_EXPORT(nrfsend, nrf send data);
 
-static int nrf_gateway_startup(void)
+void nrf_gateway_startup(void)
 {
 	nrf_reg_callback(on_conn_cb, on_disconn_cb,
 					on_send_cb, on_recv_cb);	
-	return RT_EOK;
 }
-INIT_APP_EXPORT(nrf_gateway_startup);

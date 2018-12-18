@@ -4,6 +4,8 @@
 #include <na_queue.h>
 #include <sqlite3.h>
 
+#define SYSINFO_DB_KEY_ID	1
+
 typedef struct sysinfo_s{
 	unsigned int id;
 	char sys_title[60];
@@ -16,6 +18,7 @@ typedef struct sysinfo_s{
 }sysinfo_t;
 
 int sysinfo_get_by_id(sysinfo_t *e, int id);
+int sysinfo_get_count_by_id(int id);
 int sysinfo_get_all(na_queue_t * q);
 int sysinfo_add(sysinfo_t * e);
 int sysinfo_del(int id);

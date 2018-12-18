@@ -17,7 +17,16 @@
 int main(void)
 {
     /* user app entry */
-
+	extern void app_sqlite_init(void);
+	extern void sys_lcd_startup(void);
+	extern void nrf_gateway_startup(void);
+	app_sqlite_init();
+	sys_lcd_startup();
+	nrf_gateway_startup();
+//	while(1)
+//	{
+//		rt_thread_mdelay(10);
+//	}
     return 0;
 }
 

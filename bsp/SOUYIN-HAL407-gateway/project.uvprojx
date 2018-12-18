@@ -334,7 +334,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--no_multibyte_chars</MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
               <IncludePath>applications;.;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-v1.0.2;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;user-pack\nrf_app;user-pack\RFIC;user-pack\uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
@@ -395,11 +395,6 @@
               <FileName>rfic-manage.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\rfic-manage.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\app_uart.c</FilePath>
             </File>
             <File>
               <FileName>gpio_oper.c</FileName>
@@ -1090,6 +1085,11 @@
               <FileName>lcd_oper.c</FileName>
               <FileType>1</FileType>
               <FilePath>user-pack\uart_lcd\lcd_oper.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user-pack\uart_lcd\app_lcd.c</FilePath>
             </File>
           </Files>
         </Group>

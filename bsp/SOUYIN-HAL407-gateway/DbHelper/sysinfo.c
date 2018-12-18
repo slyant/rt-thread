@@ -59,7 +59,7 @@ int sysinfo_bind(sqlite3_stmt * stmt,void * arg)
 		db_stmt_get_blob(stmt,5,e->key_a);
 		db_stmt_get_blob(stmt,6,e->key_b);
 	}
-	return ret;
+	return 1;
 }
 
 //将查询结果绑定到队列，返回队列的成员个数
@@ -125,8 +125,12 @@ void sysinfo_foreach(na_queue_t *q, void (*foreach_handle)(sysinfo_t *e))
 //获取一条记录根据记录主键，返回查询到的记录数
 int sysinfo_get_by_id(sysinfo_t *e, int id)
 {
-	int res = db_query_by_varpara("select * from sysinfo where id=?;", sysinfo_bind, e, "%d", id);
-	return res;
+	return db_query_by_varpara("select * from sysinfo where id=?;", sysinfo_bind, e, "%d", id);
+}
+
+int sysinfo_get_count_by_id(int id)
+{
+	return db_query_count_result("select count(*) from sysinfo where id=?;", "%d", id);
 }
 
 //返回查询到的记录数

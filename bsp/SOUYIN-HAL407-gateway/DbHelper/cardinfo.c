@@ -50,7 +50,7 @@ int cardinfo_bind(sqlite3_stmt * stmt,void * arg)
 		db_stmt_get_text(stmt,2,e->pwd);
 		e->type = db_stmt_get_int(stmt,3);
 	}
-	return ret;
+	return 1;
 }
 
 //将查询结果绑定到队列，返回队列的成员个数
@@ -107,10 +107,36 @@ void cardinfo_foreach(na_queue_t *q, void (*foreach_handle)(cardinfo_t *e))
 }
 
 //获取一条记录根据记录主键，返回查询到的记录数
-int cardinfo_get_by_id(cardinfo_t *e, int id)
+int cardinfo_get_by_num(cardinfo_t *e, int num)
 {
-	int res = db_query_by_varpara("select * from cardinfo where num=?;", cardinfo_bind, e, "%d", id);
-	return res;
+	return db_query_by_varpara("select * from cardinfo where num=?;", cardinfo_bind, e, "%d", num);
+}
+
+//获取一条记录根据卡ID，返回查询到的记录数
+int cardinfo_get_by_cardid(cardinfo_t *e, int card_id)
+{
+	return db_query_by_varpara("select * from cardinfo where id=?;", cardinfo_bind, e, "%d", card_id);
+}
+
+//获取记录根据卡类型，返回查询到的记录数
+int cardinfo_get_by_type(na_queue_t *q, int type)
+{
+	return db_query_by_varpara("select * from cardinfo where type=?;", cardinfo_queue_bind, q, "%d", type);
+}
+
+int cardinfo_count_by_num(int num)
+{
+	return db_query_count_result("select count(*) from cardinfo where num=?;", "%d", num);
+}
+
+int cardinfo_count_by_cardid(int card_id)
+{
+	return db_query_count_result("select count(*) from cardinfo where id=?;", "%d", card_id);
+}
+
+int cardinfo_count_by_type(int type)
+{
+	return db_query_count_result("select count(*) from cardinfo where type=?;", "%d", type);
 }
 
 //返回查询到的记录数

@@ -3,7 +3,7 @@
 #include <rtthread.h>
 #include "hmi_driver.h"
 
-extern void SendChar(unsigned char c);
+extern void send_char(unsigned char c);
 
 #define TX_8(P1) SEND_DATA((P1)&0xFF)  //发送单个字节
 #define TX_8N(P,N) SendNU8((unsigned char *)P,N)  //发送N个字节
@@ -67,7 +67,7 @@ void END_CMD()
 
 #else//NO CRC16
 
-#define SEND_DATA(P) SendChar(P)
+#define SEND_DATA(P) send_char(P)
 #define BEGIN_CMD() TX_8(0XEE)
 #define END_CMD() TX_32(0XFFFCFFFF)
 

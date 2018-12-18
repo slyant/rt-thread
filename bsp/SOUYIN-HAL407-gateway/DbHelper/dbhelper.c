@@ -346,7 +346,7 @@ static int db_get_count(sqlite3_stmt *stmt,void *arg)
 int db_query_count_result(const char *sql)
 {
     int ret,count=0;
-    ret = db_query_by_varpara(sql,db_get_count,&count,NULL);
+    ret = db_query_by_varpara(sql,db_get_count,&count,RT_NULL);
     if(ret == SQLITE_OK)
         return count;
     return 0;

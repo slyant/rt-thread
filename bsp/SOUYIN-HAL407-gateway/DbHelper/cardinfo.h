@@ -11,7 +11,12 @@ typedef struct cardinfo_s{
 	na_queue_t queue;
 }cardinfo_t;
 
-int cardinfo_get_by_id(cardinfo_t *e, int id);
+int cardinfo_get_by_num(cardinfo_t *e, int num);
+int cardinfo_get_by_cardid(cardinfo_t *e, int card_id);
+int cardinfo_get_by_type(na_queue_t *q, int type);
+int cardinfo_count_by_num(int num);
+int cardinfo_count_by_cardid(int card_id);
+int cardinfo_count_by_type(int type);
 int cardinfo_get_all(na_queue_t * q);
 int cardinfo_add(cardinfo_t * e);
 int cardinfo_del(int id);
