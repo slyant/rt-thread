@@ -166,11 +166,6 @@
 #define PKG_USING_TINYCRYPT
 #define PKG_USING_TINYCRYPT_V100
 #define TINY_CRYPT_MD5
-#define TINY_CRYPT_BASE64
-#define TINY_CRYPT_AES
-#define TINY_CRYPT_AES_ROM_TABLES
-#define TINY_CRYPT_SHA1
-#define TINY_CRYPT_SHA256
 
 /* language packages */
 
@@ -191,7 +186,7 @@
 /* miscellaneous packages */
 
 #define PKG_USING_MULTIBUTTON
-#define PKG_USING_MULTIBUTTON_V102
+#define PKG_USING_MULTIBUTTON_LATEST_VERSION
 
 /* MultiButton Options */
 

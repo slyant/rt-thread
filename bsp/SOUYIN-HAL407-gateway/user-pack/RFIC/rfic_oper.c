@@ -6,7 +6,7 @@
 #include <hmi_driver.h>
 #include <uart_lcd_process.h>
 
-#define  RFID_SIG_LOG  rt_kprintf("[RFID_SIG]:");rt_kprintf
+#define  RFID_SIG_LOG  rt_kprintf("[RFIC_OPER]:");rt_kprintf
 
 rt_uint8_t ic_card_read_buff[300];
 

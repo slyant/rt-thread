@@ -7,7 +7,7 @@
 #include "stm32f4xx_hal.h"
 
 
-#define RFIC_LOG  rt_kprintf("[RFIC]:");rt_kprintf
+#define RFIC_LOG  rt_kprintf("[DRV_RFIC]:");rt_kprintf
 
 #define MAXRLEN 18
 unsigned char com_mf522_buf[MAXRLEN];

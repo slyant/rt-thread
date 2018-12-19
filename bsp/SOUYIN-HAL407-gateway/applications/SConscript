@@ -1,21 +1,12 @@
-Import('RTT_ROOT')
-Import('rtconfig')
-from building import *
+import os
+from building import * 
 
-cwd     = os.path.join(str(Dir('#')), 'applications')
+# get current dir path
+cwd = GetCurrentDir()
+inc = [cwd]
+src = Glob('*.c')
 
-src = Split("""
-main.c
-delay.c
-rfic-manage.c
-app_uart.c
-gpio_oper.c
-pcf8563.c
-gps_user.c
-""")
-
-CPPPATH = [cwd, str(Dir('#'))]
-
-group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH)
+# add group to IDE project
+group = DefineGroup('Applications', src, depend = [], CPPPATH = inc)
 
 Return('group')
