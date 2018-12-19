@@ -212,26 +212,6 @@ void key_card_init(void)
 	else rt_kprintf("key card reset faulted ! \n");    //仅空白卡可以初始化，成功后卡内仅有A,B密钥及控制信息
 }
 
-#include "na_queue.h"
-
-void test_get_byid(void)
-{
-	uint8_t sysinfo_id;
-	sysinfo_t sysinfo;
-	
-	sysinfo_id = 1; 
-	if(sysinfo_get_by_id(&sysinfo, sysinfo_id)) //读系统数据库信息
-	{
-		rt_kprintf("id:%d\nsys_title:%s\nopen_timeout:%d\nnode_count:%d\ndoor_count:%d\n",\
-		sysinfo.id, sysinfo.sys_title, sysinfo.open_timeout,sysinfo.node_count, sysinfo.door_count);
-		rt_kprintf("keya:%02x%02x%02x%02x%02x%02x\nkeyb:%02x%02x%02x%02x%02x%02x",\
-		sysinfo.key_a[0],sysinfo.key_a[1],sysinfo.key_a[2],sysinfo.key_a[03],\
-		sysinfo.key_a[04],sysinfo.key_a[5],sysinfo.key_b[0],sysinfo.key_b[1],sysinfo.key_b[2],\
-		sysinfo.key_b[3],sysinfo.key_b[4],sysinfo.key_b[5]);
-	}		
-}
-MSH_CMD_EXPORT(test_get_byid, test get byid);
-
 void key_card_make(void)
 {
 	uint8_t i,ts,sysinfo_id;

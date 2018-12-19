@@ -1,16 +1,34 @@
 #ifndef __IC_CARD_PROTOCOL_H__
 #define __IC_CARD_PROTOCOL_H__
 
-enum
+/******************数据块地址定义**********************/
+#define CARD_CHECK_BLOCK			1	//卡签名数据块
+#define CARD_LEN_BLOCK				2	//卡信息长度数据块
+
+typedef enum
 {
-	ROOT_CARD=0,           //密钥卡
-	SYS_COF_CARD,          //配置卡
-	MANAG_CARD,            //管理卡
-	NORMNA_CARD,           //钥匙卡
-	SPACE_CARD,            //空卡
-	WAIT_TYP_CARD,         //待定类型的卡，该卡被判定为内部正常使用的卡，但还需进一步判定：配置、管理、钥匙卡
-	OTHER_CARD = 255       //其他卡
-};
+	CARD_TYPE_NULL = 0,     //空卡
+	CARD_TYPE_KEY,			//密钥卡
+	CARD_TYPE_APP,			//应用卡
+	CARD_TYPE_UNKNOW		//未知卡
+}card_base_type_t;//IC卡基础类型枚举
+
+typedef enum
+{
+	CARD_APP_TYPE_ABKEY = 0,	//密钥卡
+	CARD_APP_TYPE_CONFIG,		//配置卡
+	CARD_APP_TYPE_POWER,        //授权卡
+	CARD_APP_TYPE_EKEY,			//钥匙卡
+	CARD_APP_TYPE_DRIVER,		//司机卡
+	CARD_APP_TYPE_LOCKKEY,		//锁钥卡
+	CARD_APP_TYPE_UNKNOW		//未知卡
+}card_app_type_t;//IC卡应用类型枚举
+
+
+
+
+
+
 
 #define APP_USE_SECTOR_SIZE  9
 
@@ -29,10 +47,7 @@ enum
 #define CardInfType_02		2		//车辆卡
 #define CardInfType_03		3		//开启台卡
 #define CardInfType_FF		255		//未知卡
-/******************数据块地址定义**********************/
-#define CARD_APP_CHECK_BLOCK			1	//卡签名数据块
-#define CARD_APP_LEN_BLOCK				2	//卡信息长度数据块
-#define CARD_APP_CHECK_CTRL_BLOCK	    3	//卡签名控制数据块
+
 
 void create_rnd_str(int length,char* out_str);
 

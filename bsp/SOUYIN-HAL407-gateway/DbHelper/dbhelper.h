@@ -16,7 +16,9 @@ int db_nonquery_transaction(int (*exec_sqls)(sqlite3 *db,void * arg),void *arg);
 //执行多值传参的查询语句
 int db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...);
 //执行查询并返回查询结果集的条数
-int db_query_count_result(const char *sql);
+int db_query_count_result(const char *sql,const char *fmt,...);
+//执行查询并返回查询结果的第一行第一列
+int db_query_scalar_result(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...);
 //对sqlite3_column_blob的二次封装
 int db_stmt_get_blob(sqlite3_stmt *stmt,int index,unsigned char *out);
 //对sqlite3_column_text的二次封装

@@ -287,7 +287,7 @@
 
   <Group>
     <GroupName>DbHelper</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1607,7 +1607,7 @@
 
   <Group>
     <GroupName>NrfNet</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1739,7 +1739,7 @@
 
   <Group>
     <GroupName>NRF-APP</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1759,7 +1759,7 @@
 
   <Group>
     <GroupName>RFIC</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1782,8 +1782,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>user-pack\RFIC\dev_rfic.c</PathWithFileName>
-      <FilenameWithoutPath>dev_rfic.c</FilenameWithoutPath>
+      <PathWithFileName>user-pack\RFIC\ic_card_protocol.c</PathWithFileName>
+      <FilenameWithoutPath>ic_card_protocol.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1794,8 +1794,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>user-pack\RFIC\ic_card_protocol.c</PathWithFileName>
-      <FilenameWithoutPath>ic_card_protocol.c</FilenameWithoutPath>
+      <PathWithFileName>.\user-pack\RFIC\rfic_oper.c</PathWithFileName>
+      <FilenameWithoutPath>rfic_oper.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1806,8 +1806,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\user-pack\RFIC\rfic_oper.c</PathWithFileName>
-      <FilenameWithoutPath>rfic_oper.c</FilenameWithoutPath>
+      <PathWithFileName>.\user-pack\RFIC\drv_rfic.c</PathWithFileName>
+      <FilenameWithoutPath>drv_rfic.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1850,8 +1850,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>user-pack\uart_lcd\lcd_oper.c</PathWithFileName>
-      <FilenameWithoutPath>lcd_oper.c</FilenameWithoutPath>
+      <PathWithFileName>.\user-pack\uart_lcd\uart_lcd_device.c</PathWithFileName>
+      <FilenameWithoutPath>uart_lcd_device.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1862,8 +1862,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\user-pack\uart_lcd\app_lcd.c</PathWithFileName>
-      <FilenameWithoutPath>app_lcd.c</FilenameWithoutPath>
+      <PathWithFileName>.\user-pack\uart_lcd\uart_lcd_process.c</PathWithFileName>
+      <FilenameWithoutPath>uart_lcd_process.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

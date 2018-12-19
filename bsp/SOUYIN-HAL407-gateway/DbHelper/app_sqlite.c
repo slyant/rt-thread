@@ -1,7 +1,6 @@
 #include <rtthread.h>
 #include <dfs_posix.h>
 #include <db_include.h>
-#include "lcd_oper.h"
 
 #define APP_SQLITE_DEBUG	1
 
@@ -85,8 +84,7 @@ void app_sqlite_init(void)
 	if(sysinfo_get_count_by_id(SYSINFO_DB_KEY_ID)==0)
 	{//如果id=SYSINFO_DB_KEY_ID的记录不存在，则添加
 		init_data();
-	}
-	
+	}	
 
 	sysinfo_t sysinfo;
 	int count = sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID);

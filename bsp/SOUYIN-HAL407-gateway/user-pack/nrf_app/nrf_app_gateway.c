@@ -2,7 +2,7 @@
 #include <nrf_gateway.h>
 #include <stdlib.h>
 #include <rtdevice.h>
-#include <lcd_oper.h>
+#include <uart_lcd_process.h>
 
 #define APP_USING_LOG
 #ifdef APP_USING_LOG
@@ -17,13 +17,13 @@ static void on_conn_cb(void* args)
 {
 	uint8_t node = *(uint8_t*)args;
 	LOG("NRF Node %d Connected!\r\n", node);
-	sark_join_cfg(node);
+	//sark_join_cfg(node);
 }
 static void on_disconn_cb(void* args)
 {
 	uint8_t node = *(uint8_t*)args;
 	LOG("NRF Node %d DisConnected!\r\n", node);
-	sark_discon_remov(node);
+	//sark_discon_remov(node);
 }
 static void on_send_cb(rt_uint8_t src_addr,rt_uint8_t dst_addr,rt_uint8_t pack_type,rt_uint16_t ID,rt_uint8_t *buf,rt_uint8_t status)
 {

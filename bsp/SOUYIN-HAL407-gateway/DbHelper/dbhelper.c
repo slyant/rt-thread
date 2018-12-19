@@ -78,19 +78,7 @@ static int db_bind_by_var(sqlite3_stmt *stmt,const char *fmt,va_list args)
     return ret;
 }
 
-/* 
- * ===  FUNCTION  ======================================================================
- *         Name:  db_query_by_varpara
- *  Description:  数据库查询操作，可以带变参绑定
- *  @sql       :  sql 
- *  @create    :  取得数据并创建节点
- *  @arg       :  用户用于create的参数
- *  @fmt       :  格式字符串，%s string,%d int,%nx 长度为N的二进制串
- *  ...        :  变参
- *  Return     :  查询到数据的条数 
- * =====================================================================================
- */
-int db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...)
+static int _db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,va_list args)
 {
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
@@ -113,10 +101,7 @@ int db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *a
     }
 
     if(fmt){
-        va_list args;
-        va_start(args,fmt);
         rc = db_bind_by_var(stmt,fmt,args);
-        va_end(args);
         if(rc){
             DB_DEBUG("database bind fail,rc=%d",rc);
             goto DB_EXEC_FAIL;
@@ -139,8 +124,34 @@ DB_EXEC_OK:
     return rc;
 }
 
-
-
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  db_query_by_varpara
+ *  Description:  数据库查询操作，可以带变参绑定
+ *  @sql       :  sql 
+ *  @create    :  取得数据并创建节点
+ *  @arg       :  用户用于create的参数
+ *  @fmt       :  格式字符串，%s string,%d int,%nx 长度为N的二进制串
+ *  ...        :  变参
+ *  Return     :  查询到数据的条数 
+ * =====================================================================================
+ */
+int db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...)
+{
+	int rc;
+	va_list args;
+    if(fmt)
+	{       
+        va_start(args,fmt);
+        rc = _db_query_by_varpara(sql,create,arg,fmt,args);
+        va_end(args);        
+    }
+	else
+	{
+		rc = _db_query_by_varpara(sql,create,arg,fmt,args);
+	}
+    return rc;
+}
 
 /* 
  * ===  FUNCTION  ======================================================================
@@ -338,18 +349,57 @@ static int db_get_count(sqlite3_stmt *stmt,void *arg)
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  db_query_count_result
- *  Description:  查询计数结果的第一列第一行，其它忽略
+ *  Description:  查询计数结果的第一行第一列，其它忽略
  *  @sql       :  查询计数的SQL语句
  *  Return     :  查询到计数返回计数，否则一律返回0 
  * =====================================================================================
  */
-int db_query_count_result(const char *sql)
+int db_query_count_result(const char *sql,const char *fmt,...)
 {
     int ret,count=0;
-    ret = db_query_by_varpara(sql,db_get_count,&count,RT_NULL);
+	va_list args;
+    if(fmt)
+	{        
+        va_start(args,fmt);
+        ret = _db_query_by_varpara(sql,db_get_count,&count,fmt,args);
+        va_end(args);        
+    }
+	else
+	{
+		ret = _db_query_by_varpara(sql,db_get_count,&count,fmt,args);
+	} 
     if(ret == SQLITE_OK)
         return count;
     return 0;
+}
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  db_query_scalar_result
+ *  Description:  查询结果的第一行第一列，可以带变参绑定
+ *  @sql       :  sql 
+ *  @create    :  取得数据并创建节点
+ *  @arg       :  用户用于create的参数
+ *  @fmt       :  格式字符串，%s string,%d int,%nx 长度为N的二进制串
+ *  ...        :  变参
+ *  Return     :  0 or error 
+ * =====================================================================================
+ */
+int db_query_scalar_result(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...)
+{
+    int rc;
+	va_list args;
+    if(fmt)
+	{        
+        va_start(args,fmt);
+        rc = _db_query_by_varpara(sql,create,arg,fmt,args);
+        va_end(args);        
+    }
+	else
+	{
+		rc = _db_query_by_varpara(sql,create,arg,fmt,args);
+	} 
+    return rc;
 }
 
 int db_stmt_get_blob(sqlite3_stmt *stmt,int index,unsigned char *out)

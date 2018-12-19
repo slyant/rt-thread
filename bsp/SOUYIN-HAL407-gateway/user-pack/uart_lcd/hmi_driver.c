@@ -1,9 +1,9 @@
 
 
 #include <rtthread.h>
-#include "hmi_driver.h"
+#include <hmi_driver.h>
 
-extern void send_char(unsigned char c);
+extern void send_char(rt_uint8_t c);	//from uart_lcd_device.c
 
 #define TX_8(P1) SEND_DATA((P1)&0xFF)  //发送单个字节
 #define TX_8N(P,N) SendNU8((unsigned char *)P,N)  //发送N个字节

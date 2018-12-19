@@ -1052,11 +1052,6 @@
               <FilePath>user-pack\RFIC\datacheck.c</FilePath>
             </File>
             <File>
-              <FileName>dev_rfic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>user-pack\RFIC\dev_rfic.c</FilePath>
-            </File>
-            <File>
               <FileName>ic_card_protocol.c</FileName>
               <FileType>1</FileType>
               <FilePath>user-pack\RFIC\ic_card_protocol.c</FilePath>
@@ -1065,6 +1060,11 @@
               <FileName>rfic_oper.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\user-pack\RFIC\rfic_oper.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_rfic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user-pack\RFIC\drv_rfic.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1082,14 +1082,14 @@
               <FilePath>user-pack\uart_lcd\hmi_driver.c</FilePath>
             </File>
             <File>
-              <FileName>lcd_oper.c</FileName>
+              <FileName>uart_lcd_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\uart_lcd\lcd_oper.c</FilePath>
+              <FilePath>.\user-pack\uart_lcd\uart_lcd_device.c</FilePath>
             </File>
             <File>
-              <FileName>app_lcd.c</FileName>
+              <FileName>uart_lcd_process.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\user-pack\uart_lcd\app_lcd.c</FilePath>
+              <FilePath>.\user-pack\uart_lcd\uart_lcd_process.c</FilePath>
             </File>
           </Files>
         </Group>
