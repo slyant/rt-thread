@@ -1,8 +1,7 @@
 {
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
     "files.associations": {
-        "drv_rfic.h": "c",
-        "ic_card_protocol.h": "c"
+        "db_include.h": "c"
     }
 
 }

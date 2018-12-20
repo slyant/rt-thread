@@ -4,11 +4,6 @@
 #include "drv_rng.h"
 #include "ic_card_protocol.h"
 
-#define BLOCK_SIZE				16
-#define KEY_LENGTH				6
-#define CTRL_LENGTH				4
-#define SIGNATURE_LENGTH		16
-#define CARD_INF_BLOCK_COUNT	18	//最大值45(15*3=45)
 const unsigned char factory_signature[SIGNATURE_LENGTH] = {0x61, 0x6D, 0x50, 0x75, 0x38, 0x39, 0x52, 0x33, 0x47, 0x44, 0x77, 0x78, 0x21, 0x7E, 0x6A, 0x23};
 const unsigned char factory_key_a[KEY_LENGTH] = {0x25, 0xFD, 0xC4, 0x96, 0xAA, 0x06};
 const unsigned char factory_key_b[KEY_LENGTH] = {0xA5, 0xF2, 0x3D, 0x90, 0xF7, 0x43};

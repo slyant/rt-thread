@@ -1,5 +1,12 @@
 #ifndef __IC_CARD_PROTOCOL_H__
 #define __IC_CARD_PROTOCOL_H__
+#include <rtthread.h>
+
+#define BLOCK_SIZE				16
+#define KEY_LENGTH				6
+#define CTRL_LENGTH				4
+#define SIGNATURE_LENGTH		16
+#define CARD_INF_BLOCK_COUNT	18	//最大值45(15*3=45)
 
 /******************数据块地址定义**********************/
 #define CARD_CHECK_BLOCK			1	//卡签名数据块
