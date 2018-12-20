@@ -20,11 +20,9 @@ int main(void)
 	extern void app_sqlite_init(void);
 	extern void nrf_gateway_startup(void);
 	extern int lcd_device_startup(void);
-	extern int rfid_thread_startup(void);
 	app_sqlite_init();
 	nrf_gateway_startup();
 	lcd_device_startup();
-	rfid_thread_startup();
 //	while(1)
 //	{
 //		rt_thread_mdelay(10);

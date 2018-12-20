@@ -1,16 +1,8 @@
 {
-    "C_Cpp.intelliSenseEngineFallback": "Disabled",
+    "C_Cpp.intelliSenseEngineFallback": "Enabled",
     "files.associations": {
-        "dbhelper.h": "c",
-        "sqlite3.h": "c",
-        "stdarg.h": "c",
-        "rtthread.h": "c",
-        "rtdef.h": "c",
-        "rtlibc.h": "c",
-        "libc_fcntl.h": "c",
-        "fcntl.h": "c",
-        "dbinclude.h": "c",
-        "dfs_posix.h": "c"
+        "drv_rfic.h": "c",
+        "ic_card_protocol.h": "c"
     }
 
 }

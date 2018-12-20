@@ -126,7 +126,8 @@ int pcd_select_ex(unsigned char *pSnr);
 int pcd_auth_state_ex(unsigned char auth_mode,unsigned char addr,unsigned char *pKey,unsigned char *pSnr);
 int pcd_read_ex(unsigned char addr,unsigned char *pData);
 int pcd_write_ex(unsigned char addr,unsigned char *pData);
-
+int pcd_value_ex(unsigned char dd_mode,unsigned char addr,unsigned char *pValue);
+int pcd_bak_value_ex(unsigned char sourceaddr, unsigned char goaladdr);
 
 
 #endif

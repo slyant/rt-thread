@@ -1,14 +1,9 @@
-
-
-
 #include <rtdevice.h>
 
 #include "drv_i2c.h"
-#include "rfic_oper.h"
 #include "pcf8563.h"
 
 #define  PCF_ADDR  0x51
-
 
 uint8_t time_buf[7] = {0};  //用于保存时间,[0]秒，[1]分，[2]时，[3]日，[4]星期，[5]月，[6]年
 const uint8_t tab_week[12]={0,3,3,6,1,4,6,2,5,0,3,5}; //月修正数据表

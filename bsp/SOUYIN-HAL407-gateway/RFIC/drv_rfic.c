@@ -3,7 +3,6 @@
 #include <drv_spi.h>
 #include <drv_usart.h>
 #include <drv_rfic.h>
-#include <ic_card_protocol.h>
 #include "stm32f4xx_hal.h"
 
 
@@ -886,5 +885,101 @@ int pcd_write_ex(unsigned char addr,unsigned char *pData)
     return status;
 }
 
+/////////////////////////////////////////////////////////////////////
+//功    能：扣款和充值
+//参数说明: dd_mode[IN]：命令字
+//               0xC0 = 扣款
+//               0xC1 = 充值
+//          addr[IN]：钱包地址
+//          pValue[IN]：4字节增(减)值，低位在前
+//返    回: 成功返回MI_OK
+/////////////////////////////////////////////////////////////////////                 
+int pcd_value_ex(unsigned char dd_mode,unsigned char addr,unsigned char *pValue)
+{
+    int status;
+    unsigned int  unLen;     
+    
+    com_mf522_buf[0] = dd_mode;
+    com_mf522_buf[1] = addr;
+    calulate_crc_ex(com_mf522_buf,2,&com_mf522_buf[2]);
+ 
+    status = pcd_com_mf522_ex(PCD_TRANSCEIVE,com_mf522_buf,4,com_mf522_buf,&unLen);
 
+    if ((status != MI_OK) || (unLen != 4) || ((com_mf522_buf[0] & 0x0F) != 0x0A))
+    {   status = MI_ERR;   }
+        
+    if (status == MI_OK)
+    {
+       rt_memcpy(com_mf522_buf, pValue, 4);
+ //       for (i=0; i<16; i++)
+ //       {    com_mf522_buf[i] = *(pValue+i);   }
+        calulate_crc_ex(com_mf522_buf,4,&com_mf522_buf[4]);
+        unLen = 0;
+        status = pcd_com_mf522_ex(PCD_TRANSCEIVE,com_mf522_buf,6,com_mf522_buf,&unLen);
+        if (status != MI_ERR)
+        {    status = MI_OK;    }
+    }
+    
+    if (status == MI_OK)
+    {
+        com_mf522_buf[0] = PICC_TRANSFER;
+        com_mf522_buf[1] = addr;
+        calulate_crc_ex(com_mf522_buf,2,&com_mf522_buf[2]); 
+   
+        status = pcd_com_mf522_ex(PCD_TRANSCEIVE,com_mf522_buf,4,com_mf522_buf,&unLen);
+
+        if ((status != MI_OK) || (unLen != 4) || ((com_mf522_buf[0] & 0x0F) != 0x0A))
+        {   status = MI_ERR;   }
+    }
+    return status;
+}
+
+/////////////////////////////////////////////////////////////////////
+//功    能：备份钱包
+//参数说明: sourceaddr[IN]：源地址
+//          goaladdr[IN]：目标地址
+//返    回: 成功返回MI_OK
+/////////////////////////////////////////////////////////////////////
+int pcd_bak_value_ex(unsigned char sourceaddr, unsigned char goaladdr)
+{
+    int status;
+    unsigned int  unLen;     
+
+    com_mf522_buf[0] = PICC_RESTORE;
+    com_mf522_buf[1] = sourceaddr;
+    calulate_crc_ex(com_mf522_buf,2,&com_mf522_buf[2]);
+ 
+    status = pcd_com_mf522_ex(PCD_TRANSCEIVE,com_mf522_buf,4,com_mf522_buf,&unLen);
+
+    if ((status != MI_OK) || (unLen != 4) || ((com_mf522_buf[0] & 0x0F) != 0x0A))
+    {   status = MI_ERR;   }
+    
+    if (status == MI_OK)
+    {
+        com_mf522_buf[0] = 0;
+        com_mf522_buf[1] = 0;
+        com_mf522_buf[2] = 0;
+        com_mf522_buf[3] = 0;
+        calulate_crc_ex(com_mf522_buf,4,&com_mf522_buf[4]);
+ 
+        status = pcd_com_mf522_ex(PCD_TRANSCEIVE,com_mf522_buf,6,com_mf522_buf,&unLen);
+        if (status != MI_ERR)
+        {    status = MI_OK;    }
+    }
+    
+    if (status != MI_OK)
+    {    return MI_ERR;   }
+    
+    com_mf522_buf[0] = PICC_TRANSFER;
+    com_mf522_buf[1] = goaladdr;
+
+    calulate_crc_ex(com_mf522_buf,2,&com_mf522_buf[2]);
+ 
+    status = pcd_com_mf522_ex(PCD_TRANSCEIVE,com_mf522_buf,4,com_mf522_buf,&unLen);
+
+    if ((status != MI_OK) || (unLen != 4) || ((com_mf522_buf[0] & 0x0F) != 0x0A))
+    {   status = MI_ERR;   }
+
+    return status;
+}
 

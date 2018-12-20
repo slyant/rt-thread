@@ -11,12 +11,13 @@
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pArmCC>5060750::V5.06 update 6 (build 750)::ARMCC</pArmCC>
-      <pCCUsed>5060528::V5.06 update 5 (build 528)::ARMCC</pCCUsed>
+      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
+      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F407VGTx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.11.0</PackID>
+          <PackID>Keil.STM32F4xx_DFP.2.13.0</PackID>
           <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IRAM(0x20000000,0x00020000) IRAM2(0x10000000,0x00010000) IROM(0x08000000,0x00100000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -336,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;user-pack\nrf_app;user-pack\RFIC;user-pack\uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
+              <IncludePath>applications;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;nrf_app;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFIC;uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -391,11 +392,6 @@
               <FilePath>applications\gpio_oper.c</FilePath>
             </File>
             <File>
-              <FileName>gps_user.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\gps_user.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
@@ -404,11 +400,6 @@
               <FileName>pcf8563.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\pcf8563.c</FilePath>
-            </File>
-            <File>
-              <FileName>rfic-manage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\rfic-manage.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -943,6 +934,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>NRF-APP</GroupName>
+          <Files>
+            <File>
+              <FileName>nrf_app_gateway.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>nrf_app\nrf_app_gateway.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>cJSON</GroupName>
           <Files>
             <File>
@@ -1033,32 +1034,17 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>NRF-APP</GroupName>
-          <Files>
-            <File>
-              <FileName>nrf_app_gateway.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>user-pack\nrf_app\nrf_app_gateway.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>RFIC</GroupName>
           <Files>
             <File>
               <FileName>drv_rfic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\RFIC\drv_rfic.c</FilePath>
+              <FilePath>RFIC\drv_rfic.c</FilePath>
             </File>
             <File>
               <FileName>ic_card_protocol.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\RFIC\ic_card_protocol.c</FilePath>
-            </File>
-            <File>
-              <FileName>rfic_oper.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>user-pack\RFIC\rfic_oper.c</FilePath>
+              <FilePath>RFIC\ic_card_protocol.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1068,22 +1054,22 @@
             <File>
               <FileName>cmd_queue.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\uart_lcd\cmd_queue.c</FilePath>
+              <FilePath>uart_lcd\cmd_queue.c</FilePath>
             </File>
             <File>
               <FileName>hmi_driver.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\uart_lcd\hmi_driver.c</FilePath>
+              <FilePath>uart_lcd\hmi_driver.c</FilePath>
             </File>
             <File>
               <FileName>uart_lcd_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\uart_lcd\uart_lcd_device.c</FilePath>
+              <FilePath>uart_lcd\uart_lcd_device.c</FilePath>
             </File>
             <File>
               <FileName>uart_lcd_process.c</FileName>
               <FileType>1</FileType>
-              <FilePath>user-pack\uart_lcd\uart_lcd_process.c</FilePath>
+              <FilePath>uart_lcd\uart_lcd_process.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1307,14 +1293,14 @@
                 <v6LangP>0</v6LangP>
                 <vShortEn>2</vShortEn>
                 <vShortWch>2</vShortWch>
-                <v6Lto>0</v6Lto>
-                <v6WtE>0</v6WtE>
+                <v6Lto>2</v6Lto>
+                <v6WtE>2</v6WtE>
                 <v6Rtti>2</v6Rtti>
                 <VariousControls>
                   <MiscControls> --c99</MiscControls>
                   <Define> </Define>
                   <Undefine> </Undefine>
-                  <IncludePath> </IncludePath>
+                  <IncludePath></IncludePath>
                 </VariousControls>
               </Cads>
               <Aads>
@@ -1548,5 +1534,11 @@
       </Groups>
     </Target>
   </Targets>
+
+  <RTE>
+    <apis/>
+    <components/>
+    <files/>
+  </RTE>
 
 </Project>
