@@ -38,7 +38,17 @@ typedef enum
 	CARD_APP_TYPE_UNKNOW		//未知卡
 }card_app_type_t;//IC卡应用类型枚举
 
-card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *out_card_id, rt_uint8_t *out_buffer, rt_uint16_t *out_buffer_len);
+//IC卡扫描结果信息
+struct rfid_scan_info
+{
+	card_base_type_t base_type;
+	rt_uint8_t card_id[4];
+	rt_uint8_t *buffer;
+	rt_uint16_t buf_len;
+};
+typedef struct rfid_scan_info *rfid_scan_info_t;
+
+card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rfid_scan_info_t out_result);
 rt_bool_t rfid_card_init(card_base_type_t type, rt_bool_t use_money_bag, rt_uint8_t *in_key_a, rt_uint8_t *in_key_b);
 rt_bool_t rfid_card_reset(card_base_type_t type, rt_uint8_t *in_key_b);
 rt_bool_t rfid_card_write(card_base_type_t type, rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *buffer, rt_uint16_t buf_length);

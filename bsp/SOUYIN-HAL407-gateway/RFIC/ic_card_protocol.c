@@ -85,12 +85,11 @@ function: 扫描IC卡,并返回扫描结果
 param:
 in_key_a: in 应用卡A钥
 in_key_b: in 应用卡B钥
-out_card_id： out 卡ID 4Byte
-out_buffer: out 应用卡数据,传入空指针,在外部释放
-out_buffer_len: out 应用卡数据长度
+out_result: out 卡信息
 return: 卡基础类型 card_base_type_t
 */
-card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *out_card_id, rt_uint8_t *out_buffer, rt_uint16_t *out_buffer_len)
+//card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *out_card_id, rt_uint8_t *out_buffer, rt_uint16_t out_result->buf_len)
+card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rfid_scan_info_t out_result)
 {
 	static rt_uint8_t find_tag;
 	rt_uint8_t auth_index = 0;
@@ -99,27 +98,25 @@ card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt
 	rt_uint16_t i, inf_len;
 	rt_uint8_t check_buf[BLOCK_SIZE*2];//用于存放CARD_CHECK_BLOCK和CARD_LEN_BLOCK或MD5结果
 
-	RT_ASSERT(out_card_id != RT_NULL);
-	RT_ASSERT(out_buffer == RT_NULL);
-	RT_ASSERT(out_buffer_len != RT_NULL);
+	RT_ASSERT(out_result != RT_NULL);
 
-	*out_buffer_len = 0;
+	out_result->buf_len = 0;
 
 _ENTRY:
-	if((status = pcd_request_ex(PICC_REQALL, out_card_id)) != MI_OK)
-		status = pcd_request_ex(PICC_REQALL, out_card_id);
+	if((status = pcd_request_ex(PICC_REQALL, out_result->card_id)) != MI_OK)
+		status = pcd_request_ex(PICC_REQALL, out_result->card_id);
 	if(status != MI_OK){//寻卡获得卡类型
 		find_tag = 0;
 	}
 	if(status == MI_OK && find_tag == 0)
 	{				
-		if(pcd_anticoll_ex(out_card_id) == MI_OK)//读卡号
+		if(pcd_anticoll_ex(out_result->card_id) == MI_OK)//读卡号
 		{
-			if(pcd_select_ex(out_card_id) == MI_OK)//选择卡
+			if(pcd_select_ex(out_result->card_id) == MI_OK)//选择卡
 			{				
 				if(auth_index==0)
 				{
-					if(pcd_auth_state_ex(PICC_AUTHENT1A, CARD_CHECK_BLOCK, (unsigned char*)default_key, out_card_id) == MI_OK)
+					if(pcd_auth_state_ex(PICC_AUTHENT1A, CARD_CHECK_BLOCK, (unsigned char*)default_key, out_result->card_id) == MI_OK)
 					{//空白卡
 						find_tag = 1;
 						card_base_type = CARD_TYPE_BLANK;				
@@ -132,7 +129,7 @@ _ENTRY:
 				}
 				else if(auth_index==1)
 				{
-					if(pcd_auth_state_ex(PICC_AUTHENT1A, CARD_CHECK_BLOCK, (unsigned char*)factory_key_a, out_card_id) == MI_OK)
+					if(pcd_auth_state_ex(PICC_AUTHENT1A, CARD_CHECK_BLOCK, (unsigned char*)factory_key_a, out_result->card_id) == MI_OK)
 					{//密钥卡
 						find_tag = 1;
 						card_base_type = CARD_TYPE_KEY;
@@ -151,34 +148,34 @@ _ENTRY:
 						}
 						block_count = inf_len / BLOCK_SIZE + (inf_len % BLOCK_SIZE > 0 ? 1:0);//实际在读取的数据块数量
 						//注意要在外部释放此空间					
-						out_buffer = rt_calloc(1, inf_len + (KEY_LENGTH * 2) + SIGNATURE_LENGTH);
+						out_result->buffer = rt_calloc(1, inf_len + (KEY_LENGTH * 2) + SIGNATURE_LENGTH);
 						for(i=0; i<block_count; i++)
 						{
 							if(i % 3 == 0){
-								if(pcd_auth_state_ex(PICC_AUTHENT1A, card_inf_blocks[i], (unsigned char*)factory_key_a, out_card_id) != MI_OK)
+								if(pcd_auth_state_ex(PICC_AUTHENT1A, card_inf_blocks[i], (unsigned char*)factory_key_a, out_result->card_id) != MI_OK)
 								{
 									goto _EXIT;
 								}
 							}
-							if(pcd_read_ex(card_inf_blocks[i], out_buffer + (i * BLOCK_SIZE)) != MI_OK)
+							if(pcd_read_ex(card_inf_blocks[i], out_result->buffer + (i * BLOCK_SIZE)) != MI_OK)
 							{
 								goto _EXIT;
 							}
 						}
 						//校验卡
-						rt_memcpy(out_buffer + inf_len, factory_key_a, KEY_LENGTH);
-						rt_memcpy(out_buffer + inf_len + KEY_LENGTH, factory_key_b, KEY_LENGTH);
-						rt_memcpy(out_buffer + inf_len + KEY_LENGTH + KEY_LENGTH, factory_signature, SIGNATURE_LENGTH);
-						tiny_md5(out_buffer, inf_len + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH, check_buf + BLOCK_SIZE);
+						rt_memcpy(out_result->buffer + inf_len, factory_key_a, KEY_LENGTH);
+						rt_memcpy(out_result->buffer + inf_len + KEY_LENGTH, factory_key_b, KEY_LENGTH);
+						rt_memcpy(out_result->buffer + inf_len + KEY_LENGTH + KEY_LENGTH, factory_signature, SIGNATURE_LENGTH);
+						tiny_md5(out_result->buffer, inf_len + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH, check_buf + BLOCK_SIZE);
 						if(rt_memcmp(check_buf, check_buf + BLOCK_SIZE, BLOCK_SIZE) == 0)
 						{
-							*out_buffer_len = inf_len;
-							rt_uint8_t *new_temp = rt_realloc(out_buffer, inf_len + 1);//重新分配内存，释放掉多余的内存
+							out_result->buf_len = inf_len;
+							rt_uint8_t *new_temp = rt_realloc(out_result->buffer, inf_len + 1);//重新分配内存，释放掉多余的内存
 							if(new_temp != RT_NULL)
 							{
-								out_buffer = new_temp;
+								out_result->buffer = new_temp;
 							}
-							out_buffer[inf_len]	= '\0';				
+							out_result->buffer[inf_len]	= '\0';				
 						}					
 					}
 					else
@@ -189,7 +186,7 @@ _ENTRY:
 				}
 				else if(auth_index==2)
 				{
-					if(in_key_a != RT_NULL && pcd_auth_state_ex(PICC_AUTHENT1A, CARD_CHECK_BLOCK, in_key_a, out_card_id) == MI_OK)
+					if(in_key_a != RT_NULL && pcd_auth_state_ex(PICC_AUTHENT1A, CARD_CHECK_BLOCK, in_key_a, out_result->card_id) == MI_OK)
 					{//应用卡
 						find_tag = 1;
 						card_base_type = CARD_TYPE_APP;
@@ -208,34 +205,34 @@ _ENTRY:
 						}
 						block_count = inf_len / BLOCK_SIZE + (inf_len % BLOCK_SIZE > 0 ? 1:0);//实际在读取的数据块数量
 						//注意要在外部释放此空间
-						out_buffer = rt_calloc(1, inf_len + (KEY_LENGTH * 2) + SIGNATURE_LENGTH);
+						out_result->buffer = rt_calloc(1, inf_len + (KEY_LENGTH * 2) + SIGNATURE_LENGTH);
 						for(i=0; i<block_count; i++)
 						{
 							if(i % 3 == 0){
-								if(pcd_auth_state_ex(PICC_AUTHENT1A, card_inf_blocks[i], in_key_a, out_card_id) != MI_OK)
+								if(pcd_auth_state_ex(PICC_AUTHENT1A, card_inf_blocks[i], in_key_a, out_result->card_id) != MI_OK)
 								{
 									goto _EXIT;
 								}
 							}
-							if(pcd_read_ex(card_inf_blocks[i], out_buffer + (i * BLOCK_SIZE)) != MI_OK)
+							if(pcd_read_ex(card_inf_blocks[i], out_result->buffer + (i * BLOCK_SIZE)) != MI_OK)
 							{
 								goto _EXIT;
 							}
 						}
 						//校验卡
-						rt_memcpy(out_buffer + inf_len, in_key_a, KEY_LENGTH);
-						rt_memcpy(out_buffer + inf_len + KEY_LENGTH, in_key_b, KEY_LENGTH);
-						rt_memcpy(out_buffer + inf_len + KEY_LENGTH + KEY_LENGTH, factory_signature, SIGNATURE_LENGTH);
-						tiny_md5(out_buffer, inf_len + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH, check_buf + BLOCK_SIZE);
+						rt_memcpy(out_result->buffer + inf_len, in_key_a, KEY_LENGTH);
+						rt_memcpy(out_result->buffer + inf_len + KEY_LENGTH, in_key_b, KEY_LENGTH);
+						rt_memcpy(out_result->buffer + inf_len + KEY_LENGTH + KEY_LENGTH, factory_signature, SIGNATURE_LENGTH);
+						tiny_md5(out_result->buffer, inf_len + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH, check_buf + BLOCK_SIZE);
 						if(rt_memcmp(check_buf, check_buf + BLOCK_SIZE, BLOCK_SIZE)==0)
 						{//校验通过
-							*out_buffer_len = inf_len;
-							rt_uint8_t *new_temp = rt_realloc(out_buffer, inf_len + 1);//重新分配内存，释放掉多余的内存
+							out_result->buf_len = inf_len;
+							rt_uint8_t *new_temp = rt_realloc(out_result->buffer, inf_len + 1);//重新分配内存，释放掉多余的内存
 							if(new_temp != RT_NULL)
 							{
-								out_buffer = new_temp;
+								out_result->buffer = new_temp;
 							}
-							out_buffer[inf_len] = '\0';
+							out_result->buffer[inf_len] = '\0';
 						}					
 					}				
 					else
@@ -250,6 +247,7 @@ _ENTRY:
 		}
 	}
 _EXIT:
+	out_result->base_type = card_base_type;
 	return card_base_type;
 }
 
