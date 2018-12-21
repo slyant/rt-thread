@@ -4,8 +4,6 @@
 #include <na_queue.h>
 #include <sqlite3.h>
 
-#define SYSINFO_DB_KEY_ID	1
-
 typedef struct sysinfo_s{
 	unsigned int id;
 	char sys_title[60];

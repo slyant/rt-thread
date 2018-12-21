@@ -48,7 +48,7 @@ typedef struct
 
 void write_h595(uint16_t dat);
 uint8_t get_nrf_addr(void);
-
+void beep_on(rt_uint8_t count);
 
 #endif
 

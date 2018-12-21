@@ -1,12 +1,9 @@
 #include <rtthread.h>
 #include <dfs_posix.h>
 #include <db_include.h>
+#include <app_config.h>
 
 #define APP_SQLITE_DEBUG	1
-
-const char* SYS_TITLE = "公交自助收银管理系统 V2.0";
-const unsigned char DEFAULT_KEY_A[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-const unsigned char DEFAULT_KEY_B[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 static int create_sqlite_db(void)
 {
@@ -65,12 +62,12 @@ static int init_data(void)
 	sysinfo_t e;
 	rt_memset(&e,0x00,sizeof(sysinfo_t));
 	e.id = SYSINFO_DB_KEY_ID;
-	rt_strncpy(e.sys_title, SYS_TITLE, rt_strlen(SYS_TITLE));
+	rt_strncpy(e.sys_title, INIT_SYS_TITLE, rt_strlen(INIT_SYS_TITLE));
 	e.open_timeout = 60;
 	e.node_count = 3;
 	e.door_count = 8;
-	rt_memcpy(e.key_a,DEFAULT_KEY_A,sizeof(DEFAULT_KEY_A));
-	rt_memcpy(e.key_b,DEFAULT_KEY_B,sizeof(DEFAULT_KEY_B));
+	rt_memcpy(e.key_a,INIT_SYS_KEY_A,sizeof(INIT_SYS_KEY_A));
+	rt_memcpy(e.key_b,INIT_SYS_KEY_B,sizeof(INIT_SYS_KEY_B));
 	return sysinfo_add(&e);
 }
 MSH_CMD_EXPORT(init_data, init sqlite db data);
@@ -89,7 +86,4 @@ void app_sqlite_init(void)
 	sysinfo_t sysinfo;
 	int count = sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID);
 	RT_ASSERT(count>0);
-	#if(APP_SQLITE_DEBUG)
-	rt_kprintf("\nsysinfo->\nid:%d\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\r\n",sysinfo.id, sysinfo.sys_title, sysinfo.open_timeout, sysinfo.door_count);
-	#endif
 }

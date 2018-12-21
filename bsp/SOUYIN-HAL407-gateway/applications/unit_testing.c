@@ -1,17 +1,22 @@
 #include <rtthread.h>
 #include <board.h>
-#include <cJSON_util.h>
-#include <ic_card_protocol.h>
-#include <db_include.h>
+#include <app_config.h>
 
-struct sys_status_s
+const char* INIT_SYS_TITLE = "公交自助收银管理系统 V2.0\0";
+const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+struct sys_status sys_status;
+struct sys_config sys_config;
+
+static rt_bool_t sys_abkey_exist(void)
 {
-	rt_uint8_t keya[KEY_LENGTH];
-	rt_uint8_t keyb[KEY_LENGTH];
-};
-typedef struct sys_status_s *sys_status_t;
-
-sys_status_t sys_status = RT_NULL;
+	if(rt_memcmp(sys_config.keya, INIT_SYS_KEY_A, INIT_KEY_LEN)==0 && rt_memcmp(sys_config.keyb, INIT_SYS_KEY_B, INIT_KEY_LEN)==0)
+	{
+		return RT_FALSE;
+	}
+	return RT_TRUE;
+}
 
 //应用卡处理
 static void card_app_handle(card_app_type_t type, cJSON *root)
@@ -94,16 +99,20 @@ static void rfid_scan_thread_entry(void* params)
 	rt_uint8_t card_id[4];
 	rt_uint8_t *buffer = RT_NULL;
 	rt_uint16_t buf_len;
-	cJSON *root;
+	cJSON *root = RT_NULL;
 	while(1)
 	{
-		card_base_type_t type = rfid_scan_handle(sys_status->keya, sys_status->keyb, card_id, buffer, &buf_len);
+		IC_LOCK();
+		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, card_id, buffer, &buf_len);
+		IC_UNLOCK();
 		switch((int)type)
 		{
 			case CARD_TYPE_BLANK:	//空白卡
-				rt_kprintf("CARD_TYPE_BLANK ID:%02x%02x%02x%02x\n", card_id[0], card_id[1], card_id[2], card_id[3]);
+				beep_on(1);
+				rt_kprintf("CARD_TYPE_BLANK ID:%02x%02x%02x%02x\n", card_id[0], card_id[1], card_id[2], card_id[3]);				
 				break;
 			case CARD_TYPE_KEY:		//密钥卡
+				beep_on(1);
 				rt_kprintf("CARD_TYPE_KEY ID:%02x%02x%02x%02x\n", card_id[0], card_id[1], card_id[2], card_id[3]);
 				if(buffer != RT_NULL && buf_len > 0)
 				{
@@ -128,6 +137,7 @@ static void rfid_scan_thread_entry(void* params)
 				}
 				break;
 			case CARD_TYPE_APP:
+				beep_on(1);
 				rt_kprintf("CARD_TYPE_APP ID:%02x%02x%02x%02x\n", card_id[0], card_id[1], card_id[2], card_id[3]);
 				if(buffer != RT_NULL && buf_len > 0)
 				{
@@ -152,31 +162,186 @@ static void rfid_scan_thread_entry(void* params)
 				}
 				break;
 			case CARD_TYPE_UNKNOW:
+				beep_on(3);
 				rt_kprintf("CARD_TYPE_UNKNOW ID:%02x%02x%02x%02x\n", card_id[0], card_id[1], card_id[2], card_id[3]);
 				break;
-			case CARD_TYPE_NULL:				
-				break;
-			default:
+//			case CARD_TYPE_NULL:				
+//				break;
+			default:				
 				break;			
 		}
 		if(buffer != RT_NULL)
 			rt_free(buffer);
 		if(root != RT_NULL)
 			cJSON_Delete(root);
-		rt_thread_mdelay(100);
+		
+		rt_thread_mdelay(50);
 	}
 }
 
-static int unit_test(void)
+//初始化密钥卡
+static void init_card_key(void)
 {
-	sys_status = rt_calloc(1, sizeof(sys_status_t));
-	RT_ASSERT(sys_status != RT_NULL);
+	IC_LOCK();
+	if(rfid_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
+	{
+		rt_kprintf("init_card_key OK!\n");
+	}
+	else
+	{
+		rt_kprintf("init_card_key ERROR!\n");
+	}
+	IC_UNLOCK();
+}
+MSH_CMD_EXPORT(init_card_key, init_card_key);
+
+//重置密钥卡
+static void reset_card_key(void)
+{
+	IC_LOCK();
+	if(rfid_card_reset(CARD_TYPE_KEY, RT_NULL))
+	{
+		rt_kprintf("reset_card_key OK!\n");
+	}
+	else
+	{
+		rt_kprintf("reset_card_key ERROR!\n");
+	}
+	IC_UNLOCK();	
+}
+MSH_CMD_EXPORT(reset_card_key, reset_card_key);
+
+static void auth_key_thread_entry(void *params)
+{
+	rt_uint8_t card_id[4];
+	rt_uint8_t *buffer = RT_NULL;
+	rt_uint16_t buf_len;
 	
-	rt_thread_t thread = rt_thread_create("rfid_scan", rfid_scan_thread_entry, RT_NULL, 
+	rt_mailbox_t auth_key_mb = (rt_mailbox_t)params;
+	rt_uint8_t ret_tag = 0;
+	
+	IC_LOCK();
+	rt_kprintf("please auth key card...\n");	
+	while(1)
+	{		
+		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, card_id, buffer, &buf_len);		
+		if(type != CARD_TYPE_NULL)
+		{
+			rt_mb_send(auth_key_mb, (rt_base_t)buffer);
+			ret_tag = 1;
+		}
+		if(buffer != RT_NULL)
+			rt_free(buffer);
+		
+		if(ret_tag)break;
+		rt_thread_mdelay(50);
+	}
+	IC_UNLOCK();
+}
+//创建密钥卡
+static void create_app_abkey(void)
+{
+	if(!sys_config.abkey_exist())
+	{//存在系统密钥
+		//需要先验证系统密钥
+		rt_mailbox_t auth_key_mb = rt_mb_create("auth_key", 1, RT_IPC_FLAG_FIFO);
+		RT_ASSERT(auth_key_mb != RT_NULL);
+		
+		rt_thread_t thread = rt_thread_create("auth_key", auth_key_thread_entry, auth_key_mb, 
+												1*1024, 5, 20);
+		if(thread != RT_NULL)
+			rt_thread_startup(thread);
+		
+		rt_ubase_t p = 0;
+		if(rt_mb_recv(auth_key_mb, &p, RT_WAITING_FOREVER)==RT_EOK)
+		{
+			if(p != 0)
+			{
+				char *rx_data = (char*)p;
+				if(rx_data)
+				{
+					rt_kprintf("rx_data:%s\n", rx_data);
+					rt_free(rx_data);
+				}
+				else
+				{
+					rt_kprintf("rx_data:null\n");
+				}
+			}
+		}
+
+		if(auth_key_mb != RT_NULL)
+			rt_mb_delete(auth_key_mb);
+	}
+	else
+	{//不存在系统密钥
+		rt_kprintf("sys abkey is not exist!\n");
+	}
+}
+MSH_CMD_EXPORT(create_app_abkey, create_app_abkey);
+
+
+//初始化应用卡
+static void init_card_app(void)
+{
+	
+}
+MSH_CMD_EXPORT(init_card_app, init_card_app);
+
+//重置应用卡
+static void reset_card_app(void)
+{
+	
+}
+MSH_CMD_EXPORT(reset_card_app, reset_card_app);
+
+//创建配置卡
+static void create_app_config(void)
+{
+	
+}
+MSH_CMD_EXPORT(create_app_config, create_app_config);
+
+//创建授权卡
+static void create_app_power(void)
+{
+	
+}
+MSH_CMD_EXPORT(create_app_power, create_app_power);
+
+
+
+int unit_test(void)
+{
+	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(sys_config));
+	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(sys_status));
+	
+	sys_status.rfic_lock = rt_mutex_create("ic_lock", RT_IPC_FLAG_FIFO);
+	RT_ASSERT(sys_status.rfic_lock != RT_NULL);
+
+	sysinfo_t sysinfo;
+	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
+	{
+		sys_config.door_count = sysinfo.door_count;
+		sys_config.node_count = sysinfo.node_count;
+		sys_config.open_timeout = sysinfo.open_timeout;
+		rt_strncpy(sys_config.sys_title, sysinfo.sys_title, rt_strlen(sysinfo.sys_title));
+		rt_memcpy(sys_config.keya, sysinfo.key_a, INIT_KEY_LEN);
+		rt_memcpy(sys_config.keyb, sysinfo.key_b, INIT_KEY_LEN);
+		sys_config.abkey_exist = sys_abkey_exist;
+		
+		rt_kprintf("\nsysinfo->\nid:%d\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\r\n",sysinfo.id, sysinfo.sys_title, sysinfo.open_timeout, sysinfo.door_count);
+	}
+	else
+	{
+		rt_kprintf("sysinfo table is not exist a record!");
+		RT_ASSERT(RT_FALSE);
+	}
+
+	rt_thread_t thread = rt_thread_create("ic_scan", rfid_scan_thread_entry, RT_NULL, 
 											20*1024, 5, 20);
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);
 	
 	return RT_EOK;
 }
-MSH_CMD_EXPORT(unit_test, startup unit test thread);

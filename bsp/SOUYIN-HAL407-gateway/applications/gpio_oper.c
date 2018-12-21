@@ -1,15 +1,13 @@
 
 
 #include <rtthread.h>
-#include "rtdevice.h"
-#include "gpio_oper.h"
-
+#include <rtdevice.h>
+#include <gpio_oper.h>
 
 DOOR_REG  door[16];
-
 uint16_t dor_oc_time = 30*5 ;
-
 uint8_t  sw_pin[16] = {SW1,SW2,SW3,SW4,SW5,SW6,SW7,SW8,SW9,SW10,SW11,SW12,SW13,SW14,SW15,SW16};
+rt_sem_t beep_sem = RT_NULL;
 
 static void gpio_delay_us(rt_uint32_t nus)
 {
@@ -160,12 +158,18 @@ uint8_t get_nrf_addr(void)
 	return res;
 }
 
-
-rt_sem_t beep_sem = RT_NULL;
+void beep_on(rt_uint8_t count)
+{
+	rt_uint8_t i;
+	for(i=0; i<count; i++)
+	{
+		rt_sem_release(beep_sem);
+	}
+}
 
 static void beep_entry(void* parameter)
 {
-	rt_pin_mode(BEEP,PIN_MODE_OUTPUT_OD);
+	rt_pin_mode(BEEP,PIN_MODE_OUTPUT);
 	rt_pin_write(BEEP,PIN_HIGH);
 	while(1)
 	{
@@ -179,11 +183,9 @@ static void beep_entry(void* parameter)
 
 static int beep_sound(void)
 {
-	rt_thread_t  beep_task;
-	
-	beep_sem = rt_sem_create("beep", 0, RT_IPC_FLAG_FIFO);
-	if(beep_sem == RT_NULL)
-		return 0;
+	rt_thread_t  beep_task;	
+	beep_sem = rt_sem_create("beep", 1, RT_IPC_FLAG_FIFO);
+	RT_ASSERT(beep_sem != RT_NULL);
 	
 	beep_task = rt_thread_create("beep",beep_entry,
 								  RT_NULL,256,15,100);
@@ -192,4 +194,4 @@ static int beep_sound(void)
 	
 	return 0;
 }	
-//INIT_APP_EXPORT(beep_sound);
+INIT_APP_EXPORT(beep_sound);

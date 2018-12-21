@@ -7,6 +7,7 @@
 #define CTRL_LENGTH				4
 #define SIGNATURE_LENGTH		16
 #define CARD_INF_BLOCK_COUNT	18	//最大值45(15*3=45)
+#define CARD_INF_MAX_LEN		(BLOCK_SIZE * CARD_INF_BLOCK_COUNT)
 
 /******************数据块地址定义**********************/
 #define CARD_CHECK_BLOCK			1	//卡签名数据块

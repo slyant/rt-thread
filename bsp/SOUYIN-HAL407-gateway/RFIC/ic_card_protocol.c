@@ -1,8 +1,8 @@
 #include <rtthread.h>
 #include <tinycrypt.h>
-#include "drv_rfic.h"
-#include "drv_rng.h"
-#include "ic_card_protocol.h"
+#include <drv_rfic.h>
+#include <drv_rng.h>
+#include <ic_card_protocol.h>
 
 const unsigned char factory_signature[SIGNATURE_LENGTH] = {0x61, 0x6D, 0x50, 0x75, 0x38, 0x39, 0x52, 0x33, 0x47, 0x44, 0x77, 0x78, 0x21, 0x7E, 0x6A, 0x23};
 const unsigned char factory_key_a[KEY_LENGTH] = {0x25, 0xFD, 0xC4, 0x96, 0xAA, 0x06};
