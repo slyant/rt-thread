@@ -1,7 +1,7 @@
 #include <rtthread.h>
 #include <tinycrypt.h>
 #include <drv_rfic.h>
-#include <drv_rng.h>
+#include <rng_helper.h>
 #include <ic_card_protocol.h>
 
 const unsigned char factory_signature[SIGNATURE_LENGTH] = {0x61, 0x6D, 0x50, 0x75, 0x38, 0x39, 0x52, 0x33, 0x47, 0x44, 0x77, 0x78, 0x21, 0x7E, 0x6A, 0x23};
@@ -14,25 +14,6 @@ const unsigned char default_money_bag_disable[BLOCK_SIZE] = {0x00,0x00,0xFF,0xFF
 const unsigned char default_money_bag_value[BLOCK_SIZE] = {0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x21,0xDE,0x21,0xDE};
 const unsigned char default_key[KEY_LENGTH] = {0xff,0xff,0xff,0xff,0xff,0xff};
 const unsigned char card_inf_blocks[CARD_INF_BLOCK_COUNT] = {4,5,6,8,9,10,12,13,14,16,17,18,20,21,22,24,25,26};//,28,29,30,32,33,34,36,37,38,40,41,42,44,45,46,48,49,50,52,53,54,56,57,58,60,61,62
-
-// void get_rnd_str(int length, char* out)
-// {
-// 	const char* _rndstr = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\0";
-// 	int i;
-// 	for(i=0; i<length; i++)
-// 	{
-// 		out[i] = _rndstr[RNG_Get_RandomRange(0, (rt_strlen(_rndstr)-1))];
-// 	}
-// }
-
-static void get_rnd_bytes(int length, unsigned char* out)
-{
-	int i;
-	for(i=0; i<length; i++)
-	{
-		out[i] = RNG_Get_RandomRange(0, 255);
-	}
-}
 
 //初始化电子钱包
 static int rfid_money_init(rt_uint8_t *card_id, rt_uint8_t *in_key_b, rt_uint8_t *ctrl_buffer, rt_bool_t use_money_bag)
