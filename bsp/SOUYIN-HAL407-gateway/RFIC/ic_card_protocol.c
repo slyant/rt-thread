@@ -26,10 +26,6 @@ static int rfid_money_init(rt_uint8_t *card_id, rt_uint8_t *in_key_b, rt_uint8_t
 	{
 		goto _EXIT;
 	}
-	if(pcd_write_ex(MONEY_BAG_CTRL, ctrl_buffer) != MI_OK)
-	{
-		goto _EXIT;
-	}
 	if(use_money_bag)
 	{
 		rt_memcpy(temp_buf, default_money_bag_enable, BLOCK_SIZE);
@@ -57,6 +53,10 @@ static int rfid_money_init(rt_uint8_t *card_id, rt_uint8_t *in_key_b, rt_uint8_t
 	{
 		goto _EXIT;
 	}
+	if(pcd_write_ex(MONEY_BAG_CTRL, ctrl_buffer) != MI_OK)
+	{
+		goto _EXIT;
+	}
 	result = 1;
 _EXIT:
 	return result;
@@ -66,10 +66,9 @@ function: 扫描IC卡,并返回扫描结果
 param:
 in_key_a: in 应用卡A钥
 in_key_b: in 应用卡B钥
-out_result: out 卡信息
+out_result: out 传入空指针，输出卡信息，在外部释放 
 return: 卡基础类型 card_base_type_t
 */
-//card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *out_card_id, rt_uint8_t *out_buffer, rt_uint16_t out_result->buf_len)
 card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rfid_scan_info_t out_result)
 {
 	static rt_uint8_t find_tag;
@@ -123,7 +122,7 @@ _ENTRY:
 							goto _EXIT;
 						}					
 						inf_len = check_buf[BLOCK_SIZE]; inf_len <<= 8; inf_len |= check_buf[BLOCK_SIZE + 1];
-						if(inf_len > CARD_INF_BLOCK_COUNT * BLOCK_SIZE)
+						if(inf_len > CARD_INF_MAX_LEN)
 						{//超出最大长度
 							goto _EXIT;
 						}
@@ -180,7 +179,7 @@ _ENTRY:
 							goto _EXIT;
 						}					
 						inf_len = check_buf[BLOCK_SIZE]; inf_len <<= 8; inf_len |= check_buf[BLOCK_SIZE + 1];
-						if(inf_len > CARD_INF_BLOCK_COUNT * BLOCK_SIZE)
+						if(inf_len > CARD_INF_MAX_LEN)
 						{//超出最大长度
 							goto _EXIT;
 						}
@@ -428,6 +427,9 @@ rt_bool_t rfid_card_write(card_base_type_t type, rt_uint8_t *in_key_a, rt_uint8_
 	rt_uint8_t auth_akey[KEY_LENGTH], auth_bkey[KEY_LENGTH], check_md5[BLOCK_SIZE];
 	rt_uint8_t *check_all = RT_NULL;
 
+	if(buf_length>CARD_INF_MAX_LEN)
+		goto _EXIT;
+
 	if((status = pcd_request_ex(PICC_REQALL, card_id)) != MI_OK)
 		status = pcd_request_ex(PICC_REQALL, card_id);
 	if(status == MI_OK)
@@ -500,7 +502,7 @@ rt_bool_t rfid_card_write(card_base_type_t type, rt_uint8_t *in_key_a, rt_uint8_
 		}
 	}
 _EXIT:
-	if(check_all!=RT_NULL) rt_free(check_all);		
+	if(check_all != RT_NULL) rt_free(check_all);		
 	return result;
 }
 

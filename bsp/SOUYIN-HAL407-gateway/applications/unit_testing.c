@@ -245,8 +245,10 @@ static void scan_card_thread_entry(void *params)
 	}
 }
 //验证密钥卡
-static rt_bool_t check_abkey(cJSON *root)
+static rt_bool_t check_abkey(char *buffer)
 {
+	rt_bool_t result = RT_FALSE;
+	cJSON *root = cJSON_Parse(buffer);
 	if(root != RT_NULL)
 	{
 		int type;
@@ -266,14 +268,15 @@ static rt_bool_t check_abkey(cJSON *root)
 						hex2bytes(_bkey, KEY_LENGTH, bkey);
 						if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
 						{
-							return RT_TRUE;
+							result = RT_TRUE;
 						}
 					}
 				}
 			}			
 		}
+		cJSON_Delete(root);
 	}
-	return RT_FALSE;
+	return result;
 }
 
 //初始化应用卡
@@ -291,7 +294,7 @@ static void reset_card_app(void)
 MSH_CMD_EXPORT(reset_card_app, reset_card_app);
 
 //创建密钥卡信息JSON字符串
-static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, rt_uint8_t *out_buffer)
+static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, char *out_buffer)
 {
 	rt_uint16_t buf_len = 0;
 	char akey_str[KEY_LENGTH*2], bkey_str[KEY_LENGTH*2];
@@ -310,8 +313,8 @@ static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_
 			cJSON_AddStringToObject(fileds, "AKey", akey_str);
 			cJSON_AddStringToObject(fileds, "BKey", bkey_str);
 			cJSON_AddItemToObject(root,"Fileds",fileds);
-			out_buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);
-			buf_len = rt_strlen((char*)out_buffer);
+			out_buffer = cJSON_PrintUnformatted(root);
+			buf_len = rt_strlen(out_buffer);
 		}
 		cJSON_Delete(root);
 	}
@@ -321,12 +324,12 @@ static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_
 rt_bool_t write_card_key_and_update_syskey(void)
 {
 	rt_bool_t rest = RT_FALSE;
-	rt_uint8_t *buffer = RT_NULL;
+	char *buffer = RT_NULL;
 	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];
 	rt_uint16_t buf_len = create_card_key_string(akey, bkey, buffer);
 	if(buf_len > 0)
 	{
-		if(rfid_card_write(CARD_TYPE_KEY, akey, bkey, buffer, buf_len) == RT_TRUE)
+		if(rfid_card_write(CARD_TYPE_KEY, akey, bkey, (rt_uint8_t*)buffer, buf_len) == RT_TRUE)
 		{//写密钥卡成功
 			rt_kprintf("rfid_card_write OK:\n%s\n", buffer);
 			//保存系统密钥
@@ -384,15 +387,12 @@ static void create_app_abkey(void)
 					rfid_scan_info_t scan_info = (rfid_scan_info_t)p;
 					if(scan_info->buf_len > 0 && scan_info->buffer != RT_NULL)
 					{
-						rt_kprintf("scan_info->buf_len:%d\nscan_info->buffer:%s\n", scan_info->buf_len, scan_info->buffer);
-						cJSON *root = cJSON_Parse((char*)scan_info->buffer);						
+						rt_kprintf("scan_info->buf_len:%d\nscan_info->buffer:%s\n", scan_info->buf_len, scan_info->buffer);						
 						//验证密钥卡
-						if(check_abkey(root))
+						if(check_abkey((char*)scan_info->buffer))
 						{//验证通过							
 							pass = 1;
 						}
-						if(root != RT_NULL)
-							cJSON_Delete(root);
 					}
 					else
 					{
@@ -416,6 +416,10 @@ static void create_app_abkey(void)
 		if(pass)
 		{//验证通过,更新卡密钥
 			write_card_key_and_update_syskey();
+		}
+		else
+		{
+			rt_kprintf("sys abkey authentication failed!\n");
 		}
 	}
 	else
