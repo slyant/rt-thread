@@ -19,10 +19,10 @@ static rt_bool_t sys_abkey_exist(void)
 }
 
 //应用卡处理
-static void card_app_handle(card_app_type_t type, cJSON *root)
+static void card_app_handle(card_app_type_t type, const cJSON *root)
 {
 	if(root == RT_NULL) return;
-	cJSON *fileds = cJSON_GetObjectItem(root, "Fileds");
+	cJSON *fileds = cJSON_GetObjectItem((cJSON*)root, "Fileds");
 	if(fileds == RT_NULL) return;
 
 	switch((int)type)
@@ -96,15 +96,14 @@ static void card_app_handle(card_app_type_t type, cJSON *root)
 
 //扫描卡工作线程
 static void main_scan_thread_entry(void* params)
-{
-	cJSON *root = RT_NULL;
+{	
 	struct rfid_scan_info scan_info;
-	rt_memset((rt_uint8_t*)&scan_info, 0x00, sizeof(rfid_scan_info_t));
-	
+	rt_memset((rt_uint8_t*)&scan_info, 0x00, sizeof(rfid_scan_info_t));	
+	rt_uint8_t *tem_buf = RT_NULL;
+	scan_info.buffer = &tem_buf;
 	while(1)
-	{
-		IC_LOCK();	
-		scan_info.buffer = RT_NULL;	
+	{					
+		IC_LOCK();
 		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
 		IC_UNLOCK();
 		switch((int)type)
@@ -116,9 +115,9 @@ static void main_scan_thread_entry(void* params)
 			case CARD_TYPE_KEY:		//密钥卡
 				beep_on(1);
 				rt_kprintf("CARD_TYPE_KEY ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
-				if(scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
+				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
 				{
-					root = cJSON_Parse((char*)scan_info.buffer);
+					cJSON *root = cJSON_Parse((char*)*scan_info.buffer);
 					if(root != RT_NULL)
 					{
 						int type ;
@@ -131,6 +130,7 @@ static void main_scan_thread_entry(void* params)
 						{
 							rt_kprintf("Parse json error!\n");
 						}
+						cJSON_Delete(root);
 					}
 					else
 					{
@@ -141,9 +141,9 @@ static void main_scan_thread_entry(void* params)
 			case CARD_TYPE_APP:
 				beep_on(1);
 				rt_kprintf("CARD_TYPE_APP ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
-				if(scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
+				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
 				{
-					root = cJSON_Parse((char*)scan_info.buffer);
+					cJSON *root = cJSON_Parse((char*)*scan_info.buffer);
 					if(root != RT_NULL)
 					{
 						int type ;
@@ -156,6 +156,7 @@ static void main_scan_thread_entry(void* params)
 						{
 							rt_kprintf("Parse json error!\n");
 						}
+						cJSON_Delete(root);
 					}
 					else
 					{
@@ -172,11 +173,9 @@ static void main_scan_thread_entry(void* params)
 			default:				
 				break;			
 		}
-		if(scan_info.buffer != RT_NULL)
-			rt_free(scan_info.buffer);
-		if(root != RT_NULL)
-			cJSON_Delete(root);
-		
+		if(*scan_info.buffer != RT_NULL)
+			rt_free(*scan_info.buffer);
+		*scan_info.buffer = RT_NULL;
 		rt_thread_mdelay(50);
 	}
 }
@@ -221,23 +220,25 @@ static void scan_card_thread_entry(void *params)
 	rt_kprintf("please auth key card...\n");	
 	while(1)
 	{		
-		rfid_scan_info_t scan_info = rt_calloc(1, sizeof(rfid_scan_info_t));
+		rt_uint8_t *temp = RT_NULL;
+		int size = sizeof(struct rfid_scan_info);
+		rfid_scan_info_t scan_info = rt_calloc(1, size);
 		RT_ASSERT(scan_info != RT_NULL);
-		scan_info->buffer = RT_NULL;
+		scan_info->buffer = &temp;
 		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, scan_info);		
 		if(type != CARD_TYPE_NULL)
 		{
 			if(rt_mb_send(auth_key_mb, (rt_base_t)scan_info) != RT_EOK)
 			{
-				if(scan_info->buffer != RT_NULL) 
-					rt_free(scan_info->buffer);
+				if(*scan_info->buffer != RT_NULL) 
+					rt_free(*scan_info->buffer);
 				rt_free(scan_info);
 			}
 		}
 		else
 		{
-			if(scan_info->buffer != RT_NULL)
-				rt_free(scan_info->buffer);
+			if(*scan_info->buffer != RT_NULL)
+				rt_free(*scan_info->buffer);
 			rt_free(scan_info);
 		}
 		
@@ -294,14 +295,11 @@ static void reset_card_app(void)
 MSH_CMD_EXPORT(reset_card_app, reset_card_app);
 
 //创建密钥卡信息JSON字符串
-static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, char *out_buffer)
+static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, rt_uint8_t **buffer)
 {
 	rt_uint16_t buf_len = 0;
-	char akey_str[KEY_LENGTH*2], bkey_str[KEY_LENGTH*2];
 	get_rnd_bytes(KEY_LENGTH, out_akey);
 	get_rnd_bytes(KEY_LENGTH, out_bkey);
-	buffer2hex(out_akey, KEY_LENGTH, akey_str);
-	buffer2hex(out_bkey, KEY_LENGTH, bkey_str);
 
 	cJSON *root = cJSON_CreateObject();
 	if(root != RT_NULL)
@@ -309,14 +307,19 @@ static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_
 		cJSON_AddNumberToObject(root,"Type",CARD_APP_TYPE_ABKEY);
 		cJSON *fileds = cJSON_CreateObject();
 		if(fileds != RT_NULL)
-		{
-			cJSON_AddStringToObject(fileds, "AKey", akey_str);
-			cJSON_AddStringToObject(fileds, "BKey", bkey_str);
+		{           
+            char* akey_str = rt_calloc(1, KEY_LENGTH * 2 + 1);
+            char* bkey_str = rt_calloc(1, KEY_LENGTH * 2 + 1);
+            buffer2hex(out_akey, KEY_LENGTH, akey_str);
+            buffer2hex(out_bkey, KEY_LENGTH, bkey_str);
+            cJSON_AddStringToObject(fileds, "AKey", akey_str);
+            cJSON_AddStringToObject(fileds, "BKey", bkey_str);
+			rt_free(akey_str); rt_free(bkey_str);
 			cJSON_AddItemToObject(root,"Fileds",fileds);
-			out_buffer = cJSON_PrintUnformatted(root);
-			buf_len = rt_strlen(out_buffer);
+			*buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
+            buf_len = rt_strlen((char*)*buffer);
 		}
-		cJSON_Delete(root);
+		cJSON_Delete(root);   
 	}
 	return buf_len;
 }
@@ -324,12 +327,13 @@ static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_
 rt_bool_t write_card_key_and_update_syskey(void)
 {
 	rt_bool_t rest = RT_FALSE;
-	char *buffer = RT_NULL;
-	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];
-	rt_uint16_t buf_len = create_card_key_string(akey, bkey, buffer);
-	if(buf_len > 0)
+    rt_uint16_t buf_len;
+	rt_uint8_t *buffer = RT_NULL;
+	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];	 
+    buf_len = create_card_key_string(akey, bkey, &buffer);   
+	if(buf_len > 0 && buffer != RT_NULL)
 	{
-		if(rfid_card_write(CARD_TYPE_KEY, akey, bkey, (rt_uint8_t*)buffer, buf_len) == RT_TRUE)
+		if(rfid_card_write(CARD_TYPE_KEY, akey, bkey, buffer, buf_len) == RT_TRUE)
 		{//写密钥卡成功
 			rt_kprintf("rfid_card_write OK:\n%s\n", buffer);
 			//保存系统密钥
@@ -340,6 +344,8 @@ rt_bool_t write_card_key_and_update_syskey(void)
 				rt_memcpy(sysinfo.key_b, bkey, KEY_LENGTH);
 				if(sysinfo_update(&sysinfo) == 0)
 				{
+					rt_memcpy(sys_config.keya, akey, KEY_LENGTH);
+					rt_memcpy(sys_config.keyb, bkey, KEY_LENGTH);
 					rt_kprintf("sysinfo_update OK!\n");
 					rest = RT_TRUE;
 				}
@@ -371,7 +377,7 @@ static void create_app_abkey(void)
 		
 		//扫描卡子线程
 		rt_thread_t thread = rt_thread_create("sub_scan", scan_card_thread_entry, auth_key_mb, 
-												1*1024, 5, 20);
+												10*1024, 5, 20);
 		if(thread != RT_NULL)
 			rt_thread_startup(thread);
 		
@@ -385,11 +391,11 @@ static void create_app_abkey(void)
 				if(p != 0)
 				{
 					rfid_scan_info_t scan_info = (rfid_scan_info_t)p;
-					if(scan_info->buf_len > 0 && scan_info->buffer != RT_NULL)
+					if(scan_info->buf_len > 0 && *scan_info->buffer != RT_NULL)
 					{
-						rt_kprintf("scan_info->buf_len:%d\nscan_info->buffer:%s\n", scan_info->buf_len, scan_info->buffer);						
+						rt_kprintf("scan_info->buf_len:%d\n*(scan_info->buffer):%s\n", scan_info->buf_len, *scan_info->buffer);						
 						//验证密钥卡
-						if(check_abkey((char*)scan_info->buffer))
+						if(check_abkey((char*)*scan_info->buffer))
 						{//验证通过							
 							pass = 1;
 						}
@@ -398,8 +404,8 @@ static void create_app_abkey(void)
 					{
 						rt_kprintf("rx_data:null\n");
 					}
-					if(scan_info->buffer != RT_NULL)
-						rt_free(scan_info->buffer);
+					if(*scan_info->buffer != RT_NULL)
+						rt_free(*scan_info->buffer);
 					if(scan_info != RT_NULL)
 						rt_free(scan_info);
 				}
@@ -444,8 +450,6 @@ static void create_app_power(void)
 	
 }
 MSH_CMD_EXPORT(create_app_power, create_app_power);
-
-
 
 int unit_test(void)
 {

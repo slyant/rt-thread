@@ -43,7 +43,7 @@ struct rfid_scan_info
 {
 	card_base_type_t base_type;
 	rt_uint8_t card_id[4];
-	rt_uint8_t *buffer;
+	rt_uint8_t **buffer;
 	rt_uint16_t buf_len;
 };
 typedef struct rfid_scan_info *rfid_scan_info_t;
