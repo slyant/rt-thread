@@ -11,19 +11,10 @@
 	#define DB_DEBUG		if(0)rt_kprintf
 #endif
 
-static rt_mutex_t db_mutex_lock = RT_NULL;
-
 void db_helper_init(void)
 {
 	sqlite3_initialize();
 	sqlite3_os_init();
-	if(db_mutex_lock == RT_NULL)
-		db_mutex_lock = rt_mutex_create("dblock", RT_IPC_FLAG_FIFO);
-	if(db_mutex_lock == RT_NULL)
-	{
-		DB_DEBUG("rt_mutex_create dblock failed!\n");
-		while(1);
-	}
 }
 
 int db_create_database(const char* sqlstr)
@@ -86,11 +77,9 @@ static int _db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt
 //        return SQLITE_ERROR;
         return 0;
     }
-    rt_mutex_take(db_mutex_lock, RT_WAITING_FOREVER);
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
-        rt_mutex_release(db_mutex_lock);
         return 0;
     }
 
@@ -120,7 +109,6 @@ DB_EXEC_FAIL:
     rc = 0;
 DB_EXEC_OK:
     sqlite3_close(db);
-    rt_mutex_release(db_mutex_lock);
     return rc;
 }
 
@@ -174,11 +162,9 @@ int db_nonquery_operator(const char *sqlstr,int (*bind)(sqlite3_stmt *,int index
     if(sqlstr == NULL){
         return SQLITE_ERROR;
     }
-    rt_mutex_take(db_mutex_lock, RT_WAITING_FOREVER);
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
-        rt_mutex_release(db_mutex_lock);
         return rc;
     }
 	
@@ -239,7 +225,6 @@ DB_NQ_BEGIN_FAIL:
     DB_DEBUG("db operator failed,rc=%d",rc);
 DB_NQ_EXEC_OK:
     sqlite3_close(db);
-    rt_mutex_release(db_mutex_lock);
 	rt_free(sql);
     return rc;
 }
@@ -251,11 +236,9 @@ int db_nonquery_by_varpara(const char *sql,const char *fmt,...)
     if(sql == NULL){
         return SQLITE_ERROR;
     }
-    rt_mutex_take(db_mutex_lock, RT_WAITING_FOREVER);
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
-        rt_mutex_release(db_mutex_lock);
         return rc;
     }
     DB_DEBUG("sql:%s\n",sql);
@@ -285,7 +268,6 @@ DB_VA_EXEC_FAIL:
     DB_DEBUG("db operator failed,rc=%d",rc);
 DB_VA_EXEC_OK:
     sqlite3_close(db);
-    rt_mutex_release(db_mutex_lock);
     return rc;
 }
 
@@ -294,11 +276,9 @@ int db_nonquery_transaction(int (*exec_sqls)(sqlite3 *db,void * arg),void *arg)
     sqlite3 *db = NULL;
 //    sqlite3_stmt *stmt = NULL;
 //    char *emsg = NULL;
-    rt_mutex_take(db_mutex_lock, RT_WAITING_FOREVER);
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
-        rt_mutex_release(db_mutex_lock);
         return rc;
     }
     rc = sqlite3_exec(db,"begin transaction",0,0,NULL);
@@ -332,7 +312,6 @@ DB_TR_BEGIN_FAIL:
     DB_DEBUG("db operator failed,rc=%d",rc);
 DB_TR_EXEC_OK:
     sqlite3_close(db);
-    rt_mutex_release(db_mutex_lock);
     return rc;
 }
 

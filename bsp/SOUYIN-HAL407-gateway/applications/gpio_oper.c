@@ -53,8 +53,8 @@ static void door_scan(void* parameter)
 
 static int door_hadle(void)
 {
-	rt_thread_t tas_door = rt_thread_create("door_hl", door_scan,
-											RT_NULL,256,15,20);
+	rt_thread_t tas_door = rt_thread_create("tdoor", door_scan,
+											RT_NULL,256,13,20);
 	if(tas_door != RT_NULL)
 		rt_thread_startup(tas_door);
 	return 0;
@@ -78,7 +78,7 @@ static void led_thread_entry(void* parameter)   //线程
 static int led_tolget(void)
 {
 	rt_thread_t 
-	led_task = rt_thread_create("led",                       //线程名字，在shell里面可以看到
+	led_task = rt_thread_create("tled",                       //线程名字，在shell里面可以看到
 					        led_thread_entry,                //线程入口函数
 					        RT_NULL,                         //线程入口函数参数
 					        256,                             //线程栈大小
@@ -184,11 +184,11 @@ static void beep_entry(void* parameter)
 static int beep_sound(void)
 {
 	rt_thread_t  beep_task;	
-	beep_sem = rt_sem_create("beep", 1, RT_IPC_FLAG_FIFO);
+	beep_sem = rt_sem_create("sembeep", 1, RT_IPC_FLAG_FIFO);
 	RT_ASSERT(beep_sem != RT_NULL);
 	
-	beep_task = rt_thread_create("beep",beep_entry,
-								  RT_NULL,256,15,100);
+	beep_task = rt_thread_create("tbeep",beep_entry,
+								  RT_NULL,256,14,100);
 	if(beep_task != RT_NULL )
 		rt_thread_startup(beep_task);
 	

@@ -4,12 +4,12 @@ unsigned char hexchar2byte(char c)
 {
 	if (c >= '0' && c <= '9')
 		return c - '0';
-	else if (c >= 'a' && c <= 'z')
+	else if (c >= 'a' && c <= 'f')
 		return c - 'a' + 10;
-	else if (c >= 'A' && c <= 'Z')
+	else if (c >= 'A' && c <= 'F')
 		return c - 'A' + 10;
     else
-        return c;
+        return 0;
 }
 
 unsigned char hex2byte(const char p[2])
@@ -25,13 +25,13 @@ void hex2bytes(char* hex, int len, unsigned char* outbuff)
 {
     for (int i = 0; i<len; i+=2)
     {
-        outbuff[i] = hex2byte(&hex[i]);
+        *outbuff++ = hex2byte(&hex[i]);
     }
 }
 
 char halfbyte2hexchar(const unsigned char halfbyte)
 {
-	if(halfbyte >= 0 && halfbyte <=9)
+	if(halfbyte <=9)
 	{
 		return '0' + halfbyte;
 	}
@@ -41,7 +41,7 @@ char halfbyte2hexchar(const unsigned char halfbyte)
 	}
 	else
 	{
-		return 'F';
+		return '0';
 	}
 }
 

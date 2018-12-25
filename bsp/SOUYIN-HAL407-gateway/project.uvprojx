@@ -336,7 +336,7 @@
               <MiscControls>--no_multibyte_chars</MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;nrf_app;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFIC;uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
+              <IncludePath>applications;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFIC;uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -391,6 +391,11 @@
               <FilePath>applications\gpio_oper.c</FilePath>
             </File>
             <File>
+              <FileName>hex_bin_convert.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\hex_bin_convert.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
@@ -401,19 +406,14 @@
               <FilePath>applications\pcf8563.c</FilePath>
             </File>
             <File>
-              <FileName>unit_testing.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\unit_testing.c</FilePath>
-            </File>
-            <File>
-              <FileName>hex_bin_convert.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\hex_bin_convert.c</FilePath>
-            </File>
-            <File>
               <FileName>rng_helper.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\rng_helper.c</FilePath>
+              <FilePath>applications\rng_helper.c</FilePath>
+            </File>
+            <File>
+              <FileName>unit_testing.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\unit_testing.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -948,16 +948,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>NRF-APP</GroupName>
-          <Files>
-            <File>
-              <FileName>nrf_app_gateway.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>nrf_app\nrf_app_gateway.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>cJSON</GroupName>
           <Files>
             <File>
@@ -984,26 +974,6 @@
               <FileName>multi_button.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\MultiButton-latest\multi_button.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>NrfNet</GroupName>
-          <Files>
-            <File>
-              <FileName>drv_spi_nrf24l01.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\nrf24l01_network-latest\drv_spi_nrf24l01.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_common.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\nrf24l01_network-latest\nrf_common.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_gateway.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\nrf24l01_network-latest\nrf_gateway.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1307,7 +1277,7 @@
                 <v6LangP>0</v6LangP>
                 <vShortEn>2</vShortEn>
                 <vShortWch>2</vShortWch>
-                <v6Lto>0</v6Lto>
+                <v6Lto>2</v6Lto>
                 <v6WtE>2</v6WtE>
                 <v6Rtti>2</v6Rtti>
                 <VariousControls>

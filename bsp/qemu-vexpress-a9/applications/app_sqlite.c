@@ -27,5 +27,5 @@ int app_sqlite_init(void)
 	db_helper_init();
 	return 0;
 }
-INIT_APP_EXPORT(app_sqlite_init);
+//INIT_APP_EXPORT(app_sqlite_init);
 

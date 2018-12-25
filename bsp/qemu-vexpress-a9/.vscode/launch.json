@@ -1,96 +1,59 @@
 {
+    // 使用 IntelliSense 了解相关属性。
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug @ Mac/Linux",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/rtthread.elf",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceRoot}",
-            "environment": [],
-            "externalConsole": true,
-            "miDebuggerServerAddress": "localhost:1234",
-            "serverLaunchTimeout": 2000,
-            "targetArchitecture": "ARM",
-            "setupCommands": [
-                {
-                    "text": "cd ${workspaceRoot}"
-                },
-                {
-                    "text": "shell qemu-dbg.sh"
-                },
-                {
-                    "text": "target remote localhost:1234"
-                },
-                {
-                    "text": "file rtthread.elf"
-                },
-                {
-                    "text": "break application_start"
-                }
-            ],
-            "customLaunchSetupCommands": [],
-            "launchCompleteCommand": "exec-run",
-            "preLaunchTask": "qemu debug",
-            "osx": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "arm-none-eabi-gdb"
-            },
-            "linux": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "arm-none-eabi-gdb"
-            },
-            "windows": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "arm-none-eabi-gdb.exe"
+        "name": "(gdb) Launch", //调试器的名字
+        "type": "cppdbg", //调试器的代码类型
+        "request": "launch", //单独执行，而不是附加
+        "targetArchitecture": "arm",//虽然官方说弃用了，但实际上必须指明
+        "program": "qemu", // 采用了自定义的设置，这里没啥用了
+        "args": [], //传递给运行程序的参数，这里没啥用
+        "stopAtEntry": false, //未知
+        "cwd": "${workspaceFolder}",//调试路径，当前目录
+        "environment": [], //环境变量参数
+        "externalConsole": true, //未知
+        "MIMode": "gdb", //调试器类型
+        "miDebuggerPath": "h:/git/env/tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gdb.exe",
+        //gdb的路径
+        "setupCommands": [
+            {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
             }
-        },
-        {
-            "name": "Debug @ Windows",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}\\rtthread.elf",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceRoot}",
-            "environment": [],
-            "externalConsole": true,
-            "miDebuggerServerAddress": "localhost:1234",
-            "serverLaunchTimeout": 2000,
-            "targetArchitecture": "ARM",
-            "setupCommands": [
-                {
-                    "text": "cd ${workspaceRoot}"
-                },
-                {
-                    "text": "shell qemu-dbg.bat"
-                },
-                {
-                    "text": "target remote localhost:1234"
-                },
-                {
-                    "text": "file rtthread.elf"
-                },
-                {
-                    "text": "break main"
-                }
-            ],
-            "customLaunchSetupCommands": [],
-            "launchCompleteCommand": "exec-run",
-            "osx": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "arm-none-eabi-gdb"
+        ],
+        "launchCompleteCommand": "None", //完成调试器设置后执行的命令
+        "miDebuggerServerAddress": "localhost:1234", //用于远程调试的要连接的调试器服务器
+        "customLaunchSetupCommands": [ //调试启动命令列表
+            {
+            "description": "connect to server", //描述
+            "text": "target remote :1234", //真正执行的命令
+            "ignoreFailures": false //忽略错误
             },
-            "linux": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "arm-none-eabi-gdb"
+            {
+            "description": "load file to gdb",
+            "text": "file H:/git/rt-thread/bsp/qemu-vexpress-a9/rtthread.elf", //调试的elf文件
+            "ignoreFailures": false
             },
-            "windows": {
-                "MIMode": "gdb",
-                "miDebuggerPath": "arm-none-eabi-gdb.exe"
-            }
-        },
+            {
+            "description": "download file to MCU",
+            "text": "load",
+            "ignoreFailures": false
+            },
+            {
+            "description": "reset MCU",
+            "text": "monitor reset",
+            "ignoreFailures": false
+            },
+            {
+            "description": "set breakpoints at main",
+            "text": "b main",
+            "ignoreFailures": false
+            },
+        ]
+        }
     ]
 }

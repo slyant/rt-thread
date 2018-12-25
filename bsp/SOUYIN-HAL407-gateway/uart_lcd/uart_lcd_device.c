@@ -15,7 +15,7 @@
 #endif
 #include <rtdbg.h>
 
-struct lcd_device_s lcd_device;
+struct lcd_device lcd_device;
 
 void send_char(rt_uint8_t ch)	//for hmi_driver.c
 {

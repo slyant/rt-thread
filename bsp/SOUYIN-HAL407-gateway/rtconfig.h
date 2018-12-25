@@ -139,14 +139,6 @@
 
 /* IoT - internet of things */
 
-#define PKG_USING_NRF24L01_NETWORK
-#define PKG_USING_NRF24L01_NETWORK_LATEST_VERSION
-#define NRF_SPI_BUS_NAME "spi2"
-#define NRF_SPI_DEV_NAME "spi20"
-#define NRF_SPI_CS_PIN 56
-#define NRF_CE_PIN 55
-#define NRF_IRQ_PIN 51
-#define NRF24L01_USING_GATEWAY
 #define PKG_USING_CJSON
 #define PKG_USING_CJSON_V102
 

@@ -7,10 +7,10 @@
 #include <doorinfo.h>
 
 //将实体信息绑定到sqlite上下文
-static int doorinfo_bind_for_insert(sqlite3_stmt * stmt,int index,void * arg)
+static int doorinfo_bind_for_insert(sqlite3_stmt *stmt,int index,void *arg)
 {
 	int rc;
-	doorinfo_t * e = arg;
+	doorinfo_t e = arg;
 	sqlite3_bind_int(stmt,1,e->id);
 	sqlite3_bind_int(stmt,2,e->status);
 	sqlite3_bind_int(stmt,3,e->card_num);
@@ -20,10 +20,10 @@ static int doorinfo_bind_for_insert(sqlite3_stmt * stmt,int index,void * arg)
 	return SQLITE_OK;
 }
 //将实体信息绑定到sqlite上下文
-static int doorinfo_bind_for_update(sqlite3_stmt * stmt,int index,void * arg)
+static int doorinfo_bind_for_update(sqlite3_stmt *stmt,int index,void *arg)
 {
 	int rc;
-	doorinfo_t * e = arg;	
+	doorinfo_t e = arg;	
 	sqlite3_bind_int(stmt,1,e->id);
 	sqlite3_bind_int(stmt,2,e->status);
 	sqlite3_bind_int(stmt,3,e->card_num);
@@ -33,9 +33,9 @@ static int doorinfo_bind_for_update(sqlite3_stmt * stmt,int index,void * arg)
 	return SQLITE_OK;
 }
 //将一条查询结果绑定到实体
-int doorinfo_bind(sqlite3_stmt * stmt,void * arg)
+int doorinfo_bind(sqlite3_stmt *stmt,void *arg)
 {	
-	doorinfo_t * e = arg;
+	doorinfo_t e = arg;
 	int ret = sqlite3_step(stmt);
 	if(ret != SQLITE_ROW)
 	{
@@ -51,11 +51,11 @@ int doorinfo_bind(sqlite3_stmt * stmt,void * arg)
 }
 
 //将查询结果绑定到队列，返回队列的成员个数
-int doorinfo_queue_bind(sqlite3_stmt * stmt,void * arg)
+int doorinfo_queue_bind(sqlite3_stmt *stmt,void *arg)
 {
-	na_queue_t * q = arg;
-	na_queue_init(q);
-	doorinfo_t * e;
+	record_queue_t q = arg;
+	rc_queue_init(q);
+	doorinfo_t e;
 	int ret,count = 0;
 	ret = sqlite3_step(stmt);
 	if(ret != SQLITE_ROW)
@@ -64,7 +64,7 @@ int doorinfo_queue_bind(sqlite3_stmt * stmt,void * arg)
 	}
 	do
 	{
-		e = rt_calloc(sizeof(doorinfo_t),1);
+		e = rt_calloc(1, sizeof(struct doorinfo));
 		if(!e)
 		{
 			goto CREATE_doorinfo_FAIL;
@@ -74,7 +74,7 @@ int doorinfo_queue_bind(sqlite3_stmt * stmt,void * arg)
 		e->status = db_stmt_get_int(stmt,1);
 		e->card_num = db_stmt_get_int(stmt,2);
 		
-		na_queue_insert_tail(q,&(e->queue));
+		rc_queue_insert_tail(q,&(e->queue));
 		count ++;
 	}
 	while((ret = sqlite3_step(stmt)) == SQLITE_ROW);
@@ -84,19 +84,19 @@ CREATE_doorinfo_FAIL:
 	return 0;
 }
 //打印队列
-void doorinfo_print_queue(na_queue_t *q)
+void doorinfo_print_queue(record_queue_t q)
 {
-	doorinfo_t * e = NULL;
-	na_queue_foreach(e,q,doorinfo_t,queue)
+	doorinfo_t e = NULL;
+	rc_queue_foreach(e,q,struct doorinfo,queue)
 	{
 		rt_kprintf("id:%d\nstatus:%d\ncard_num:%d\n",e->id, e->status, e->card_num);
 	}
 }
 //遍历队列，自定义处理方法（注意处理完成后释放队列及队列变量，使用doorinfo_free_queue(q)和rt_free(q)）
-void doorinfo_foreach(na_queue_t *q, void (*foreach_handle)(doorinfo_t *e))
+void doorinfo_foreach(record_queue_t q, void(*foreach_handle)(doorinfo_t e))
 {
-	doorinfo_t * e = NULL;
-	na_queue_foreach(e,q,doorinfo_t,queue)
+	doorinfo_t e = NULL;
+	rc_queue_foreach(e,q,struct doorinfo,queue)
 	{
 		foreach_handle(e);
 	}
@@ -110,7 +110,7 @@ int doorinfo_get_by_id(doorinfo_t *e, int id)
 }
 
 //返回查询到的记录数
-int doorinfo_get_all(na_queue_t * q)
+int doorinfo_get_all(record_queue_t q)
 {
     return db_query_by_varpara("select * from doorinfo;",doorinfo_queue_bind,q,NULL);
 }
@@ -141,21 +141,21 @@ int doorinfo_del_all(void)
 }
 MSH_CMD_EXPORT(doorinfo_del_all, doorinfo del all);
 //释放队列
-void doorinfo_free_queue(na_queue_t *q)
+void doorinfo_free_queue(record_queue_t q)
 {
-    na_queue_t *head = q,*pos,*n;
-    doorinfo_t *e = RT_NULL;
-    na_queue_for_each_safe(pos,n,head){
-        e = na_queue_data(pos,doorinfo_t,queue);
+    record_queue_t head = q,pos,n;
+    doorinfo_t e = RT_NULL;
+    rc_queue_for_each_safe(pos,n,head){
+        e = rc_queue_data(pos,struct doorinfo,queue);
         rt_free(e);
     }
-    na_queue_init(head);
+    rc_queue_init(head);
 }
 //遍历打印所有记录信息
 static int list_all_doorinfo(void)
 {
 	rt_kprintf("test get all doorinfo\n");
-	na_queue_t *q = rt_calloc(sizeof(doorinfo_t), 1);
+	record_queue_t q = rt_calloc(1, sizeof(struct record_queue));
 	int ret = doorinfo_get_all(q);
 	doorinfo_print_queue(q);
 	rt_kprintf("record(s):%d\n", ret);

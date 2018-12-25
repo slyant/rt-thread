@@ -3,7 +3,7 @@
 
 #define LCD_UPDATE_EVENT	(1<<0)		//屏更新事件标志
 
-struct lcd_device_s
+struct lcd_device
 {
 	rt_event_t lcd_event;
 	rt_sem_t rx_notice;
@@ -13,7 +13,7 @@ struct lcd_device_s
 	rt_uint8_t screen_id;
 	rt_uint8_t ui_tag;
 };
-typedef struct lcd_device_s *lcd_device_t;
+typedef struct lcd_device *lcd_device_t;
 
 int lcd_device_startup(void);
 

@@ -7,10 +7,10 @@
 #include <sysinfo.h>
 
 //将实体信息绑定到sqlite上下文
-static int sysinfo_bind_for_insert(sqlite3_stmt * stmt,int index,void * arg)
+static int sysinfo_bind_for_insert(sqlite3_stmt *stmt,int index,void *arg)
 {
 	int rc;
-	sysinfo_t * e = arg;
+	sysinfo_t e = arg;
 	sqlite3_bind_int(stmt,1,e->id);
 	sqlite3_bind_text(stmt,2,e->sys_title,strlen(e->sys_title),NULL);
 	sqlite3_bind_int(stmt,3,e->open_timeout);
@@ -24,10 +24,10 @@ static int sysinfo_bind_for_insert(sqlite3_stmt * stmt,int index,void * arg)
 	return SQLITE_OK;
 }
 //将实体信息绑定到sqlite上下文
-static int sysinfo_bind_for_update(sqlite3_stmt * stmt,int index,void * arg)
+static int sysinfo_bind_for_update(sqlite3_stmt *stmt,int index,void *arg)
 {
 	int rc;
-	sysinfo_t * e = arg;
+	sysinfo_t e = arg;
 	sqlite3_bind_text(stmt,1,e->sys_title,strlen(e->sys_title),NULL);
 	sqlite3_bind_int(stmt,2,e->open_timeout);
 	sqlite3_bind_int(stmt,3,e->node_count);
@@ -41,9 +41,9 @@ static int sysinfo_bind_for_update(sqlite3_stmt * stmt,int index,void * arg)
 	return SQLITE_OK;
 }
 //将一条查询结果绑定到实体
-int sysinfo_bind(sqlite3_stmt * stmt,void * arg)
+int sysinfo_bind(sqlite3_stmt *stmt,void *arg)
 {	
-	sysinfo_t * e = arg;
+	sysinfo_t e = arg;
 	int ret = sqlite3_step(stmt);
 	if(ret != SQLITE_ROW)
 	{
@@ -63,11 +63,11 @@ int sysinfo_bind(sqlite3_stmt * stmt,void * arg)
 }
 
 //将查询结果绑定到队列，返回队列的成员个数
-int sysinfo_queue_bind(sqlite3_stmt * stmt,void * arg)
+int sysinfo_queue_bind(sqlite3_stmt *stmt,void *arg)
 {
-	na_queue_t * q = arg;
-	na_queue_init(q);
-	sysinfo_t * e;
+	record_queue_t q = arg;
+	rc_queue_init(q);
+	sysinfo_t e;
 	int ret,count = 0;
 	ret = sqlite3_step(stmt);
 	if(ret != SQLITE_ROW)
@@ -76,7 +76,7 @@ int sysinfo_queue_bind(sqlite3_stmt * stmt,void * arg)
 	}
 	do
 	{
-		e = rt_calloc(sizeof(sysinfo_t),1);
+		e = rt_calloc(1, sizeof(struct sysinfo));
 		if(!e)
 		{
 			goto CREATE_sysinfo_FAIL;
@@ -90,7 +90,7 @@ int sysinfo_queue_bind(sqlite3_stmt * stmt,void * arg)
 		db_stmt_get_blob(stmt,5,e->key_a);
 		db_stmt_get_blob(stmt,6,e->key_b);
 		
-		na_queue_insert_tail(q,&(e->queue));
+		rc_queue_insert_tail(q,&(e->queue));
 		count ++;
 	}
 	while((ret = sqlite3_step(stmt)) == SQLITE_ROW);
@@ -100,30 +100,30 @@ CREATE_sysinfo_FAIL:
 	return 0;
 }
 //打印队列
-void sysinfo_print_queue(na_queue_t *q)
+void sysinfo_print_queue(record_queue_t q)
 {
-	sysinfo_t * e = NULL;
-	na_queue_foreach(e,q,sysinfo_t,queue)
+	sysinfo_t e = NULL;
+	rc_queue_foreach(e,q,struct sysinfo,queue)
 	{
 		rt_kprintf("id:%d\nsys_title:%s\nopen_timeout:%d\nnode_count:%d\ndoor_count:%d\n",\
 		e->id, e->sys_title, e->open_timeout,e->node_count, e->door_count);
 		rt_kprintf("keya:%02x%02x%02x%02x%02x%02x\nkeyb:%02x%02x%02x%02x%02x%02x",\
-		e->key_a[0],e->key_a[1],e->key_a[2],e->key_a[03],\
-		e->key_a[04],e->key_a[5],e->key_b[0],e->key_b[1],e->key_b[2],e->key_b[3],e->key_b[4],e->key_b[5]);
+		e->key_a[0],e->key_a[1],e->key_a[2],e->key_a[03],e->key_a[04],e->key_a[5],\
+		e->key_b[0],e->key_b[1],e->key_b[2],e->key_b[3],e->key_b[4],e->key_b[5]);
 	}
 }
 //遍历队列，自定义处理方法（注意处理完成后释放队列及队列变量，使用sysinfo_free_queue(q)和rt_free(q)）
-void sysinfo_foreach(na_queue_t *q, void (*foreach_handle)(sysinfo_t *e))
+void sysinfo_foreach(record_queue_t q, void (*foreach_handle)(sysinfo_t e))
 {
-	sysinfo_t * e = NULL;
-	na_queue_foreach(e,q,sysinfo_t,queue)
+	sysinfo_t e = NULL;
+	rc_queue_foreach(e,q,struct sysinfo,queue)
 	{
 		foreach_handle(e);
 	}
 }
 
 //获取一条记录根据记录主键，返回查询到的记录数
-int sysinfo_get_by_id(sysinfo_t *e, int id)
+int sysinfo_get_by_id(sysinfo_t e, int id)
 {
 	return db_query_by_varpara("select * from sysinfo where id=?;", sysinfo_bind, e, "%d", id);
 }
@@ -134,19 +134,19 @@ int sysinfo_get_count_by_id(int id)
 }
 
 //返回查询到的记录数
-int sysinfo_get_all(na_queue_t * q)
+int sysinfo_get_all(record_queue_t q)
 {
     return db_query_by_varpara("select * from sysinfo;",sysinfo_queue_bind,q,NULL);
 }
 
 //添加一条记录，操作成功返回0
-int sysinfo_add(sysinfo_t * e)
+int sysinfo_add(sysinfo_t e)
 {
   return db_nonquery_operator("insert into sysinfo(id,sys_title,open_timeout,node_count,door_count,key_a,key_b) values (?,?,?,?,?,?,?);",sysinfo_bind_for_insert,e);
 	//return db_nonquery_by_varpara("insert into sysinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
 }
 //更新一条记录，操作成功返回0
-int sysinfo_update(sysinfo_t * e)
+int sysinfo_update(sysinfo_t e)
 {
 	return db_nonquery_operator("update sysinfo set sys_title=?,open_timeout=?,node_count=?,door_count=?,key_a=?,key_b=? where id=?;",sysinfo_bind_for_update,e);
 }
@@ -165,26 +165,27 @@ int sysinfo_del_all(void)
 }
 MSH_CMD_EXPORT(sysinfo_del_all, sysinfo del all);
 //释放队列
-void sysinfo_free_queue(na_queue_t *q)
+void sysinfo_free_queue(record_queue_t q)
 {
-    na_queue_t *head = q,*pos,*n;
-    sysinfo_t *e = RT_NULL;
-    na_queue_for_each_safe(pos,n,head){
-        e = na_queue_data(pos,sysinfo_t,queue);
+    record_queue_t head = q,pos,n;
+    sysinfo_t e = RT_NULL;
+    rc_queue_for_each_safe(pos,n,head)
+	{
+        e = rc_queue_data(pos,struct sysinfo,queue);
         rt_free(e);
     }
-    na_queue_init(head);
+    rc_queue_init(head);
 }
 //遍历打印所有记录信息
-static int list_all_sysinfo(void)
+int list_all_sysinfo(void)
 {
 	rt_kprintf("test get all sysinfo\n");
-	na_queue_t *q = rt_calloc(sizeof(sysinfo_t), 1);
+	record_queue_t q = rt_calloc(1, sizeof(struct record_queue));
 	int ret = sysinfo_get_all(q);
 	sysinfo_print_queue(q);
 	rt_kprintf("\nrecord(s):%d\n", ret);
 	sysinfo_free_queue(q);
 	rt_free(q);
-  return 0;
+	return 0;
 }
 MSH_CMD_EXPORT(list_all_sysinfo, list all sysinfo);

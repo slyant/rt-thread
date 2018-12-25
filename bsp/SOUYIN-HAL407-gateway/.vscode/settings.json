@@ -1,6 +1,8 @@
 {
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
     "files.associations": {
+        "dbhelper.h": "c",
+        "sqlite3.h": "c"
     }
 
 }

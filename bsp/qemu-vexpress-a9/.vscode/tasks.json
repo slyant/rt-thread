@@ -38,7 +38,7 @@
         {
             "label": "qemu simulator",
             "type": "shell",
-            "command": "qemu.bat",
+            "command": "qemu-dbg.bat",
             "problemMatcher" : []
         }
     ]

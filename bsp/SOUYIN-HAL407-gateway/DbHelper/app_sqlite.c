@@ -22,7 +22,7 @@ static int create_sqlite_db(void)
 		const char *cardinfo_sql = "CREATE TABLE cardinfo(		\
 				num int PRIMARY KEY NOT NULL,		\
 				id int,								\
-				pwd varchar(16),					\
+				pwd varchar(17),					\
 				type int);";
 		const char *doorinfo_sql = "CREATE TABLE doorinfo(		\
 				id int PRIMARY KEY NOT NULL,		\
@@ -59,15 +59,17 @@ MSH_CMD_EXPORT(create_sqlite_db, create sqlite db);
 
 static int init_data(void)
 {
-	sysinfo_t e;
-	rt_memset(&e,0x00,sizeof(sysinfo_t));
+	struct sysinfo e;
+	rt_memset(&e,0x00,sizeof(struct sysinfo));
 	e.id = SYSINFO_DB_KEY_ID;
 	rt_strncpy(e.sys_title, INIT_SYS_TITLE, rt_strlen(INIT_SYS_TITLE));
 	e.open_timeout = 60;
 	e.node_count = 3;
 	e.door_count = 8;
-	rt_memcpy(e.key_a,INIT_SYS_KEY_A,sizeof(INIT_SYS_KEY_A));
-	rt_memcpy(e.key_b,INIT_SYS_KEY_B,sizeof(INIT_SYS_KEY_B));
+	rt_memcpy(e.key_a, INIT_SYS_KEY_A, INIT_KEY_LEN);
+	rt_memcpy(e.key_b, INIT_SYS_KEY_B, INIT_KEY_LEN);
+	rt_memcpy(sys_config.keya, INIT_SYS_KEY_A, INIT_KEY_LEN);
+	rt_memcpy(sys_config.keyb, INIT_SYS_KEY_B, INIT_KEY_LEN);
 	return sysinfo_add(&e);
 }
 MSH_CMD_EXPORT(init_data, init sqlite db data);
@@ -83,7 +85,7 @@ void app_sqlite_init(void)
 		init_data();
 	}	
 
-	sysinfo_t sysinfo;
+	struct sysinfo sysinfo;
 	int count = sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID);
 	RT_ASSERT(count>0);
 }

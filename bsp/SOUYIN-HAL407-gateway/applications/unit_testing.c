@@ -2,7 +2,7 @@
 #include <board.h>
 #include <app_config.h>
 
-const char* INIT_SYS_TITLE = "公交自助收银管理系统 V2.0\0";
+const char* INIT_SYS_TITLE = "公交自助收银管理系统 V1.0\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -98,12 +98,13 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 static void main_scan_thread_entry(void* params)
 {	
 	struct rfid_scan_info scan_info;
-	rt_memset((rt_uint8_t*)&scan_info, 0x00, sizeof(rfid_scan_info_t));	
+	rt_memset(&scan_info, 0x00, sizeof(struct rfid_scan_info));	
 	rt_uint8_t *tem_buf = RT_NULL;
 	scan_info.buffer = &tem_buf;
 	while(1)
 	{					
 		IC_LOCK();
+		*scan_info.buffer = RT_NULL;
 		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
 		IC_UNLOCK();
 		switch((int)type)
@@ -174,8 +175,7 @@ static void main_scan_thread_entry(void* params)
 				break;			
 		}
 		if(*scan_info.buffer != RT_NULL)
-			rt_free(*scan_info.buffer);
-		*scan_info.buffer = RT_NULL;
+			rt_free(*scan_info.buffer);		
 		rt_thread_mdelay(50);
 	}
 }
@@ -221,8 +221,7 @@ static void scan_card_thread_entry(void *params)
 	while(1)
 	{		
 		rt_uint8_t *temp = RT_NULL;
-		int size = sizeof(struct rfid_scan_info);
-		rfid_scan_info_t scan_info = rt_calloc(1, size);
+		rfid_scan_info_t scan_info = rt_calloc(1, sizeof(struct rfid_scan_info));
 		RT_ASSERT(scan_info != RT_NULL);
 		scan_info->buffer = &temp;
 		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, scan_info);		
@@ -265,10 +264,10 @@ static rt_bool_t check_abkey(char *buffer)
 					if(_akey != RT_NULL && _bkey != RT_NULL)
 					{
 						rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];
-						hex2bytes(_akey, KEY_LENGTH, akey);
-						hex2bytes(_bkey, KEY_LENGTH, bkey);
+						hex2bytes(_akey, KEY_LENGTH * 2, akey);
+						hex2bytes(_bkey, KEY_LENGTH * 2, bkey);
 						if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
-						{
+						{//验证通过
 							result = RT_TRUE;
 						}
 					}
@@ -294,8 +293,8 @@ static void reset_card_app(void)
 }
 MSH_CMD_EXPORT(reset_card_app, reset_card_app);
 
-//创建密钥卡信息JSON字符串
-static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, rt_uint8_t **buffer)
+//创建密钥卡信息
+static rt_uint16_t create_card_key_info(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, rt_uint8_t **out_buffer)
 {
 	rt_uint16_t buf_len = 0;
 	get_rnd_bytes(KEY_LENGTH, out_akey);
@@ -316,8 +315,8 @@ static rt_uint16_t create_card_key_string(rt_uint8_t *out_akey, rt_uint8_t *out_
             cJSON_AddStringToObject(fileds, "BKey", bkey_str);
 			rt_free(akey_str); rt_free(bkey_str);
 			cJSON_AddItemToObject(root,"Fileds",fileds);
-			*buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
-            buf_len = rt_strlen((char*)*buffer);
+			*out_buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
+            buf_len = rt_strlen((char*)*out_buffer);
 		}
 		cJSON_Delete(root);   
 	}
@@ -330,14 +329,14 @@ rt_bool_t write_card_key_and_update_syskey(void)
     rt_uint16_t buf_len;
 	rt_uint8_t *buffer = RT_NULL;
 	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];	 
-    buf_len = create_card_key_string(akey, bkey, &buffer);   
+    buf_len = create_card_key_info(akey, bkey, &buffer);   
 	if(buf_len > 0 && buffer != RT_NULL)
 	{
 		if(rfid_card_write(CARD_TYPE_KEY, akey, bkey, buffer, buf_len) == RT_TRUE)
 		{//写密钥卡成功
 			rt_kprintf("rfid_card_write OK:\n%s\n", buffer);
 			//保存系统密钥
-			sysinfo_t sysinfo;
+			struct sysinfo sysinfo;
 			if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
 			{
 				rt_memcpy(sysinfo.key_a, akey, KEY_LENGTH);
@@ -377,7 +376,7 @@ static void create_app_abkey(void)
 		
 		//扫描卡子线程
 		rt_thread_t thread = rt_thread_create("sub_scan", scan_card_thread_entry, auth_key_mb, 
-												10*1024, 5, 20);
+												1*1024, 5, 20);
 		if(thread != RT_NULL)
 			rt_thread_startup(thread);
 		
@@ -392,12 +391,15 @@ static void create_app_abkey(void)
 				{
 					rfid_scan_info_t scan_info = (rfid_scan_info_t)p;
 					if(scan_info->buf_len > 0 && *scan_info->buffer != RT_NULL)
-					{
-						rt_kprintf("scan_info->buf_len:%d\n*(scan_info->buffer):%s\n", scan_info->buf_len, *scan_info->buffer);						
+					{					
 						//验证密钥卡
 						if(check_abkey((char*)*scan_info->buffer))
 						{//验证通过							
 							pass = 1;
+						}
+						else
+						{//验证失败
+							rt_kprintf("sys abkey authentication failed\n");
 						}
 					}
 					else
@@ -453,13 +455,13 @@ MSH_CMD_EXPORT(create_app_power, create_app_power);
 
 int unit_test(void)
 {
-	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(sys_config));
-	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(sys_status));
+	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
+	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
 	
 	sys_status.rfic_lock = rt_mutex_create("ic_lock", RT_IPC_FLAG_FIFO);
 	RT_ASSERT(sys_status.rfic_lock != RT_NULL);
 
-	sysinfo_t sysinfo;
+	struct sysinfo sysinfo;
 	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
 	{
 		sys_config.door_count = sysinfo.door_count;
@@ -470,7 +472,10 @@ int unit_test(void)
 		rt_memcpy(sys_config.keyb, sysinfo.key_b, INIT_KEY_LEN);
 		sys_config.abkey_exist = sys_abkey_exist;
 		
-		rt_kprintf("\nsysinfo->\nid:%d\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\r\n",sysinfo.id, sysinfo.sys_title, sysinfo.open_timeout, sysinfo.door_count);
+		rt_kprintf("\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n",sys_config.sys_title, sys_config.open_timeout, sysinfo.door_count, sys_config.node_count);
+		rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
+		rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
+		
 	}
 	else
 	{
@@ -478,10 +483,13 @@ int unit_test(void)
 		RT_ASSERT(RT_FALSE);
 	}
 
-	rt_thread_t thread = rt_thread_create("ic_scan", main_scan_thread_entry, RT_NULL, 
-											20*1024, 5, 20);
+	rt_thread_t thread = rt_thread_create("ticscan", main_scan_thread_entry, RT_NULL, 
+											10*1024, 12, 20);
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);
+	
+	extern int list_all_sysinfo(void);
+	list_all_sysinfo();
 	
 	return RT_EOK;
 }
