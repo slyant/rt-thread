@@ -336,7 +336,7 @@
               <MiscControls>--no_multibyte_chars</MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFIC;uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
+              <IncludePath>applications;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;nrf_app;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFIC;uart_lcd;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -948,6 +948,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>NRF-APP</GroupName>
+          <Files>
+            <File>
+              <FileName>nrf_app_gateway.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>nrf_app\nrf_app_gateway.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>cJSON</GroupName>
           <Files>
             <File>
@@ -974,6 +984,26 @@
               <FileName>multi_button.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\MultiButton-latest\multi_button.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>NrfNet</GroupName>
+          <Files>
+            <File>
+              <FileName>drv_spi_nrf24l01.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\nrf24l01_network-latest\drv_spi_nrf24l01.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrf_common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\nrf24l01_network-latest\nrf_common.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrf_gateway.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\nrf24l01_network-latest\nrf_gateway.c</FilePath>
             </File>
           </Files>
         </Group>

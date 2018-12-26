@@ -460,7 +460,7 @@ int unit_test(void)
 	
 	sys_status.rfic_lock = rt_mutex_create("ic_lock", RT_IPC_FLAG_FIFO);
 	RT_ASSERT(sys_status.rfic_lock != RT_NULL);
-
+	
 	struct sysinfo sysinfo;
 	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
 	{
@@ -486,10 +486,7 @@ int unit_test(void)
 	rt_thread_t thread = rt_thread_create("ticscan", main_scan_thread_entry, RT_NULL, 
 											10*1024, 12, 20);
 	if(thread != RT_NULL)
-		rt_thread_startup(thread);
-	
-	extern int list_all_sysinfo(void);
-	list_all_sysinfo();
-	
+		rt_thread_startup(thread);	
+
 	return RT_EOK;
 }

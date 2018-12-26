@@ -59,7 +59,7 @@ static int door_hadle(void)
 		rt_thread_startup(tas_door);
 	return 0;
 }
-//INIT_APP_EXPORT(door_hadle);
+INIT_APP_EXPORT(door_hadle);
 
 
 static void led_thread_entry(void* parameter)   //线程

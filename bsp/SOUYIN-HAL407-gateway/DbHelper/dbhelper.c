@@ -11,12 +11,6 @@
 	#define DB_DEBUG		if(0)rt_kprintf
 #endif
 
-void db_helper_init(void)
-{
-	sqlite3_initialize();
-	sqlite3_os_init();
-}
-
 int db_create_database(const char* sqlstr)
 {
 	return db_nonquery_operator(sqlstr, 0, 0);
