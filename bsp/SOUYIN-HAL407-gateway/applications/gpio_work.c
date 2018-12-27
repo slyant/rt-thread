@@ -2,12 +2,13 @@
 
 #include <rtthread.h>
 #include <rtdevice.h>
-#include <gpio_oper.h>
+#include <gpio_work.h>
 
 DOOR_REG  door[16];
-uint16_t dor_oc_time = 30*5 ;
-uint8_t  sw_pin[16] = {SW1,SW2,SW3,SW4,SW5,SW6,SW7,SW8,SW9,SW10,SW11,SW12,SW13,SW14,SW15,SW16};
+rt_uint16_t dor_oc_time = 30*5 ;
+rt_uint8_t  sw_pin[16] = {SW1,SW2,SW3,SW4,SW5,SW6,SW7,SW8,SW9,SW10,SW11,SW12,SW13,SW14,SW15,SW16};
 rt_sem_t beep_sem = RT_NULL;
+struct rt_event timing_out_event;
 
 static void gpio_delay_us(rt_uint32_t nus)
 {
@@ -17,11 +18,11 @@ static void gpio_delay_us(rt_uint32_t nus)
 
 static int door_sw_init(void)
 {
-	uint8_t i;
+	rt_uint8_t i;
 	for(i=0;i<16;i++)
 	{
 		rt_pin_mode(sw_pin[i],PIN_MODE_INPUT);
-		door[i].door_sta = (uint16_t) rt_pin_read(sw_pin[i]);     //为0处于关门状态
+		door[i].door_sta = (rt_uint16_t) rt_pin_read(sw_pin[i]);     //为0处于关门状态
 		door[i].open_time = 0;
 	}
 	return 0;
@@ -30,12 +31,13 @@ INIT_DEVICE_EXPORT(door_sw_init);
 
 static void door_scan(void* parameter)
 {
-	uint8_t i;
+	rt_uint8_t i;
+
 	while(1)
 	{
 		for(i=0;i<16;i++)
 		{
-			if(door[i].door_sta != (uint16_t) rt_pin_read(sw_pin[i]))
+			if(door[i].door_sta != (rt_uint16_t) rt_pin_read(sw_pin[i]))
 			{
 				door[i].door_sta ^= 1;
 				if(door[i].door_sta==0)  door[i].open_time=0;
@@ -45,6 +47,8 @@ static void door_scan(void* parameter)
 			{
 				if(door[i].open_time<dor_oc_time)
 					door[i].open_time++;
+				//else
+					//rt_event_send(&timing_out_event,1<<i);
 			}				
 		}
 		rt_thread_delay(200);
@@ -53,6 +57,8 @@ static void door_scan(void* parameter)
 
 static int door_hadle(void)
 {
+	rt_event_init(&timing_out_event, "event", RT_IPC_FLAG_FIFO);
+
 	rt_thread_t tas_door = rt_thread_create("tdoor", door_scan,
 											RT_NULL,256,13,20);
 	if(tas_door != RT_NULL)
@@ -107,15 +113,15 @@ static int door_h595_init(void)
 }	
 INIT_DEVICE_EXPORT(door_h595_init);
 
-void write_h595(uint16_t dat)
+void write_h595(rt_uint16_t dat)
 {
-	uint8_t i;
+	rt_uint8_t i;
 	
 	rt_pin_write(OE595,PIN_LOW);           //低电平期间移位
 	gpio_delay_us(5);
 	for(i=0;i<16;i++)
 	{
-		rt_pin_write(D595,(uint8_t)(dat>>15));
+		rt_pin_write(D595,(rt_uint8_t)(dat>>15));
 		gpio_delay_us(5);
 		rt_pin_write(CK595,PIN_HIGH);      //时钟上升沿移位
 		dat = dat<<1;
@@ -140,9 +146,9 @@ static int nrf_addr_pin_init(void)
 }
 INIT_DEVICE_EXPORT(nrf_addr_pin_init);
 
-uint8_t get_nrf_addr(void)
+rt_uint8_t get_nrf_addr(void)
 {
-	uint8_t res;
+	rt_uint8_t res;
 	res=0;
 	res |= rt_pin_read(ADD_SET1);
 	res<<=1;

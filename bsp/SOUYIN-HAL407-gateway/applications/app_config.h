@@ -7,14 +7,16 @@
 #include <cJSON_util.h>
 #include <ic_card_protocol.h>
 #include <db_include.h>
-#include <gpio_oper.h>
+#include <gpio_work.h>
 #include <hex_bin_convert.h>
 #include <rng_helper.h>
+#include <drv_pcf8563.h>
+#include <uart_lcd.h>
 
 #define INIT_KEY_LEN		6	//初始化密钥长度
 #define SYSINFO_DB_KEY_ID	1   //系统信息主键ID
-#define IC_LOCK()		rt_mutex_take(sys_status.rfic_lock,RT_WAITING_FOREVER)
-#define IC_UNLOCK()		rt_mutex_release(sys_status.rfic_lock)
+#define IC_LOCK()		rt_mutex_take(&sys_status.rfic_lock,RT_WAITING_FOREVER)
+#define IC_UNLOCK()		rt_mutex_release(&sys_status.rfic_lock)
 
 
 struct sys_config
@@ -31,7 +33,8 @@ typedef struct sys_config *sys_config_t;
 
 struct sys_status
 {
-	rt_mutex_t rfic_lock;
+	struct rt_mutex rfic_lock;
+	struct calendar sys_datetime;
 };
 typedef struct sys_status *sys_status_t;
 

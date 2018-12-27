@@ -1,11 +1,9 @@
 
 
-#ifndef _GPIO_OPER_
-#define _GPIO_OPER_
+#ifndef __GPIO_OPER_H__
+#define __GPIO_OPER_H__
 
 #include <rtthread.h>
-
-
 
 #define   LED     97
 #define   BEEP    98
@@ -46,8 +44,8 @@ typedef struct
 }DOOR_REG;
 
 
-void write_h595(uint16_t dat);
-uint8_t get_nrf_addr(void);
+void write_h595(rt_uint16_t dat);
+rt_uint8_t get_nrf_addr(void);
 void beep_on(rt_uint8_t count);
 
 #endif

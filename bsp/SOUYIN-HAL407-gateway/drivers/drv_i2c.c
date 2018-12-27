@@ -27,8 +27,7 @@
 #include <rtdevice.h>
 #include "drv_i2c.h"
 #include <board.h>
-/*user can change this*/
-#define I2C2_BUS_NAME  "i2c2"
+
 /*user should change this to adapt specific board*/
 #define I2C_SCL_PIN                 GPIO_PIN_4
 #define I2C_SCL_PORT                GPIOH
@@ -78,11 +77,8 @@ static rt_int32_t  drv_get_scl(void *data)
 
 static void drv_udelay(rt_uint32_t us)
 {
-    int i = (HAL_RCC_GetHCLKFreq() / 4000000 * us);
-    while (i)
-    {
-        i--;
-    }
+	extern void delay_us(rt_uint32_t nus);
+	delay_us(us);
 }
 
 static const struct rt_i2c_bit_ops drv_bit_ops =
@@ -99,11 +95,11 @@ static const struct rt_i2c_bit_ops drv_bit_ops =
 
 int drv_i2c_init(void)
 {
-    static struct rt_i2c_bus_device i2c2_bus;
+    static struct rt_i2c_bus_device i2c_bus;
     drv_i2c_gpio_init();
-    rt_memset((void *)&i2c2_bus, 0, sizeof(struct rt_i2c_bus_device));
-    i2c2_bus.priv = (void *)&drv_bit_ops;
-    rt_i2c_bit_add_bus(&i2c2_bus, I2C2_BUS_NAME);
+    rt_memset((void *)&i2c_bus, 0, sizeof(struct rt_i2c_bus_device));
+    i2c_bus.priv = (void *)&drv_bit_ops;
+    rt_i2c_bit_add_bus(&i2c_bus, I2C_BUS_NAME);
     return RT_EOK;
 }
 INIT_BOARD_EXPORT(drv_i2c_init);

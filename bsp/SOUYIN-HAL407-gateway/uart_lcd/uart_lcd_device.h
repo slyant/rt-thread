@@ -5,17 +5,16 @@
 
 struct lcd_device
 {
-	rt_event_t lcd_event;
 	rt_sem_t rx_notice;
 	rt_device_t uart_device;
 	unsigned char *cmd_buffer;
 	int cmd_bufsize;
-	rt_uint8_t screen_id;
-	rt_uint8_t ui_tag;
 };
 typedef struct lcd_device *lcd_device_t;
 
-int lcd_device_startup(void);
+typedef void (*message_handle_t)(unsigned char *msg_buf, unsigned short msg_size);
+
+void lcd_uart_reg_msg_handle(message_handle_t msg_hdle);
 
 #endif
 

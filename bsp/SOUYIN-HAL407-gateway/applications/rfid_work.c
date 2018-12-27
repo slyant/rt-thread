@@ -2,7 +2,7 @@
 #include <board.h>
 #include <app_config.h>
 
-const char* INIT_SYS_TITLE = "公交自助收银管理系统 V1.0\0";
+const char* INIT_SYS_TITLE = "公交自助收银管理系统V1.0\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -458,8 +458,7 @@ int unit_test(void)
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
 	
-	sys_status.rfic_lock = rt_mutex_create("ic_lock", RT_IPC_FLAG_FIFO);
-	RT_ASSERT(sys_status.rfic_lock != RT_NULL);
+	rt_mutex_init(&sys_status.rfic_lock, "ic_lock", RT_IPC_FLAG_FIFO);
 	
 	struct sysinfo sysinfo;
 	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
@@ -488,5 +487,9 @@ int unit_test(void)
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);	
 
+	rtc_get_time(&(sys_status.sys_datetime));
+	SetRtc(sys_status.sys_datetime.year, sys_status.sys_datetime.month, sys_status.sys_datetime.mday, sys_status.sys_datetime.wday,
+		sys_status.sys_datetime.hour, sys_status.sys_datetime.min, sys_status.sys_datetime.sec);
+	
 	return RT_EOK;
 }

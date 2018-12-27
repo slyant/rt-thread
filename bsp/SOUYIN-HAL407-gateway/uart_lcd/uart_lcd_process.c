@@ -1,6 +1,5 @@
 #include <rtthread.h>
 #include <stdio.h>
-#include <cmd_queue.h>
 #include <uart_lcd_process.h>
 
 #define UART_LCD_PROCESS_DEBUG
@@ -14,8 +13,6 @@
 #define DBG_LEVEL				DBG_INFO
 #endif
 #include <rtdbg.h>
-
-static lcd_device_t lcd_device = RT_NULL;
 
 /*! 
  *  \brief  读取RTC时间，注意返回的是BCD码
@@ -40,11 +37,7 @@ static void NotifyReadRTC(unsigned char year,unsigned char month,unsigned char w
  */
 static void NotifyScreen(unsigned short screen_id)
 {
-	if(lcd_device!=RT_NULL)
-	{
-		lcd_device->screen_id = screen_id;
-		send_lcd_update_event();
-	}
+
 }
 
 /*! 
@@ -176,8 +169,9 @@ static void NotifyTimer(unsigned short screen_id, unsigned short control_id)
 *  \param msg 待处理消息
 *  \param size 消息长度
 */
-void ProcessMessage(PCTRL_MSG msg, uint16_t size)
+void ProcessMessage(uint8_t *msg_buff, uint16_t size)
 {
+	PCTRL_MSG msg = (PCTRL_MSG)msg_buff;
     uint8_t cmd_type = msg->cmd_type;                                                  //指令类型
     uint8_t ctrl_msg = msg->ctrl_msg;                                                  //消息的类型
     uint8_t control_type = msg->control_type;                                          //控件类型
@@ -252,48 +246,7 @@ void ProcessMessage(PCTRL_MSG msg, uint16_t size)
     }
 }
 
-static void send_lcd_update_event(void)
+void uart_lcd_process_init(void)
 {
-	if(lcd_device!=RT_NULL)
-	{
-		rt_event_send(lcd_device->lcd_event,LCD_UPDATE_EVENT);
-	}
-}
-
-void lcd_device_reg(lcd_device_t device)
-{
-	lcd_device = device;
-}
-
-void lcd_update_ui(void)
-{
-	if(lcd_device!=RT_NULL)
-	{
-		switch(lcd_device->ui_tag)
-		{
-			case SARK_MANAGE: 
-				//show_sark_list(); 
-			break;
-		}    
-	}	
-}
-
-void lcd_change_screen(rt_uint16_t screen_id)
-{
-	if(lcd_device!=RT_NULL)
-	{
-		lcd_device->screen_id = screen_id;
-		send_lcd_update_event();
-	}
-}
-
-void lcd_load_error_screen(char *msg)
-{
-	
-}
-
-void lcd_load_default_screen(void)
-{
-
-	//SetScreen(KEY_CARD_COF);    //进入密钥卡管理
+	lcd_uart_reg_msg_handle(ProcessMessage);
 }

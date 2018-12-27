@@ -84,10 +84,7 @@ static void SetTextValueInt32(unsigned short screen_id, unsigned short control_i
 static long StringToInt32(unsigned char *str);
 static void send_lcd_update_event(void);
 
-void lcd_device_reg(lcd_device_t device);
-void lcd_load_default_screen(void);
-void lcd_load_error_screen(char *msg);
-void lcd_change_screen(rt_uint16_t screen_id);
-void lcd_update_ui(void);
-void ProcessMessage(PCTRL_MSG msg, unsigned short size);
+
+void uart_lcd_process_init(void);
+
 #endif

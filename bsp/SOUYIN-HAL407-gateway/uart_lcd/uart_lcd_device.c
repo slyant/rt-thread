@@ -1,7 +1,7 @@
 #include <rtthread.h>
 #include <cmd_queue.h>
+#include <drv_usart.h>
 #include <uart_lcd_device.h>
-#include <uart_lcd_process.h>
 
 #define UART_LCD_DEVICE_DEBUG
 
@@ -16,6 +16,7 @@
 #include <rtdbg.h>
 
 struct lcd_device lcd_device;
+static message_handle_t msg_handle = RT_NULL;
 
 void send_char(rt_uint8_t ch)	//for hmi_driver.c
 {
@@ -46,6 +47,11 @@ static rt_err_t get_char(rt_uint8_t *ch)
     return RT_EOK;
 }
 
+void lcd_uart_reg_msg_handle(message_handle_t msg_hdle)
+{
+	msg_handle = msg_hdle;
+}
+
 static void lcd_uart_rx_handle_entry(void* param)
 {
 	rt_uint8_t ch;
@@ -56,41 +62,23 @@ static void lcd_uart_rx_handle_entry(void* param)
 		queue_push(ch);
 		qsize size = queue_find_cmd(lcd_device.cmd_buffer,lcd_device.cmd_bufsize); 		//从缓冲区中获取一条指令 
 		if(size>0)
-		{                   
-			ProcessMessage((PCTRL_MSG)lcd_device.cmd_buffer, size);		//指令处理  
+		{          
+			if(msg_handle)
+				msg_handle(lcd_device.cmd_buffer, size); 
 		}
 	}
 }
-static void lcd_updata_entry(void* param)
-{
-	lcd_load_default_screen();
-	while(1)
-	{    
-		rt_uint32_t e;
-		if(rt_event_recv(lcd_device.lcd_event,LCD_UPDATE_EVENT,RT_EVENT_FLAG_CLEAR,RT_WAITING_FOREVER, &e) == RT_EOK)
-		{
-			if(e & LCD_UPDATE_EVENT)
-			{
-				lcd_update_ui();
-			}
-		}
-		rt_thread_mdelay(100);//100ms允许更新屏幕
-	}
-}
+
 static int lcd_device_init(void)
 {
 	rt_err_t res;	
     rt_device_t uart_lcd_device = rt_device_find(UART_LCD_UART_NAME);
 	if (uart_lcd_device != RT_NULL)
     {   
-		lcd_device.uart_device = uart_lcd_device;
-		
-		lcd_device.lcd_event = rt_event_create("lcd_evt", RT_IPC_FLAG_FIFO);
-		RT_ASSERT(lcd_device.lcd_event!=RT_NULL);
-				
+		uart_name_set_baud_rate(UART_LCD_UART_NAME, UART_LCD_BAUD_RATE);
+		lcd_device.uart_device = uart_lcd_device;						
 		lcd_device.rx_notice = rt_sem_create("lcd_rx", 0, RT_IPC_FLAG_FIFO);
-		RT_ASSERT(lcd_device.rx_notice!=RT_NULL);
-		
+		RT_ASSERT(lcd_device.rx_notice!=RT_NULL);		
 		lcd_device.cmd_bufsize = CMD_MAX_SIZE;
 		lcd_device.cmd_buffer = rt_calloc(1, lcd_device.cmd_bufsize);		
 		RT_ASSERT(lcd_device.cmd_buffer!=RT_NULL);
@@ -113,7 +101,6 @@ static int lcd_device_init(void)
 		queue_reset();
 		/*延时等待串口屏初始化完毕,必须等待300ms*/
 		rt_thread_mdelay(300);
-		lcd_device_reg(&lcd_device);
 		LOG_I("lcd device on %s init OK! \n", UART_LCD_UART_NAME);
 		return RT_EOK;
 	}
@@ -134,12 +121,6 @@ int lcd_device_startup(void)
 		if(lcd_rev != RT_NULL)
 			rt_thread_startup(lcd_rev);
 		
-		rt_thread_t lcd_upd = rt_thread_create("lcd_upd",
-											   lcd_updata_entry,
-											   RT_NULL,512,7,10);
-		if(lcd_upd != RT_NULL)
-			rt_thread_startup(lcd_upd);	
-		
 		return 0;
 	}
 	else
@@ -147,3 +128,4 @@ int lcd_device_startup(void)
 		return -RT_ERROR;
 	}
 }
+INIT_APP_EXPORT(lcd_device_startup);

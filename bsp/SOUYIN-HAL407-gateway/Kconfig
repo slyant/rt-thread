@@ -298,10 +298,10 @@ config RT_HSE_HCLK
     default 168000000	
 config RT_USING_EXT_SDRAM
     bool "Enable SDRAM on the board"
-    default y
+    default n
 config RT_USING_EXT_EEPROM
     bool "Enable EEPROM on the board"
-    default y	
+    default n	
 config RT_USING_LAN8742A
     bool "Enable LAN8742A on the board"
     default n
@@ -310,6 +310,9 @@ config RT_USING_ICCARD
     default n
 config RT_USING_UART_LCD
     bool "Enable UART LCD on the board"
+    default n   
+config RT_USING_UART_GPS
+    bool "Enable UART GPS Moudel on the board"
     default n
 	
 if RT_USING_SERIAL
@@ -364,6 +367,17 @@ if RT_USING_SPI
 	endmenu
 endif
 
+if RT_USING_I2C
+	menu "IIC Device Config"
+		config I2C_BUS_NAME
+			string "iic bus name"
+			default "i2cbus"
+		config RT_USING_PCF8563
+		bool "Using PCF8563"
+		default n
+	endmenu
+endif
+
 if RT_USING_ICCARD
 	menu "ICCARD Config"
 		config ICCARD_SPI_CS_PIN
@@ -383,6 +397,20 @@ if RT_USING_UART_LCD
 		config UART_LCD_UART_NAME
 			string "uart lcd using uart name"
 			default "uart2"
+        config UART_LCD_BAUD_RATE
+            int "uart lcd baud rate"
+            default 115200
+	endmenu	
+endif
+
+if RT_USING_UART_GPS
+	menu "UART GPS Config"
+		config UART_GPS_UART_NAME
+			string "uart gps moudel using uart name"
+			default "uart1"
+        config UART_GPS_BAUD_RATE
+            int "uart gps moudel baud rate"
+            default 9600
 	endmenu	
 endif
 

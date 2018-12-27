@@ -204,6 +204,7 @@
 #define RT_HSE_HCLK 168000000
 #define RT_USING_ICCARD
 #define RT_USING_UART_LCD
+#define RT_USING_UART_GPS
 
 /* Serial Select */
 
@@ -219,6 +220,11 @@
 #define RT_USING_SPI2
 #define RT_USING_SPI3
 
+/* IIC Device Config */
+
+#define I2C_BUS_NAME "i2cbus"
+#define RT_USING_PCF8563
+
 /* ICCARD Config */
 
 #define ICCARD_SPI_CS_PIN 33
@@ -228,6 +234,12 @@
 /* UART LCD Config */
 
 #define UART_LCD_UART_NAME "uart2"
+#define UART_LCD_BAUD_RATE 115200
+
+/* UART GPS Config */
+
+#define UART_GPS_UART_NAME "uart1"
+#define UART_GPS_BAUD_RATE 4800
 
 /* SFUD Config */
 

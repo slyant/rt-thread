@@ -2,7 +2,10 @@
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
     "files.associations": {
         "dbhelper.h": "c",
-        "sqlite3.h": "c"
+        "sqlite3.h": "c",
+        "drv_pcf8563.h": "c",
+        "gpio_work.h": "c",
+        "drv_usart.h": "c"
     }
 
 }

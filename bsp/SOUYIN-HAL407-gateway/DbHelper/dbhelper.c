@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <string.h>
 #include <ctype.h>
 #include <rtthread.h>
 #include <dbhelper.h>
@@ -10,6 +10,21 @@
 #else
 	#define DB_DEBUG		if(0)rt_kprintf
 #endif
+
+#define DB_LOCK()   rt_mutex_take(&db_lock, RT_WAITING_FOREVER)
+#define DB_UNLOCK() rt_mutex_release(&db_lock)
+
+static struct rt_mutex db_lock;
+
+int db_helper_init(void)
+{
+    if(rt_mutex_init(&db_lock, "dblock", RT_IPC_FLAG_FIFO) != RT_EOK)
+    {
+        rt_kprintf("db_lock mutex init failed!\n");
+        return -1;
+    }
+    return 0;
+}
 
 int db_create_database(const char* sqlstr)
 {
@@ -24,7 +39,8 @@ static int db_bind_by_var(sqlite3_stmt *stmt,const char *fmt,va_list args)
         return ret;
     }
 
-       for(;*fmt;++fmt){
+    for(;*fmt;++fmt)
+    {
         if(*fmt != '%')
             continue;
         ++fmt;
@@ -41,7 +57,7 @@ static int db_bind_by_var(sqlite3_stmt *stmt,const char *fmt,va_list args)
         case 's':
             {
             char *str = va_arg(args,char *);
-            ret = sqlite3_bind_text(stmt,npara,str,strlen(str),NULL);
+            ret = sqlite3_bind_text(stmt,npara,str,rt_strlen(str),NULL);
             }
             break;
         case 'x':
@@ -71,9 +87,11 @@ static int _db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt
 //        return SQLITE_ERROR;
         return 0;
     }
+    DB_LOCK();
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
+        DB_UNLOCK();
         return 0;
     }
 
@@ -103,6 +121,7 @@ DB_EXEC_FAIL:
     rc = 0;
 DB_EXEC_OK:
     sqlite3_close(db);
+    DB_UNLOCK();
     return rc;
 }
 
@@ -156,9 +175,11 @@ int db_nonquery_operator(const char *sqlstr,int (*bind)(sqlite3_stmt *,int index
     if(sqlstr == NULL){
         return SQLITE_ERROR;
     }
+    DB_LOCK();
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
+        DB_UNLOCK();
         return rc;
     }
 	
@@ -220,6 +241,7 @@ DB_NQ_BEGIN_FAIL:
 DB_NQ_EXEC_OK:
     sqlite3_close(db);
 	rt_free(sql);
+    DB_UNLOCK();
     return rc;
 }
 
@@ -230,9 +252,11 @@ int db_nonquery_by_varpara(const char *sql,const char *fmt,...)
     if(sql == NULL){
         return SQLITE_ERROR;
     }
+    DB_LOCK();
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
+        DB_UNLOCK();
         return rc;
     }
     DB_DEBUG("sql:%s\n",sql);
@@ -262,17 +286,18 @@ DB_VA_EXEC_FAIL:
     DB_DEBUG("db operator failed,rc=%d",rc);
 DB_VA_EXEC_OK:
     sqlite3_close(db);
+    DB_UNLOCK();
     return rc;
 }
 
 int db_nonquery_transaction(int (*exec_sqls)(sqlite3 *db,void * arg),void *arg)
 {
-    sqlite3 *db = NULL;
-//    sqlite3_stmt *stmt = NULL;
-//    char *emsg = NULL;
+    DB_LOCK();
+    sqlite3 *db = NULL;    
     int rc = sqlite3_open(DB_NAME,&db);
     if(rc != SQLITE_OK){
         DB_DEBUG("open database failed,rc=%d",rc);
+        DB_UNLOCK();
         return rc;
     }
     rc = sqlite3_exec(db,"begin transaction",0,0,NULL);
@@ -306,6 +331,7 @@ DB_TR_BEGIN_FAIL:
     DB_DEBUG("db operator failed,rc=%d",rc);
 DB_TR_EXEC_OK:
     sqlite3_close(db);
+    DB_UNLOCK();
     return rc;
 }
 
@@ -380,7 +406,7 @@ int db_stmt_get_blob(sqlite3_stmt *stmt,int index,unsigned char *out)
     const char *pdata = sqlite3_column_blob(stmt,index);
     int len = sqlite3_column_bytes(stmt,index);
     if(pdata){
-        memcpy(out,pdata,len);
+        rt_memcpy(out,pdata,len);
         return len;
     }
     return 0;
@@ -390,8 +416,8 @@ int db_stmt_get_text(sqlite3_stmt *stmt,int index,char *out)
 {
     const unsigned char *pdata = sqlite3_column_text(stmt,index);
     if(pdata){
-        int len = strlen((char*)pdata);
-        strncpy(out,(char*)pdata,len);
+        int len = rt_strlen((char*)pdata);
+        rt_strncpy(out,(char*)pdata,len);
         return len;
     }
     return 0;
@@ -406,5 +432,3 @@ double db_stmt_get_double(sqlite3_stmt *stmt,int index)
 {
     return sqlite3_column_double(stmt,index);
 }
-
-

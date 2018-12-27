@@ -19,13 +19,14 @@ int main(void)
     /* user app entry */
 	extern void app_sqlite_init(void);
 	extern void nrf_gateway_startup(void);
-	//extern int lcd_device_startup(void);
-	extern int unit_test(void);
+	extern void uart_lcd_process_init(void);
+	extern void work_init(void);	
 	
 	app_sqlite_init();
-	nrf_gateway_startup();
-	//lcd_device_startup();
-	unit_test();
+	uart_lcd_process_init();
+	work_init();
+	nrf_gateway_startup();	
+	
 //	while(1)
 //	{
 //		rt_thread_mdelay(10);

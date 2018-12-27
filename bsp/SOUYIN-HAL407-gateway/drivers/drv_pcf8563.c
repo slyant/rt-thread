@@ -1,27 +1,17 @@
+#include <rtthread.h>
 #include <rtdevice.h>
-
-#include "drv_i2c.h"
-#include "pcf8563.h"
+#include "drv_pcf8563.h"
 
 #define  PCF_ADDR  0x51
 
-uint8_t time_buf[7] = {0};  //用于保存时间,[0]秒，[1]分，[2]时，[3]日，[4]星期，[5]月，[6]年
-const uint8_t tab_week[12]={0,3,3,6,1,4,6,2,5,0,3,5}; //月修正数据表
+rt_uint8_t time_buf[7] = {0};  //用于保存时间,[0]秒，[1]分，[2]时，[3]日，[4]星期，[5]月，[6]年
+const rt_uint8_t tab_week[12]={0,3,3,6,1,4,6,2,5,0,3,5}; //月修正数据表
 
 static struct rt_i2c_bus_device  *pcf_bus;
 
-static int pcf8563_init(void)
+static rt_uint8_t pcf8563_set_time(rt_uint8_t * buf)
 {
-	pcf_bus = rt_i2c_bus_device_find("i2c2");
-	if(pcf_bus == RT_NULL)
-		rt_kprintf("pcf8563 bus not find ! \n");
-	return RT_EOK;
-}
-INIT_ENV_EXPORT(pcf8563_init);
-
-uint8_t pcf8563_set_time(uint8_t * buf)
-{
-	uint8_t ts,i,tbuf[8];
+	rt_uint8_t ts,i,tbuf[8];
 	tbuf[0]=2;
 	for(i=0;i<8;i++)
 	{
@@ -32,9 +22,9 @@ uint8_t pcf8563_set_time(uint8_t * buf)
 	else return 0;
 }
 
-uint8_t pcf8563_get_time(uint8_t * buf)
+static rt_uint8_t pcf8563_get_time(rt_uint8_t * buf)
 {
-	uint8_t i,ts,rbuf[7];
+	rt_uint8_t i,ts,rbuf[7];
 	rbuf[0] = 2;
 	ts = rt_i2c_master_send(pcf_bus,PCF_ADDR,0,&rbuf[0],1);
 	if(ts==1)
@@ -52,10 +42,10 @@ uint8_t pcf8563_get_time(uint8_t * buf)
 	return 0;
 }
 
-static uint8_t ymd_to_wday(int year, int month, int mday)
+rt_uint8_t ymd_to_wday(int year, int month, int mday)
 {
 	int tmp;
-	uint8_t yearh,yearl;
+	rt_uint8_t yearh,yearl;
 	yearh = year/100;
 	yearl = year&100;
 	if(yearh>19) yearl+=100;
@@ -65,9 +55,9 @@ static uint8_t ymd_to_wday(int year, int month, int mday)
 	return tmp%7;
 }
 
-uint8_t rtc_set_time(Calendar_Def *ptime)
+rt_uint8_t rtc_set_time(calendar_t ptime)
 {
-	uint8_t ds;
+	rt_uint8_t ds;
 	time_buf[0] = ptime->sec/10;		//秒
 	time_buf[0] <<= 4;
 	time_buf[0] |= (ptime->sec % 10);
@@ -95,7 +85,7 @@ uint8_t rtc_set_time(Calendar_Def *ptime)
 	return ds;
 }
 
-uint8_t rtc_get_time(Calendar_Def *ptime)
+rt_uint8_t rtc_get_time(calendar_t ptime)
 {
 	uint64_t ds;
 	ds = pcf8563_get_time(time_buf);
@@ -116,5 +106,11 @@ uint8_t rtc_get_time(Calendar_Def *ptime)
 	return 1;
 }
 
-
-
+static int pcf8563_init(void)
+{
+	pcf_bus = rt_i2c_bus_device_find(I2C_BUS_NAME);
+	if(pcf_bus == RT_NULL)
+		rt_kprintf("pcf8563 iic bus not find ! \n");
+	return RT_EOK;
+}
+INIT_ENV_EXPORT(pcf8563_init);

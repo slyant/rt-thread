@@ -724,9 +724,14 @@ int hw_usart_init(void)
 }
 INIT_BOARD_EXPORT(hw_usart_init);
 
-void uart_set_baud_rate(const char* rt_serial_name, rt_uint32_t baud_rate)
+void uart_device_set_baud_rate(struct rt_serial_device *ser_dev, rt_uint32_t baud_rate)
+{
+	ser_dev->config.baud_rate = baud_rate;
+	ser_dev->ops->configure(ser_dev, &(ser_dev->config));
+}
+
+void uart_name_set_baud_rate(const char *rt_serial_name, rt_uint32_t baud_rate)
 {
 	struct rt_serial_device *ser = (struct rt_serial_device*)rt_device_find(rt_serial_name);
-	ser->config.baud_rate = baud_rate;
-	ser->ops->configure(ser, &(ser->config));
+	uart_device_set_baud_rate(ser, baud_rate);
 }

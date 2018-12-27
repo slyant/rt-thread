@@ -6,6 +6,7 @@
 
 #define DB_SQL_MAX_LEN 1024
 
+int db_helper_init(void);
 int db_create_database(const char* sqlstr);
 //执行没有返回的SQL语句
 int db_nonquery_operator(const char *sqlstr,int (*bind)(sqlite3_stmt *,int index,void * arg),void *param);

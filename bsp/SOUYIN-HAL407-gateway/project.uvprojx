@@ -386,9 +386,14 @@
               <FilePath>applications\delay.c</FilePath>
             </File>
             <File>
-              <FileName>gpio_oper.c</FileName>
+              <FileName>gpio_work.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\gpio_oper.c</FilePath>
+              <FilePath>applications\gpio_work.c</FilePath>
+            </File>
+            <File>
+              <FileName>gps_work.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\gps_work.c</FilePath>
             </File>
             <File>
               <FileName>hex_bin_convert.c</FileName>
@@ -401,9 +406,9 @@
               <FilePath>applications\main.c</FilePath>
             </File>
             <File>
-              <FileName>pcf8563.c</FileName>
+              <FileName>rfid_work.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\pcf8563.c</FilePath>
+              <FilePath>applications\rfid_work.c</FilePath>
             </File>
             <File>
               <FileName>rng_helper.c</FileName>
@@ -411,9 +416,9 @@
               <FilePath>applications\rng_helper.c</FilePath>
             </File>
             <File>
-              <FileName>unit_testing.c</FileName>
+              <FileName>uart_lcd_work.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\unit_testing.c</FilePath>
+              <FilePath>applications\uart_lcd_work.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -484,6 +489,11 @@
               <FileName>drv_i2c.c</FileName>
               <FileType>1</FileType>
               <FilePath>drivers\drv_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_pcf8563.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers\drv_pcf8563.c</FilePath>
             </File>
             <File>
               <FileName>drv_spi_flash.c</FileName>
@@ -951,9 +961,19 @@
           <GroupName>NRF-APP</GroupName>
           <Files>
             <File>
-              <FileName>nrf_app_gateway.c</FileName>
+              <FileName>nrf_mcu_id.c</FileName>
               <FileType>1</FileType>
-              <FilePath>nrf_app\nrf_app_gateway.c</FilePath>
+              <FilePath>nrf_app\nrf_mcu_id.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrf_work.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>nrf_app\nrf_work.c</FilePath>
+            </File>
+            <File>
+              <FileName>st_mcuid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>nrf_app\st_mcuid.c</FilePath>
             </File>
           </Files>
         </Group>

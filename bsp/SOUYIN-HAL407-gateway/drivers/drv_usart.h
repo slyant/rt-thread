@@ -17,7 +17,9 @@
 #ifndef __USART_H__
 #define __USART_H__
 #include <rtthread.h>
+#include <rtdevice.h>
 
-void uart_set_baud_rate(const char* rt_serial_name, rt_uint32_t baud_rate);
+void uart_name_set_baud_rate(const char *rt_serial_name, rt_uint32_t baud_rate);
+void uart_device_set_baud_rate(struct rt_serial_device *ser_dev, rt_uint32_t baud_rate);
 
 #endif

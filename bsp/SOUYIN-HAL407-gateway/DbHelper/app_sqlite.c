@@ -76,6 +76,7 @@ MSH_CMD_EXPORT(init_data, init sqlite db data);
 
 void app_sqlite_init(void)
 {	
+	db_helper_init();
 	//创建数据库的例子
 	create_sqlite_db();
 	

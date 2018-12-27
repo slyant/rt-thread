@@ -29,6 +29,9 @@ if GetDepend(['RT_USING_SPI']):
 if GetDepend(['RT_USING_I2C']):
     src += ['drv_i2c.c']
 	
+if GetDepend(['RT_USING_PCF8563']):
+    src += ['drv_pcf8563.c']
+	
 if GetDepend(['RT_USING_SFUD']):
     src += ['drv_spi_flash.c']	
 	
