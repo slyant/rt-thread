@@ -1,21 +1,6 @@
 #ifndef __UART_LCD_PROCESS_H__
 #define __UART_LCD_PROCESS_H__
 
-/*************************  UI界面 ID   *********************/
-#define MAIN_INDEX      0     //主界面
-#define SYS_CFG_INDEX   1     //系统配置
-#define SYS_TIME_SETUP  2     //系统时间设置（RTC）
-#define CARD_MANAG      3     //卡管理
-#define SARK_MANAGE     4     //银柜管理
-#define DOOR_OPEN_MANA  5     //柜门开门管理
-#define TEST_UI         6     //测试
-#define KEY_CARD_COF    7     //密钥卡管理
-/*************************  卡管理映射UI-->ID  **************/
-#define COF_CARD_SET   8      //配置卡设置
-#define MANA_CARD_SET   9     //管理卡设置
-#define NORM_CARD_SET   10    //普通卡设置
-/*************************  UI界面 ID  **********************/
-
 typedef void (*notify_handle_t)(unsigned short, unsigned short, void *params);
 
 #define NOTIFY_TOUCH_PRESS      0X01   //触摸屏按下通知
@@ -85,5 +70,6 @@ void ProcessMessage(uint8_t *msg_buff, uint16_t size);
 
 void uart_lcd_reg_button_notify_handle(notify_handle_t button_handle);
 void uart_lcd_reg_text_notify_handle(notify_handle_t text_handle);
+void uart_lcd_reg_screen_notify_handle(notify_handle_t screen_handle);
 
 #endif

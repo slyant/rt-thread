@@ -1,5 +1,9 @@
 #include <rtthread.h>
 #include <board.h>
+
+#include <cJSON_util.h>
+#include <ic_card_protocol.h>
+#include <rng_helper.h>
 #include <app_config.h>
 
 //应用卡处理

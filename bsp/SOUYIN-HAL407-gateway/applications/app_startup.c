@@ -25,17 +25,20 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 {
 	char *err = rt_calloc(1, 512);
 	rt_sprintf(err, "(%s) assertion failed at function:%s, line number:%d \n", ex, func, line);
-	show_string(0, 50, 50, 1, 6, (unsigned char *)err);
+	rt_kprintf("%s", err);
+	lcd_show_error(err);
 	rt_free(err);
+	
 	while(1);
 }
 
 void app_startup(void)
 {
 	rt_assert_set_hook(assert_hook);
-	RT_ASSERT(RT_FALSE);
+//	RT_ASSERT(RT_FALSE);
 	app_sqlite_init();
 	
+
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
 	
@@ -44,6 +47,8 @@ void app_startup(void)
 	struct sysinfo sysinfo;
 	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
 	{
+		uart_lcd_startup();
+		
 		sys_config.door_count = sysinfo.door_count;
 		sys_config.node_count = sysinfo.node_count;
 		sys_config.open_timeout = sysinfo.open_timeout;
@@ -55,15 +60,23 @@ void app_startup(void)
 		rt_kprintf("\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n",sys_config.sys_title, sys_config.open_timeout, sysinfo.door_count, sys_config.node_count);
 		rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
 		rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
-		
+			
+		if(sys_config.abkey_exist())
+		{
+			lcd_set_screen(UI_MAIN);
+		}
+		else
+		{
+			lcd_set_screen(UI_ABKEY_CARD);
+			return;
+		}		
 	}
 	else
 	{
 		rt_kprintf("sysinfo table is not exist a record!");
 		RT_ASSERT(RT_FALSE);
-	}
+	}	
 	
-	uart_lcd_startup();
 	app_rfic_startup();
 	app_nrf_gateway_startup();
 }

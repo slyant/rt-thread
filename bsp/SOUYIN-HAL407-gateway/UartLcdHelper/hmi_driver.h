@@ -18,6 +18,14 @@
 #define CMD_MAX_SIZE 64        /*!<单条指令大小，根据需要调整，尽量设置大一些*/
 #define QUEUE_MAX_SIZE 512   /*!< 指令接收缓冲区大小，根据需要调整，尽量设置大一些*/
 
+#define COLOR_RED		0xF800
+#define COLOR_GREEN		0x0400
+#define COLOR_BLUE		0X001f
+#define COLOR_YELLOW	0XFFE0
+#define COLOR_ORANGE	0XFB20
+#define COLOR_WHITE 	0XFFFF
+#define COLOR_BLACK		0X0000
+
 /*! 
  *  \brief  检查数据是否符合CRC16校验
  *  \param buffer 待校验的数据，末尾存储CRC16

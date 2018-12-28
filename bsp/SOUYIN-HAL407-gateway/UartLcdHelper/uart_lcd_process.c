@@ -15,6 +15,7 @@
 
 static notify_handle_t notify_button = RT_NULL;
 static notify_handle_t notify_text = RT_NULL;
+static notify_handle_t notify_screen = RT_NULL;
 
 /*! 
  *  \brief  读取RTC时间，注意返回的是BCD码
@@ -39,7 +40,10 @@ static void NotifyReadRTC(unsigned char year,unsigned char month,unsigned char w
  */
 static void NotifyScreen(unsigned short screen_id)
 {
-
+    if(notify_screen)
+	{
+		notify_screen(screen_id, 0, 0);
+	}
 }
 
 /*! 
@@ -253,4 +257,9 @@ void uart_lcd_reg_button_notify_handle(notify_handle_t button_handle)
 void uart_lcd_reg_text_notify_handle(notify_handle_t text_handle)
 {
 	notify_text = text_handle;
+}
+
+void uart_lcd_reg_screen_notify_handle(notify_handle_t screen_handle)
+{
+	notify_screen = screen_handle;
 }

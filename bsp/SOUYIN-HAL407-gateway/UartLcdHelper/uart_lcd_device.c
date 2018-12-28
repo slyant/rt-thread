@@ -93,8 +93,6 @@ static int lcd_device_init(void)
         }
 		/*清空串口接收缓冲区*/
 		queue_reset();
-		/*延时等待串口屏初始化完毕,必须等待300ms*/
-		rt_thread_mdelay(300);
 		LOG_I("lcd device on %s init OK! \n", UART_LCD_UART_NAME);
 		return RT_EOK;
 	}
