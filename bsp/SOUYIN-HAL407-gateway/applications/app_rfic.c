@@ -2,22 +2,6 @@
 #include <board.h>
 #include <app_config.h>
 
-const char* INIT_SYS_TITLE = "公交自助收银管理系统V1.0\0";
-const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
-struct sys_status sys_status;
-struct sys_config sys_config;
-
-static rt_bool_t sys_abkey_exist(void)
-{
-	if(rt_memcmp(sys_config.keya, INIT_SYS_KEY_A, INIT_KEY_LEN)==0 && rt_memcmp(sys_config.keyb, INIT_SYS_KEY_B, INIT_KEY_LEN)==0)
-	{
-		return RT_FALSE;
-	}
-	return RT_TRUE;
-}
-
 //应用卡处理
 static void card_app_handle(card_app_type_t type, const cJSON *root)
 {
@@ -94,92 +78,6 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 	}
 }
 
-//扫描卡工作线程
-static void main_scan_thread_entry(void* params)
-{	
-	struct rfid_scan_info scan_info;
-	rt_memset(&scan_info, 0x00, sizeof(struct rfid_scan_info));	
-	rt_uint8_t *tem_buf = RT_NULL;
-	scan_info.buffer = &tem_buf;
-	while(1)
-	{					
-		IC_LOCK();
-		*scan_info.buffer = RT_NULL;
-		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
-		IC_UNLOCK();
-		switch((int)type)
-		{
-			case CARD_TYPE_BLANK:	//空白卡
-				beep_on(1);
-				rt_kprintf("CARD_TYPE_BLANK ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);				
-				break;
-			case CARD_TYPE_KEY:		//密钥卡
-				beep_on(1);
-				rt_kprintf("CARD_TYPE_KEY ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
-				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
-				{
-					cJSON *root = cJSON_Parse((char*)*scan_info.buffer);
-					if(root != RT_NULL)
-					{
-						int type ;
-						int ret = cJSON_item_get_number(root, "Type", &type);
-						if(ret == 0 && type == CARD_APP_TYPE_ABKEY)
-						{
-							card_app_handle((card_app_type_t)type, root);							
-						}
-						else
-						{
-							rt_kprintf("Parse json error!\n");
-						}
-						cJSON_Delete(root);
-					}
-					else
-					{
-						rt_kprintf("Parse json error!\n");
-					}
-				}
-				break;
-			case CARD_TYPE_APP:
-				beep_on(1);
-				rt_kprintf("CARD_TYPE_APP ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
-				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
-				{
-					cJSON *root = cJSON_Parse((char*)*scan_info.buffer);
-					if(root != RT_NULL)
-					{
-						int type ;
-						int ret = cJSON_item_get_number(root, "Type", &type);
-						if(ret == 0)
-						{
-							card_app_handle((card_app_type_t)type, root);
-						}
-						else
-						{
-							rt_kprintf("Parse json error!\n");
-						}
-						cJSON_Delete(root);
-					}
-					else
-					{
-						rt_kprintf("Parse json error!\n");
-					}
-				}
-				break;
-			case CARD_TYPE_UNKNOW:
-				beep_on(3);
-				rt_kprintf("CARD_TYPE_UNKNOW ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
-				break;
-//			case CARD_TYPE_NULL:				
-//				break;
-			default:				
-				break;			
-		}
-		if(*scan_info.buffer != RT_NULL)
-			rt_free(*scan_info.buffer);		
-		rt_thread_mdelay(50);
-	}
-}
-
 //初始化密钥卡
 static void init_card_key(void)
 {
@@ -213,7 +111,7 @@ static void reset_card_key(void)
 MSH_CMD_EXPORT(reset_card_key, reset_card_key);
 
 //扫描卡子线程
-static void scan_card_thread_entry(void *params)
+static void sub_scan_thread_entry(void *params)
 {	
 	rt_mailbox_t auth_key_mb = (rt_mailbox_t)params;
 	
@@ -375,7 +273,7 @@ static void create_app_abkey(void)
 		RT_ASSERT(auth_key_mb != RT_NULL);
 		
 		//扫描卡子线程
-		rt_thread_t thread = rt_thread_create("sub_scan", scan_card_thread_entry, auth_key_mb, 
+		rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, auth_key_mb, 
 												1*1024, 5, 20);
 		if(thread != RT_NULL)
 			rt_thread_startup(thread);
@@ -453,43 +351,96 @@ static void create_app_power(void)
 }
 MSH_CMD_EXPORT(create_app_power, create_app_power);
 
-int unit_test(void)
-{
-	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
-	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
-	
-	rt_mutex_init(&sys_status.rfic_lock, "ic_lock", RT_IPC_FLAG_FIFO);
-	
-	struct sysinfo sysinfo;
-	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
-	{
-		sys_config.door_count = sysinfo.door_count;
-		sys_config.node_count = sysinfo.node_count;
-		sys_config.open_timeout = sysinfo.open_timeout;
-		rt_strncpy(sys_config.sys_title, sysinfo.sys_title, rt_strlen(sysinfo.sys_title));
-		rt_memcpy(sys_config.keya, sysinfo.key_a, INIT_KEY_LEN);
-		rt_memcpy(sys_config.keyb, sysinfo.key_b, INIT_KEY_LEN);
-		sys_config.abkey_exist = sys_abkey_exist;
-		
-		rt_kprintf("\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n",sys_config.sys_title, sys_config.open_timeout, sysinfo.door_count, sys_config.node_count);
-		rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
-		rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
-		
+//扫描卡工作线程
+static void main_scan_thread_entry(void* params)
+{	
+	struct rfid_scan_info scan_info;
+	rt_memset(&scan_info, 0x00, sizeof(struct rfid_scan_info));	
+	rt_uint8_t *tem_buf = RT_NULL;
+	scan_info.buffer = &tem_buf;
+	while(1)
+	{					
+		IC_LOCK();
+		*scan_info.buffer = RT_NULL;
+		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
+		IC_UNLOCK();
+		switch((int)type)
+		{
+			case CARD_TYPE_BLANK:	//空白卡
+				beep_on(1);
+				rt_kprintf("CARD_TYPE_BLANK ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);				
+				break;
+			case CARD_TYPE_KEY:		//密钥卡
+				beep_on(1);
+				rt_kprintf("CARD_TYPE_KEY ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
+				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
+				{
+					cJSON *root = cJSON_Parse((char*)*scan_info.buffer);
+					if(root != RT_NULL)
+					{
+						int type ;
+						int ret = cJSON_item_get_number(root, "Type", &type);
+						if(ret == 0 && type == CARD_APP_TYPE_ABKEY)
+						{
+							card_app_handle((card_app_type_t)type, root);							
+						}
+						else
+						{
+							rt_kprintf("Parse json error!\n");
+						}
+						cJSON_Delete(root);
+					}
+					else
+					{
+						rt_kprintf("Parse json error!\n");
+					}
+				}
+				break;
+			case CARD_TYPE_APP:
+				beep_on(1);
+				rt_kprintf("CARD_TYPE_APP ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
+				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
+				{
+					cJSON *root = cJSON_Parse((char*)*scan_info.buffer);
+					if(root != RT_NULL)
+					{
+						int type ;
+						int ret = cJSON_item_get_number(root, "Type", &type);
+						if(ret == 0)
+						{
+							card_app_handle((card_app_type_t)type, root);
+						}
+						else
+						{
+							rt_kprintf("Parse json error!\n");
+						}
+						cJSON_Delete(root);
+					}
+					else
+					{
+						rt_kprintf("Parse json error!\n");
+					}
+				}
+				break;
+			case CARD_TYPE_UNKNOW:
+				beep_on(3);
+				rt_kprintf("CARD_TYPE_UNKNOW ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
+				break;
+//			case CARD_TYPE_NULL:				
+//				break;
+			default:				
+				break;			
+		}
+		if(*scan_info.buffer != RT_NULL)
+			rt_free(*scan_info.buffer);		
+		rt_thread_mdelay(50);
 	}
-	else
-	{
-		rt_kprintf("sysinfo table is not exist a record!");
-		RT_ASSERT(RT_FALSE);
-	}
+}
 
+void app_rfic_startup(void)
+{
 	rt_thread_t thread = rt_thread_create("ticscan", main_scan_thread_entry, RT_NULL, 
 											10*1024, 12, 20);
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);	
-
-	rtc_get_time(&(sys_status.sys_datetime));
-	SetRtc(sys_status.sys_datetime.year, sys_status.sys_datetime.month, sys_status.sys_datetime.mday, sys_status.sys_datetime.wday,
-		sys_status.sys_datetime.hour, sys_status.sys_datetime.min, sys_status.sys_datetime.sec);
-	
-	return RT_EOK;
 }

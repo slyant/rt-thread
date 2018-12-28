@@ -1,5 +1,4 @@
 #include <rtthread.h>
-#include <stdio.h>
 #include <uart_lcd_process.h>
 
 #define UART_LCD_PROCESS_DEBUG
@@ -13,6 +12,9 @@
 #define DBG_LEVEL				DBG_INFO
 #endif
 #include <rtdbg.h>
+
+static notify_handle_t notify_button = RT_NULL;
+static notify_handle_t notify_text = RT_NULL;
 
 /*! 
  *  \brief  读取RTC时间，注意返回的是BCD码
@@ -47,18 +49,12 @@ static void NotifyScreen(unsigned short screen_id)
  *  \param control_id 控件ID
  *  \param state 按钮状态：0弹起，1按下
  */
-static void NotifyButton(unsigned short screen_id, unsigned short control_id, unsigned char  state)
+static void NotifyButton(unsigned short screen_id, unsigned short control_id, unsigned char state)
 {
-
-}
-
-
-//字符串转整数
-static long StringToInt32(unsigned char *str)
-{
-	long v = 0;
-	sscanf((char *)str,"%ld",&v);
-	return v;
+	if(notify_button)
+	{
+		notify_button(screen_id, control_id, (void *)(unsigned long)state);
+	}
 }
 
 /*! 
@@ -71,7 +67,10 @@ static long StringToInt32(unsigned char *str)
 
 static void NotifyText(unsigned short screen_id, unsigned short control_id, unsigned char *str)
 {
-
+	if(notify_text)
+	{
+		notify_text(screen_id, control_id, (void *)str);
+	}
 }
 
 
@@ -246,7 +245,12 @@ void ProcessMessage(uint8_t *msg_buff, uint16_t size)
     }
 }
 
-void uart_lcd_process_init(void)
+void uart_lcd_reg_button_notify_handle(notify_handle_t button_handle)
 {
-	lcd_uart_reg_msg_handle(ProcessMessage);
+	notify_button = button_handle;
+}
+
+void uart_lcd_reg_text_notify_handle(notify_handle_t text_handle)
+{
+	notify_text = text_handle;
 }

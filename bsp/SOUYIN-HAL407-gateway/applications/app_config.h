@@ -7,11 +7,11 @@
 #include <cJSON_util.h>
 #include <ic_card_protocol.h>
 #include <db_include.h>
-#include <gpio_work.h>
-#include <hex_bin_convert.h>
+#include <app_beep.h>
+#include <any_convert.h>
 #include <rng_helper.h>
 #include <drv_pcf8563.h>
-#include <uart_lcd.h>
+#include <hmi_driver.h>
 
 #define INIT_KEY_LEN		6	//初始化密钥长度
 #define SYSINFO_DB_KEY_ID	1   //系统信息主键ID

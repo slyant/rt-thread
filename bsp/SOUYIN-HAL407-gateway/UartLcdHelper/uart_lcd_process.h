@@ -1,7 +1,5 @@
-#ifndef __CMD_PROCESS_H__
-#define __CMD_PROCESS_H__
-
-#include <uart_lcd_device.h>
+#ifndef __UART_LCD_PROCESS_H__
+#define __UART_LCD_PROCESS_H__
 
 /*************************  UI界面 ID   *********************/
 #define MAIN_INDEX      0     //主界面
@@ -17,6 +15,8 @@
 #define MANA_CARD_SET   9     //管理卡设置
 #define NORM_CARD_SET   10    //普通卡设置
 /*************************  UI界面 ID  **********************/
+
+typedef void (*notify_handle_t)(unsigned short, unsigned short, void *params);
 
 #define NOTIFY_TOUCH_PRESS      0X01   //触摸屏按下通知
 #define NOTIFY_TOUCH_RELEASE  0X03  //触摸屏松开通知
@@ -81,10 +81,9 @@ static void NotifyWriteFlash(unsigned char status);
 static void NotifyReadRTC(unsigned char year,unsigned char month,unsigned char week,unsigned char day,unsigned char hour,unsigned char minute,unsigned char second);
 static void SetTextValueInt32(unsigned short screen_id, unsigned short control_id,long value);
 
-static long StringToInt32(unsigned char *str);
-static void send_lcd_update_event(void);
+void ProcessMessage(uint8_t *msg_buff, uint16_t size);
 
-
-void uart_lcd_process_init(void);
+void uart_lcd_reg_button_notify_handle(notify_handle_t button_handle);
+void uart_lcd_reg_text_notify_handle(notify_handle_t text_handle);
 
 #endif

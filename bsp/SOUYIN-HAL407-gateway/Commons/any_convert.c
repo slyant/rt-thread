@@ -1,4 +1,13 @@
-#include <hex_bin_convert.h>
+#include <stdio.h>
+#include <any_convert.h>
+
+//字符串转整数
+long str2int32(unsigned char *str)
+{
+	long v = 0;
+	sscanf((char *)str,"%ld",&v);
+	return v;
+}
 
 unsigned char hexchar2byte(char c)
 {
@@ -45,7 +54,7 @@ char halfbyte2hexchar(const unsigned char halfbyte)
 	}
 }
 
-void byte2hexchar(const unsigned char byte, char *out_hex)
+void byte2hexchar(const unsigned char byte, char out_hex[2])
 {
 	unsigned char h, l;
 	h = byte >> 4;

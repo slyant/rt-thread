@@ -1,13 +1,11 @@
-
-
 #include <rtthread.h>
 #include <rtdevice.h>
-#include <gpio_work.h>
+#include <app_door.h>
 
 DOOR_REG  door[16];
 rt_uint16_t dor_oc_time = 30*5 ;
 rt_uint8_t  sw_pin[16] = {SW1,SW2,SW3,SW4,SW5,SW6,SW7,SW8,SW9,SW10,SW11,SW12,SW13,SW14,SW15,SW16};
-rt_sem_t beep_sem = RT_NULL;
+
 struct rt_event timing_out_event;
 
 static void gpio_delay_us(rt_uint32_t nus)
@@ -66,36 +64,6 @@ static int door_hadle(void)
 	return 0;
 }
 INIT_APP_EXPORT(door_hadle);
-
-
-static void led_thread_entry(void* parameter)   //线程
-{
-	rt_pin_mode(LED,PIN_MODE_OUTPUT);
-	
-	while(1)
-	{
-		rt_pin_write(LED,PIN_LOW);
-		rt_thread_mdelay(500);                        //延时500ms，该函数更新操作系统
-		rt_pin_write(LED,PIN_HIGH);
-		rt_thread_mdelay(500);
-	}
-}
-
-static int led_tolget(void)
-{
-	rt_thread_t 
-	led_task = rt_thread_create("tled",                       //线程名字，在shell里面可以看到
-					        led_thread_entry,                //线程入口函数
-					        RT_NULL,                         //线程入口函数参数
-					        256,                             //线程栈大小
-					        15,                              //线程的优先级
-					        20);                             //线程时间片
-	if(led_task != RT_NULL)
-		rt_thread_startup(led_task);
-	
-    return 0;
-}
-INIT_APP_EXPORT(led_tolget);
 
 static int door_h595_init(void)
 {
@@ -164,40 +132,3 @@ rt_uint8_t get_nrf_addr(void)
 	return res;
 }
 
-void beep_on(rt_uint8_t count)
-{
-	rt_uint8_t i;
-	for(i=0; i<count; i++)
-	{
-		rt_sem_release(beep_sem);
-	}
-}
-
-static void beep_entry(void* parameter)
-{
-	rt_pin_mode(BEEP,PIN_MODE_OUTPUT);
-	rt_pin_write(BEEP,PIN_HIGH);
-	while(1)
-	{
-		rt_sem_take(beep_sem,RT_WAITING_FOREVER);
-		rt_pin_write(BEEP,PIN_LOW);
-		rt_thread_mdelay(100);
-		rt_pin_write(BEEP,PIN_HIGH);
-		rt_thread_mdelay(10);
-	}
-}
-
-static int beep_sound(void)
-{
-	rt_thread_t  beep_task;	
-	beep_sem = rt_sem_create("sembeep", 1, RT_IPC_FLAG_FIFO);
-	RT_ASSERT(beep_sem != RT_NULL);
-	
-	beep_task = rt_thread_create("tbeep",beep_entry,
-								  RT_NULL,256,14,100);
-	if(beep_task != RT_NULL )
-		rt_thread_startup(beep_task);
-	
-	return 0;
-}	
-INIT_APP_EXPORT(beep_sound);

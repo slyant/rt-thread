@@ -5,8 +5,8 @@
 
 #include <rtthread.h>
 
-#define   LED     97
-#define   BEEP    98
+
+
 
 #define   SW1     57
 #define   SW2     58
@@ -46,7 +46,6 @@ typedef struct
 
 void write_h595(rt_uint16_t dat);
 rt_uint8_t get_nrf_addr(void);
-void beep_on(rt_uint8_t count);
 
 #endif
 

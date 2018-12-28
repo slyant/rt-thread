@@ -14,7 +14,7 @@ typedef struct lcd_device *lcd_device_t;
 
 typedef void (*message_handle_t)(unsigned char *msg_buf, unsigned short msg_size);
 
-void lcd_uart_reg_msg_handle(message_handle_t msg_hdle);
+void uart_lcd_reg_msg_handle(message_handle_t msg_hdle);
 
 #endif
 

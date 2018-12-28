@@ -7,6 +7,6 @@ inc = [cwd]
 src = Glob('*.c')
 
 # add group to IDE project
-group = DefineGroup('RFIC', src, depend = ['RT_USING_ICCARD'], CPPPATH = inc)
+group = DefineGroup('Commons', src, depend = [], CPPPATH = inc)
 
 Return('group')

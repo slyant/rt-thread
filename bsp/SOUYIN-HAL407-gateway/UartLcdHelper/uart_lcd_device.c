@@ -2,6 +2,7 @@
 #include <cmd_queue.h>
 #include <drv_usart.h>
 #include <uart_lcd_device.h>
+#include <uart_lcd_process.h>
 
 #define UART_LCD_DEVICE_DEBUG
 
@@ -16,7 +17,6 @@
 #include <rtdbg.h>
 
 struct lcd_device lcd_device;
-static message_handle_t msg_handle = RT_NULL;
 
 void send_char(rt_uint8_t ch)	//for hmi_driver.c
 {
@@ -47,12 +47,7 @@ static rt_err_t get_char(rt_uint8_t *ch)
     return RT_EOK;
 }
 
-void lcd_uart_reg_msg_handle(message_handle_t msg_hdle)
-{
-	msg_handle = msg_hdle;
-}
-
-static void lcd_uart_rx_handle_entry(void* param)
+static void uart_lcd_rx_handle_entry(void* param)
 {
 	rt_uint8_t ch;
 	queue_reset();
@@ -63,8 +58,7 @@ static void lcd_uart_rx_handle_entry(void* param)
 		qsize size = queue_find_cmd(lcd_device.cmd_buffer,lcd_device.cmd_bufsize); 		//从缓冲区中获取一条指令 
 		if(size>0)
 		{          
-			if(msg_handle)
-				msg_handle(lcd_device.cmd_buffer, size); 
+			ProcessMessage(lcd_device.cmd_buffer, size); 
 		}
 	}
 }
@@ -115,8 +109,8 @@ int lcd_device_startup(void)
 {
 	if(lcd_device_init()==RT_EOK)
 	{	
-		rt_thread_t lcd_rev = rt_thread_create("lcd_rev",
-											   lcd_uart_rx_handle_entry,
+		rt_thread_t lcd_rev = rt_thread_create("lcd_recv",
+											   uart_lcd_rx_handle_entry,
 											   RT_NULL,1024,8,10);
 		if(lcd_rev != RT_NULL)
 			rt_thread_startup(lcd_rev);

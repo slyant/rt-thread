@@ -5,7 +5,10 @@
         "sqlite3.h": "c",
         "drv_pcf8563.h": "c",
         "gpio_work.h": "c",
-        "drv_usart.h": "c"
+        "drv_usart.h": "c",
+        "app_door.h": "c",
+        "app_beep.h": "c",
+        "app_config.h": "c"
     }
 
 }

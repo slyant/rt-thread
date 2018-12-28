@@ -1,7 +1,5 @@
 #include <rtthread.h>
 #include <drv_usart.h>
-#include <string.h>
-#include <stdlib.h>
 #include "drv_pcf8563.h"
 #include "hmi_driver.h"
 #include <app_config.h>
@@ -104,10 +102,11 @@ static void gps_data_parse(rt_uint8_t len)
 
 		sys_status.sys_datetime.wday = ymd_to_wday(sys_status.sys_datetime.year, sys_status.sys_datetime.month, sys_status.sys_datetime.mday);
         //更新系统时钟以及串口屏时钟
-		rt_kprintf("------------   updata system time ! ----------------\n");
+		rt_kprintf("updata system time...\n");
 		rtc_set_time(&(sys_status.sys_datetime));
 		SetRtc(sys_status.sys_datetime.year, sys_status.sys_datetime.month, sys_status.sys_datetime.mday, sys_status.sys_datetime.wday,
-		sys_status.sys_datetime.hour, sys_status.sys_datetime.min, sys_status.sys_datetime.sec);		
+		sys_status.sys_datetime.hour, sys_status.sys_datetime.min, sys_status.sys_datetime.sec);
+		rt_kprintf("updata system time completed!\n");
 	}
 }
 

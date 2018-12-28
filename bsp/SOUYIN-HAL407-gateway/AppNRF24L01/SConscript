@@ -1,0 +1,20 @@
+import os
+from building import * 
+
+# get current dir path
+cwd = GetCurrentDir()
+inc = [cwd]
+src = Split("""
+
+""")
+
+if GetDepend(['NRF24L01_USING_GATEWAY']):
+    src += ['app_nrf_gateway.c']
+	
+if GetDepend(['NRF24L01_USING_NODE']):
+    src += ['app_nrf_node.c']	
+	
+group = DefineGroup('AppNRF24L01', src, depend = [], CPPPATH = inc)
+
+Return('group')
+
