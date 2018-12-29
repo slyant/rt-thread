@@ -1,7 +1,7 @@
 #include <app_config.h>
-
+#include <stm32f4xx_hal_cortex.h>
 extern void app_sqlite_init(void);
-extern void uart_lcd_startup(void);
+extern void app_lcd_startup(void);
 extern void app_rfic_startup(void);
 extern void app_nrf_gateway_startup(void);
 
@@ -9,8 +9,98 @@ const char* INIT_SYS_TITLE = "公交自助收银管理系统V1.0\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+static enum sys_workmodel workmodel;
+static rt_uint16_t screen_id_list[5];
+
 struct sys_status sys_status;
 struct sys_config sys_config;
+
+static void sys_restart(void)
+{
+	HAL_NVIC_SystemReset();
+}
+static void set_datetime(calendar_t cal)
+{	
+	rtc_set_time(cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
+	lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
+}
+
+static void gps_update_hook(calendar_t cal)
+{
+	static int count = 0;
+	if(count == 0)
+	{
+		set_datetime(cal);
+		rt_kprintf("datetime:%04d-%02d-%02d %02d:%02d:%02d\n", cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
+	}
+	else if(count >= 5*60)	//5分钟同步1次
+	{	
+		count = 0;
+	}
+	count++;
+}
+
+static rt_bool_t get_datetime(calendar_t cal)
+{
+	int year, month, mday, wday, hour, min, sec;	
+	if(rtc_get_time(&year, &month, &mday, &wday, &hour, &min, &sec))
+	{		
+		cal->year = year;
+		cal->month = month;
+		cal->mday = mday;
+		cal->wday = wday;
+		cal->hour = hour;
+		cal->min = min;
+		cal->sec = sec;	
+		return RT_TRUE;
+	}		
+	return RT_FALSE;
+}
+
+static void load_datetime(void)
+{
+	calendar_t cal = rt_calloc(1, sizeof(struct calendar));
+	if(get_datetime(cal))
+	{
+		lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
+	}
+	rt_free(cal);
+}
+
+static rt_uint16_t get_screen_id(void)
+{
+	return screen_id_list[0];
+}
+
+static void set_screen_id(rt_uint16_t id)
+{
+	lcd_set_screen(id);	
+	screen_id_list[4] = screen_id_list[3];
+	screen_id_list[3] = screen_id_list[2];
+	screen_id_list[2] = screen_id_list[1];
+	screen_id_list[1] = screen_id_list[0];
+	screen_id_list[0] = id;
+}
+
+static void set_screen_back(void)
+{
+	lcd_set_screen(screen_id_list[1]);
+	screen_id_list[0] = screen_id_list[1];
+	screen_id_list[1] = screen_id_list[2];
+	screen_id_list[2] = screen_id_list[3];
+	screen_id_list[3] = screen_id_list[4];
+	screen_id_list[4] = UI_MAIN;	
+}
+
+static void set_workmodel(enum sys_workmodel model)
+{
+	workmodel = model;
+}
+
+static enum sys_workmodel get_workmodel(void)
+{
+	return workmodel;
+}
 
 static rt_bool_t sys_abkey_exist(void)
 {
@@ -35,19 +125,28 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 void app_startup(void)
 {
 	rt_assert_set_hook(assert_hook);
-//	RT_ASSERT(RT_FALSE);
-	app_sqlite_init();
+	gps_set_update_hook(gps_update_hook);
 	
-
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
+	sys_status.get_workmodel = get_workmodel;
+	sys_status.set_workmodel = set_workmodel;
+	sys_status.get_screen_id = get_screen_id;
+	sys_status.set_screen_id = set_screen_id;
+	sys_status.set_screen_back = set_screen_back;
+	sys_status.get_datetime = get_datetime;
+	sys_status.set_datetime = set_datetime;
+	sys_status.restart = sys_restart;
 	
-	rt_mutex_init(&sys_status.rfic_lock, "ic_lock", RT_IPC_FLAG_FIFO);
+	sys_status.set_workmodel(WORK_OFF_MODEL);
+	
+	load_datetime();
+	app_sqlite_init();	
 	
 	struct sysinfo sysinfo;
-	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
+	RT_ASSERT(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0);
 	{
-		uart_lcd_startup();
+		app_lcd_startup();		
 		
 		sys_config.door_count = sysinfo.door_count;
 		sys_config.node_count = sysinfo.node_count;
@@ -63,20 +162,16 @@ void app_startup(void)
 			
 		if(sys_config.abkey_exist())
 		{
-			lcd_set_screen(UI_MAIN);
+			sys_status.set_screen_id(UI_MAIN);
+			sys_status.set_workmodel(WORK_ON_MODEL);
 		}
 		else
 		{
-			lcd_set_screen(UI_ABKEY_CARD);
+			sys_status.set_screen_id(UI_ABKEY_CARD);
+			sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 			return;
-		}		
+		}
+		app_rfic_startup();
+		app_nrf_gateway_startup();	
 	}
-	else
-	{
-		rt_kprintf("sysinfo table is not exist a record!");
-		RT_ASSERT(RT_FALSE);
-	}	
-	
-	app_rfic_startup();
-	app_nrf_gateway_startup();
 }

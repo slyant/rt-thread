@@ -1,16 +1,21 @@
 #include <rtthread.h>
 #include <drv_usart.h>
-#include "drv_pcf8563.h"
-#include "hmi_driver.h"
-#include <app_config.h>
+#include <app_gps.h>
 
 #define  GPS_RX_EVENT  (1<<0)
 
 static struct rt_event gps_evt;                   //事件控制块
 static rt_device_t uart_gps_dev = RT_NULL;        //串口设备句柄
+static struct calendar cal;
+#define BUF_LEN		128
+static char gps_buf[BUF_LEN]={0};
 
-static char gps_buf[128]={0};
+static gps_update_hook_t gps_update_hook = RT_NULL;
 
+void gps_set_update_hook(gps_update_hook_t hook)
+{
+	gps_update_hook = hook;
+}
 
 /* 回调函数 */
 static rt_err_t uart_gps_rev(rt_device_t dev, rt_size_t size)
@@ -60,7 +65,6 @@ INIT_DEVICE_EXPORT(gps_init);
 
 static void gps_data_parse(rt_uint8_t len)
 {	
-	static rt_uint16_t cfg_time = 0;
 	rt_uint8_t i,t,ds[3]={0};	
 	t=0;
 	for(i=0;i<len;i++)
@@ -75,61 +79,53 @@ static void gps_data_parse(rt_uint8_t len)
 	}
 	if(gps_buf[ds[1]] == 'A')
 	{
-		if(cfg_time == 0)
-		{
-			cfg_time = 300;    //每5分钟检查一次时间
-		}
-		else
-		{
-			cfg_time--;	
-			return;
-		}	
 		t = ds[0];
-		sys_status.sys_datetime.hour =   (gps_buf[t]-'0')*10;   t++;
-		sys_status.sys_datetime.hour +=  (gps_buf[t]-'0')+8;    t++;
-		sys_status.sys_datetime.min  =   (gps_buf[t]-'0')*10;   t++;
-		sys_status.sys_datetime.min  +=  (gps_buf[t]-'0');      t++;
-		sys_status.sys_datetime.sec  =   (gps_buf[t]-'0')*10;   t++;
-		sys_status.sys_datetime.sec  +=  (gps_buf[t]-'0');
+		cal.hour =   (gps_buf[t]-'0')*10;   t++;
+		cal.hour +=  (gps_buf[t]-'0')+8;    t++;
+		cal.min  =   (gps_buf[t]-'0')*10;   t++;
+		cal.min  +=  (gps_buf[t]-'0');      t++;
+		cal.sec  =   (gps_buf[t]-'0')*10;   t++;
+		cal.sec  +=  (gps_buf[t]-'0');
 		
 		t = ds[2];
-		sys_status.sys_datetime.mday   =  (gps_buf[t]-'0')*10;   t++;
-		sys_status.sys_datetime.mday  +=  (gps_buf[t]-'0');      t++;
-		sys_status.sys_datetime.month  =  (gps_buf[t]-'0')*10;   t++;
-		sys_status.sys_datetime.month +=  (gps_buf[t]-'0');      t++;
-		sys_status.sys_datetime.year   =  (gps_buf[t]-'0')*10;   t++;
-		sys_status.sys_datetime.year  +=  (gps_buf[t]-'0')+2000;
-
-		sys_status.sys_datetime.wday = ymd_to_wday(sys_status.sys_datetime.year, sys_status.sys_datetime.month, sys_status.sys_datetime.mday);
-        //更新系统时钟以及串口屏时钟
-		rt_kprintf("updata system time...\n");
-		rtc_set_time(&(sys_status.sys_datetime));
-		SetRtc(sys_status.sys_datetime.year, sys_status.sys_datetime.month, sys_status.sys_datetime.mday, sys_status.sys_datetime.wday,
-		sys_status.sys_datetime.hour, sys_status.sys_datetime.min, sys_status.sys_datetime.sec);
-		rt_kprintf("updata system time completed!\n");
+		cal.mday   =  (gps_buf[t]-'0')*10;   t++;
+		cal.mday  +=  (gps_buf[t]-'0');      t++;
+		cal.month  =  (gps_buf[t]-'0')*10;   t++;
+		cal.month +=  (gps_buf[t]-'0');      t++;
+		cal.year   =  (gps_buf[t]-'0')*10;   t++;
+		cal.year  +=  (gps_buf[t]-'0')+2000;
+		
+		if(gps_update_hook)
+			gps_update_hook(&cal);
 	}
 }
 
 static void uart_handle_entry(void* param)
 {
 	uint8_t gps_rx;
-	static uint8_t gps_index;
-	
-	gps_index=0; 
+	static uint8_t gps_index = 0;
 	while(1)
 	{
 		gps_rx = gps_getchar();
-		if(gps_rx == '$') { gps_buf[0] = gps_rx; gps_index = 1; }
-		else if(gps_index)
+		if(gps_rx == '$') 
+		{ 
+			gps_buf[0] = gps_rx; 
+			gps_index = 1;
+		}
+		else if(gps_index > 0 && gps_index < BUF_LEN - 1)
 		{
 			gps_buf[gps_index] = gps_rx;
 			if(gps_rx == 0xA && gps_buf[gps_index-1] == 0xD)
 			{
-				gps_buf[gps_index+1]=0; 
+				gps_buf[gps_index + 1] = 0; 
 				gps_data_parse(gps_index); 
-				gps_index=0; 
+				gps_index = 0; 
 			}
 			else gps_index++; 
+		}
+		else
+		{
+			gps_index = 0;
 		}
 	}
 }
@@ -137,7 +133,7 @@ static void uart_handle_entry(void* param)
 static int gps_handle(void)
 {
 	rt_thread_t gps_thread = rt_thread_create("tgps",uart_handle_entry,
-											RT_NULL,512,12,50);
+											RT_NULL,1024,12,50);
 	if(gps_thread!=RT_NULL)
 		rt_thread_startup(gps_thread);
 	return 0;

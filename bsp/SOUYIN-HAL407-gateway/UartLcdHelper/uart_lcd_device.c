@@ -109,7 +109,7 @@ int lcd_device_startup(void)
 	{	
 		rt_thread_t lcd_rev = rt_thread_create("lcd_recv",
 											   uart_lcd_rx_handle_entry,
-											   RT_NULL,1024,8,10);
+											   RT_NULL,10*1024,8,10);
 		if(lcd_rev != RT_NULL)
 			rt_thread_startup(lcd_rev);
 		

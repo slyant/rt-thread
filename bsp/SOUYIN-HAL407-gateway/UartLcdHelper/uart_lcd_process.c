@@ -249,17 +249,17 @@ void ProcessMessage(uint8_t *msg_buff, uint16_t size)
     }
 }
 
-void uart_lcd_reg_button_notify_handle(notify_handle_t button_handle)
+void uart_lcd_set_button_notify_hook(notify_handle_t button_handle)
 {
 	notify_button = button_handle;
 }
 
-void uart_lcd_reg_text_notify_handle(notify_handle_t text_handle)
+void uart_lcd_set_text_notify_hook(notify_handle_t text_handle)
 {
 	notify_text = text_handle;
 }
 
-void uart_lcd_reg_screen_notify_handle(notify_handle_t screen_handle)
+void uart_lcd_set_screen_notify_hook(notify_handle_t screen_handle)
 {
 	notify_screen = screen_handle;
 }

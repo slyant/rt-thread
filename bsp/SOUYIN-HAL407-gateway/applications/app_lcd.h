@@ -28,7 +28,7 @@
 #define SYS_CFG_BTN_EXIT    		18      //退出
 /****************************************************************/
 
-/*************************  UI_MESSAGE 控件ID  ******************/
+/*************************  UI_ABKEY_CARD 控件ID  ******************/
 #define ABKEY_CARD_BTN_INIT    		31      //初始化
 #define ABKEY_CARD_BTN_CREATE     	32      //制卡
 #define ABKEY_CARD_BTN_RESET     	33      //重置
@@ -39,12 +39,13 @@
 
 /*************************  UI_MESSAGE 控件ID  ******************/
 #define MESSAGE_BTN_BACK    		6      //返回
+#define MESSAGE_TEXT_TITLE          1      //信息标题
 #define MESSAGE_TEXT_MSGBOX     	4      //信息文本框
 /****************************************************************/
 
 void lcd_show_error(const char* err);
-void lcd_show_message(const char *msg);
-
+void lcd_show_message(const char *title, const char *msg);
 void lcd_set_screen(rt_uint16_t screen_id);
+void lcd_set_datetime(int year, int month, int mday, int wday, int hour, int min, int sec);
 
 #endif

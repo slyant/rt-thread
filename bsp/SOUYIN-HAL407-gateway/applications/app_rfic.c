@@ -6,10 +6,14 @@
 #include <rng_helper.h>
 #include <app_config.h>
 
+static struct rt_mutex mutex_rfic;
+#define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER)
+#define IC_UNLOCK()		rt_mutex_release(&mutex_rfic)
+
 //应用卡处理
 static void card_app_handle(card_app_type_t type, const cJSON *root)
 {
-	if(root == RT_NULL) return;
+	if(root == RT_NULL)	return;
 	cJSON *fileds = cJSON_GetObjectItem((cJSON*)root, "Fileds");
 	if(fileds == RT_NULL) return;
 
@@ -18,10 +22,25 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 		case CARD_APP_TYPE_ABKEY:
 			{
 				rt_kprintf("CARD_APP_TYPE_ABKEY\n");
-				char *akey = (char*)cJSON_item_get_string(fileds, "AKey");
-				char *bkey = (char*)cJSON_item_get_string(fileds, "BKey");
-				rt_kprintf("AKey:%s\n", akey);
-				rt_kprintf("BKey:%s\n", bkey);
+				char *akey_str = (char*)cJSON_item_get_string(fileds, "AKey");
+				char *bkey_str = (char*)cJSON_item_get_string(fileds, "BKey");
+				rt_kprintf("AKey:%s\n", akey_str);
+				rt_kprintf("BKey:%s\n", akey_str);
+				rt_uint8_t *akey = rt_calloc(1, KEY_LENGTH);
+				rt_uint8_t *bkey = rt_calloc(1, KEY_LENGTH);
+				hex2bytes(akey_str, KEY_LENGTH*2, akey);
+				hex2bytes(bkey_str, KEY_LENGTH*2, bkey);
+				if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
+				{//密钥卡验证通过
+					sys_status.set_screen_id(UI_SYS_CFG);
+					sys_status.set_workmodel(CONFIG_MANAGE_MODEL);
+				}
+				else
+				{
+					beep_on(2);
+				}
+				rt_free(akey);
+				rt_free(bkey);
 			}
 			break;
 		case CARD_APP_TYPE_CONFIG:
@@ -83,34 +102,40 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 }
 
 //初始化密钥卡
-static void init_card_key(void)
+rt_bool_t init_card_key(void)
 {
+	rt_bool_t result = RT_FALSE;
 	IC_LOCK();
 	if(rfid_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
 	{
-		rt_kprintf("init_card_key OK!\n");
+		rt_kprintf("init_card_key ok!\n");
+		result = RT_TRUE;
 	}
 	else
 	{
-		rt_kprintf("init_card_key ERROR!\n");
+		rt_kprintf("init_card_key error!\n");
 	}
 	IC_UNLOCK();
+	return result;
 }
 MSH_CMD_EXPORT(init_card_key, init_card_key);
 
 //重置密钥卡
-static void reset_card_key(void)
+rt_bool_t reset_card_key(void)
 {
+	rt_bool_t result = RT_FALSE;
 	IC_LOCK();
 	if(rfid_card_reset(CARD_TYPE_KEY, RT_NULL))
 	{
 		rt_kprintf("reset_card_key OK!\n");
+		result = RT_TRUE;
 	}
 	else
 	{
 		rt_kprintf("reset_card_key ERROR!\n");
 	}
-	IC_UNLOCK();	
+	IC_UNLOCK();
+	return result;
 }
 MSH_CMD_EXPORT(reset_card_key, reset_card_key);
 
@@ -141,8 +166,7 @@ static void sub_scan_thread_entry(void *params)
 			if(*scan_info->buffer != RT_NULL)
 				rt_free(*scan_info->buffer);
 			rt_free(scan_info);
-		}
-		
+		}		
 		rt_thread_mdelay(50);
 	}
 }
@@ -267,8 +291,9 @@ rt_bool_t write_card_key_and_update_syskey(void)
 }
 
 //创建密钥卡
-static void create_app_abkey(void)
+rt_bool_t create_app_abkey(void)
 {
+	rt_bool_t rest = RT_FALSE;
 	IC_LOCK();
 	if(sys_config.abkey_exist())
 	{//存在系统密钥		
@@ -326,6 +351,7 @@ static void create_app_abkey(void)
 		if(pass)
 		{//验证通过,更新卡密钥
 			write_card_key_and_update_syskey();
+			rest = RT_TRUE;
 		}
 		else
 		{
@@ -335,9 +361,10 @@ static void create_app_abkey(void)
 	else
 	{//不存在系统密钥,则创建系统密钥，先写卡，后保存到系统
 		rt_kprintf("sys abkey is not exist!\n");
-		write_card_key_and_update_syskey();
+		rest = write_card_key_and_update_syskey();
 	}
 	IC_UNLOCK();
+	return rest;
 }
 MSH_CMD_EXPORT(create_app_abkey, create_app_abkey);
 
@@ -390,12 +417,14 @@ static void main_scan_thread_entry(void* params)
 						}
 						else
 						{
+							beep_on(2);
 							rt_kprintf("Parse json error!\n");
 						}
 						cJSON_Delete(root);
 					}
 					else
 					{
+						beep_on(2);
 						rt_kprintf("Parse json error!\n");
 					}
 				}
@@ -443,6 +472,8 @@ static void main_scan_thread_entry(void* params)
 
 void app_rfic_startup(void)
 {
+	rt_mutex_init(&mutex_rfic, "ic_lock", RT_IPC_FLAG_FIFO);
+	
 	rt_thread_t thread = rt_thread_create("ticscan", main_scan_thread_entry, RT_NULL, 
 											10*1024, 12, 20);
 	if(thread != RT_NULL)
