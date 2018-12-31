@@ -4,6 +4,8 @@
 #include <cJSON_util.h>
 #include <ic_card_protocol.h>
 #include <rng_helper.h>
+#include <app_rfic.h>
+#include <app_lcd.h>
 #include <app_config.h>
 
 static struct rt_mutex mutex_rfic;
@@ -105,6 +107,8 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 rt_bool_t init_card_key(void)
 {
 	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;
 	IC_LOCK();
 	if(rfid_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
 	{
@@ -118,12 +122,13 @@ rt_bool_t init_card_key(void)
 	IC_UNLOCK();
 	return result;
 }
-MSH_CMD_EXPORT(init_card_key, init_card_key);
 
 //重置密钥卡
 rt_bool_t reset_card_key(void)
 {
 	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;	
 	IC_LOCK();
 	if(rfid_card_reset(CARD_TYPE_KEY, RT_NULL))
 	{
@@ -137,7 +142,6 @@ rt_bool_t reset_card_key(void)
 	IC_UNLOCK();
 	return result;
 }
-MSH_CMD_EXPORT(reset_card_key, reset_card_key);
 
 //扫描卡子线程
 static void sub_scan_thread_entry(void *params)
@@ -205,20 +209,6 @@ static rt_bool_t check_abkey(char *buffer)
 	return result;
 }
 
-//初始化应用卡
-static void init_card_app(void)
-{
-	
-}
-MSH_CMD_EXPORT(init_card_app, init_card_app);
-
-//重置应用卡
-static void reset_card_app(void)
-{
-	
-}
-MSH_CMD_EXPORT(reset_card_app, reset_card_app);
-
 //创建密钥卡信息
 static rt_uint16_t create_card_key_info(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, rt_uint8_t **out_buffer)
 {
@@ -249,7 +239,7 @@ static rt_uint16_t create_card_key_info(rt_uint8_t *out_akey, rt_uint8_t *out_bk
 	return buf_len;
 }
 
-rt_bool_t write_card_key_and_update_syskey(void)
+static rt_bool_t write_card_key_and_update_syskey(void)
 {
 	rt_bool_t rest = RT_FALSE;
     rt_uint16_t buf_len;
@@ -292,8 +282,10 @@ rt_bool_t write_card_key_and_update_syskey(void)
 
 //创建密钥卡
 rt_bool_t create_app_abkey(void)
-{
+{	
 	rt_bool_t rest = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL)
+		return rest;
 	IC_LOCK();
 	if(sys_config.abkey_exist())
 	{//存在系统密钥		
@@ -366,21 +358,30 @@ rt_bool_t create_app_abkey(void)
 	IC_UNLOCK();
 	return rest;
 }
-MSH_CMD_EXPORT(create_app_abkey, create_app_abkey);
+
+//初始化应用卡
+rt_bool_t init_card_app(void)
+{
+	return RT_FALSE;
+}
+
+//重置应用卡
+rt_bool_t reset_card_app(void)
+{
+	return RT_FALSE;
+}
 
 //创建配置卡
-static void create_app_config(void)
+rt_bool_t create_app_config(void)
 {
-	
+	return RT_FALSE;
 }
-MSH_CMD_EXPORT(create_app_config, create_app_config);
 
 //创建授权卡
-static void create_app_power(void)
+rt_bool_t create_app_power(void)
 {
-	
+	return RT_FALSE;
 }
-MSH_CMD_EXPORT(create_app_power, create_app_power);
 
 //扫描卡工作线程
 static void main_scan_thread_entry(void* params)
@@ -390,7 +391,9 @@ static void main_scan_thread_entry(void* params)
 	rt_uint8_t *tem_buf = RT_NULL;
 	scan_info.buffer = &tem_buf;
 	while(1)
-	{					
+	{		
+		rt_thread_mdelay(50);		
+		if(sys_status.get_workmodel() != WORK_ON_MODEL) continue;
 		IC_LOCK();
 		*scan_info.buffer = RT_NULL;
 		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
@@ -465,8 +468,7 @@ static void main_scan_thread_entry(void* params)
 				break;			
 		}
 		if(*scan_info.buffer != RT_NULL)
-			rt_free(*scan_info.buffer);		
-		rt_thread_mdelay(50);
+			rt_free(*scan_info.buffer);	
 	}
 }
 

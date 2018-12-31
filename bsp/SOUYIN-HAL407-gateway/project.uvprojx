@@ -10,13 +10,12 @@
       <TargetName>rt-thread_stm32f4xx</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
-      <uAC6>0</uAC6>
+      <pCCUsed>5060300::V5.06 update 3 (build 300)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F407VGTx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.13.0</PackID>
+          <PackID>Keil.STM32F4xx_DFP.2.11.0</PackID>
           <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IRAM(0x20000000,0x00020000) IRAM2(0x10000000,0x00010000) IROM(0x08000000,0x00100000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -336,7 +335,7 @@
               <MiscControls>--no_multibyte_chars</MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>Applications;AppNRF24L01;Commons;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFICHelper;UartLcdHelper;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
+              <IncludePath>applications;AppNRF24L01;Commons;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFICHelper;UartLcdHelper;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -383,47 +382,47 @@
             <File>
               <FileName>app_beep.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_beep.c</FilePath>
+              <FilePath>applications\app_beep.c</FilePath>
             </File>
             <File>
               <FileName>app_door.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_door.c</FilePath>
+              <FilePath>applications\app_door.c</FilePath>
             </File>
             <File>
               <FileName>app_gps.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_gps.c</FilePath>
+              <FilePath>applications\app_gps.c</FilePath>
             </File>
             <File>
               <FileName>app_lcd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_lcd.c</FilePath>
+              <FilePath>applications\app_lcd.c</FilePath>
             </File>
             <File>
               <FileName>app_led.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_led.c</FilePath>
+              <FilePath>applications\app_led.c</FilePath>
             </File>
             <File>
               <FileName>app_rfic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_rfic.c</FilePath>
+              <FilePath>applications\app_rfic.c</FilePath>
             </File>
             <File>
               <FileName>app_sqlite.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_sqlite.c</FilePath>
+              <FilePath>applications\app_sqlite.c</FilePath>
             </File>
             <File>
               <FileName>app_startup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\app_startup.c</FilePath>
+              <FilePath>applications\app_startup.c</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>Applications\main.c</FilePath>
+              <FilePath>applications\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -440,6 +439,11 @@
         <Group>
           <GroupName>Commons</GroupName>
           <Files>
+            <File>
+              <FileName>any_convert.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Commons\any_convert.c</FilePath>
+            </File>
             <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
@@ -459,11 +463,6 @@
               <FileName>st_mcuid.c</FileName>
               <FileType>1</FileType>
               <FilePath>Commons\st_mcuid.c</FilePath>
-            </File>
-            <File>
-              <FileName>any_convert.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Commons\any_convert.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1347,8 +1346,8 @@
                 <v6LangP>0</v6LangP>
                 <vShortEn>2</vShortEn>
                 <vShortWch>2</vShortWch>
-                <v6Lto>2</v6Lto>
-                <v6WtE>2</v6WtE>
+                <v6Lto>0</v6Lto>
+                <v6WtE>0</v6WtE>
                 <v6Rtti>2</v6Rtti>
                 <VariousControls>
                   <MiscControls> --c99</MiscControls>
@@ -1588,11 +1587,5 @@
       </Groups>
     </Target>
   </Targets>
-
-  <RTE>
-    <apis/>
-    <components/>
-    <files/>
-  </RTE>
 
 </Project>

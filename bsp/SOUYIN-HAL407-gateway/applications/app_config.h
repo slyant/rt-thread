@@ -6,10 +6,8 @@
 
 #include <db_include.h>
 #include <app_beep.h>
-#include <any_convert.h>
-#include <drv_pcf8563.h>
 #include <app_gps.h>
-#include <app_lcd.h>
+#include <any_convert.h>
 
 #define INIT_KEY_LEN		6	//初始化密钥长度
 #define SYSINFO_DB_KEY_ID	1   //系统信息主键ID

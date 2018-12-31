@@ -11,28 +11,50 @@ const char MSG_CARD[] = {0xC7, 0xEB, 0xCB, 0xA2, 0xBF, 0xA8, 0x00};	            
 const char MSG_SUCCESS[] = {0xB2, 0xD9, 0xD7, 0xF7, 0xB3, 0xC9, 0xB9, 0xA6, 0x21, 0x00};	//操作成功!
 const char MSG_FAILED[] =  {0xB2, 0xD9, 0xD7, 0xF7, 0xCA, 0xA7, 0xB0, 0xDC, 0x21, 0x00};	//操作失败!
 
+static rt_uint16_t screen_id_list[5];
+
 void lcd_set_datetime(int year, int month, int mday, int wday, int hour, int min, int sec)
 {
 	SetRtc(year, month, mday, wday,	hour, min, sec);
 }
 
-void lcd_set_screen(rt_uint16_t screen_id)
+void lcd_set_screen_id(rt_uint16_t id)
 {
-	SetScreen(screen_id);
+	SetScreen(id);
+    screen_id_list[4] = screen_id_list[3];
+	screen_id_list[3] = screen_id_list[2];
+	screen_id_list[2] = screen_id_list[1];
+	screen_id_list[1] = screen_id_list[0];
+	screen_id_list[0] = id;
+}
+
+rt_uint16_t lcd_get_screen_id(void)
+{
+	return screen_id_list[0];
+}
+
+void lcd_set_screen_back(void)
+{
+	SetScreen(screen_id_list[1]);
+	screen_id_list[0] = screen_id_list[1];
+	screen_id_list[1] = screen_id_list[2];
+	screen_id_list[2] = screen_id_list[3];
+	screen_id_list[3] = screen_id_list[4];
+	screen_id_list[4] = UI_MAIN;	
 }
 
 void lcd_show_error(const char *err)
 {
 	GUI_CleanScreen();
 	SetFcolor(COLOR_WHITE);
-    sys_status.set_screen_id(UI_ERROR);
+    lcd_set_screen_id(UI_ERROR);
 	show_string(UI_ERROR, 5, 10, 0, 6, (unsigned char *)SYS_ERR);
     show_string(UI_ERROR, 5, 50, 0, 6, (unsigned char *)err);
 }
 
 void lcd_show_message(const char *title, const char *msg)
 {
-    sys_status.set_screen_id(UI_MESSAGE);
+    lcd_set_screen_id(UI_MESSAGE);
     SetTextValue(UI_MESSAGE, MESSAGE_TEXT_TITLE, (unsigned char *)title);
     SetTextValue(UI_MESSAGE, MESSAGE_TEXT_MSGBOX, (unsigned char *)msg);
 }
@@ -75,8 +97,9 @@ static void abkey_card_handle(unsigned short control_id)
         break;
     case ABKEY_CARD_BTN_IMPORT:
         break;
-    case ABKEY_CARD_BTN_BACK:
+    case ABKEY_CARD_BTN_RESTART:
         sys_status.restart();
+
         break;
     default:
         break;
@@ -93,7 +116,7 @@ static void lcd_notify_button(unsigned short screen_id, unsigned short control_i
         break;
     case UI_MESSAGE:
         if(control_id == MESSAGE_BTN_BACK)
-            sys_status.set_screen_back();
+            lcd_set_screen_back();
         break;
     default:
         break;

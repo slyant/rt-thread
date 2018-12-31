@@ -1,17 +1,14 @@
 #include <app_config.h>
+#include <app_gps.h>
+#include <drv_pcf8563.h>
+#include <app_lcd.h>
 #include <stm32f4xx_hal_cortex.h>
-extern void app_sqlite_init(void);
-extern void app_lcd_startup(void);
-extern void app_rfic_startup(void);
-extern void app_nrf_gateway_startup(void);
 
 const char* INIT_SYS_TITLE = "公交自助收银管理系统V1.0\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 static enum sys_workmodel workmodel;
-static rt_uint16_t screen_id_list[5];
-
 struct sys_status sys_status;
 struct sys_config sys_config;
 
@@ -67,31 +64,6 @@ static void load_datetime(void)
 	rt_free(cal);
 }
 
-static rt_uint16_t get_screen_id(void)
-{
-	return screen_id_list[0];
-}
-
-static void set_screen_id(rt_uint16_t id)
-{
-	lcd_set_screen(id);	
-	screen_id_list[4] = screen_id_list[3];
-	screen_id_list[3] = screen_id_list[2];
-	screen_id_list[2] = screen_id_list[1];
-	screen_id_list[1] = screen_id_list[0];
-	screen_id_list[0] = id;
-}
-
-static void set_screen_back(void)
-{
-	lcd_set_screen(screen_id_list[1]);
-	screen_id_list[0] = screen_id_list[1];
-	screen_id_list[1] = screen_id_list[2];
-	screen_id_list[2] = screen_id_list[3];
-	screen_id_list[3] = screen_id_list[4];
-	screen_id_list[4] = UI_MAIN;	
-}
-
 static void set_workmodel(enum sys_workmodel model)
 {
 	workmodel = model;
@@ -118,7 +90,7 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 	rt_kprintf("%s", err);
 	lcd_show_error(err);
 	rt_free(err);
-	
+	rt_thread_mdelay(1*60*1000);
 	while(1);
 }
 
@@ -131,47 +103,48 @@ void app_startup(void)
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
 	sys_status.get_workmodel = get_workmodel;
 	sys_status.set_workmodel = set_workmodel;
-	sys_status.get_screen_id = get_screen_id;
-	sys_status.set_screen_id = set_screen_id;
-	sys_status.set_screen_back = set_screen_back;
+	sys_status.get_screen_id = lcd_get_screen_id;
+	sys_status.set_screen_id = lcd_set_screen_id;
+	sys_status.set_screen_back = lcd_set_screen_back;
 	sys_status.get_datetime = get_datetime;
 	sys_status.set_datetime = set_datetime;
-	sys_status.restart = sys_restart;
-	
+	sys_status.restart = sys_restart;	
 	sys_status.set_workmodel(WORK_OFF_MODEL);
 	
 	load_datetime();
+
+	extern void app_sqlite_init(void);
 	app_sqlite_init();	
-	
+	extern void app_lcd_startup(void);
+	app_lcd_startup();
+	extern void app_rfic_startup(void);
+	app_rfic_startup();
+	extern void app_nrf_gateway_startup(void);	
+	app_nrf_gateway_startup();
+
 	struct sysinfo sysinfo;
 	RT_ASSERT(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0);
+
+	sys_config.door_count = sysinfo.door_count;
+	sys_config.node_count = sysinfo.node_count;
+	sys_config.open_timeout = sysinfo.open_timeout;
+	rt_strncpy(sys_config.sys_title, sysinfo.sys_title, rt_strlen(sysinfo.sys_title));
+	rt_memcpy(sys_config.keya, sysinfo.key_a, INIT_KEY_LEN);
+	rt_memcpy(sys_config.keyb, sysinfo.key_b, INIT_KEY_LEN);
+	sys_config.abkey_exist = sys_abkey_exist;
+	
+	rt_kprintf("\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n",sys_config.sys_title, sys_config.open_timeout, sysinfo.door_count, sys_config.node_count);
+	rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
+	rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
+		
+	if(sys_config.abkey_exist())
 	{
-		app_lcd_startup();		
-		
-		sys_config.door_count = sysinfo.door_count;
-		sys_config.node_count = sysinfo.node_count;
-		sys_config.open_timeout = sysinfo.open_timeout;
-		rt_strncpy(sys_config.sys_title, sysinfo.sys_title, rt_strlen(sysinfo.sys_title));
-		rt_memcpy(sys_config.keya, sysinfo.key_a, INIT_KEY_LEN);
-		rt_memcpy(sys_config.keyb, sysinfo.key_b, INIT_KEY_LEN);
-		sys_config.abkey_exist = sys_abkey_exist;
-		
-		rt_kprintf("\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n",sys_config.sys_title, sys_config.open_timeout, sysinfo.door_count, sys_config.node_count);
-		rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
-		rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
-			
-		if(sys_config.abkey_exist())
-		{
-			sys_status.set_screen_id(UI_MAIN);
-			sys_status.set_workmodel(WORK_ON_MODEL);
-		}
-		else
-		{
-			sys_status.set_screen_id(UI_ABKEY_CARD);
-			sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
-			return;
-		}
-		app_rfic_startup();
-		app_nrf_gateway_startup();	
+		sys_status.set_screen_id(UI_MAIN);
+		sys_status.set_workmodel(WORK_ON_MODEL);
+	}
+	else
+	{
+		sys_status.set_screen_id(UI_ABKEY_CARD);
+		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 	}
 }

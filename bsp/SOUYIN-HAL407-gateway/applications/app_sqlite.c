@@ -84,8 +84,4 @@ void app_sqlite_init(void)
 	{//如果id=SYSINFO_DB_KEY_ID的记录不存在，则添加
 		init_data();
 	}	
-
-	struct sysinfo sysinfo;
-	int count = sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID);
-	RT_ASSERT(count>0);
 }
