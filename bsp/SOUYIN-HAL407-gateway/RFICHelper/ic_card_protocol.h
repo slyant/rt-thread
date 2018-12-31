@@ -18,41 +18,32 @@
 #define MONEY_BAG_BF				34	//电子钱包备份数据块 
 #define MONEY_BAG_CTRL				35	//电子钱包备份数据块 
 
-typedef enum
+//IC卡基础类型枚举
+enum card_base_type
 {
 	CARD_TYPE_BLANK = 0,    //空白卡
 	CARD_TYPE_KEY,			//密钥卡
 	CARD_TYPE_APP,			//应用卡
 	CARD_TYPE_UNKNOW,		//未知卡
 	CARD_TYPE_NULL			//无卡
-}card_base_type_t;//IC卡基础类型枚举
-
-typedef enum
-{
-	CARD_APP_TYPE_ABKEY = 0,	//密钥卡
-	CARD_APP_TYPE_CONFIG,		//配置卡
-	CARD_APP_TYPE_POWER,        //授权卡
-	CARD_APP_TYPE_EKEY,			//钥匙卡
-	CARD_APP_TYPE_DRIVER,		//司机卡
-	CARD_APP_TYPE_LOCKKEY,		//锁钥卡
-	CARD_APP_TYPE_UNKNOW		//未知卡
-}card_app_type_t;//IC卡应用类型枚举
+};
 
 //IC卡扫描结果信息
-struct rfid_scan_info
+struct rfic_scan_info
 {
-	card_base_type_t base_type;
+	enum card_base_type base_type;
 	rt_uint8_t card_id[4];
 	rt_uint8_t **buffer;
 	rt_uint16_t buf_len;
 };
-typedef struct rfid_scan_info *rfid_scan_info_t;
+typedef struct rfic_scan_info *rfic_scan_info_t;
 
-card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rfid_scan_info_t out_result);
-rt_bool_t rfid_card_init(card_base_type_t type, rt_bool_t use_money_bag, rt_uint8_t *in_key_a, rt_uint8_t *in_key_b);
-rt_bool_t rfid_card_reset(card_base_type_t type, rt_uint8_t *in_key_b);
-rt_bool_t rfid_card_write(card_base_type_t type, rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *buffer, rt_uint16_t buf_length);
-rt_bool_t rfic_money_read(rt_uint8_t *in_key_a, rt_bool_t *out_stat, rt_uint32_t *out_value);
-rt_bool_t rfic_money_write(rt_uint8_t *in_key_b, rt_int32_t value);
+void rfic_scan_reset(void);
+enum card_base_type rfic_scan_handle(rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rfic_scan_info_t out_result);
+rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_money_bag, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH]);
+rt_bool_t rfic_card_reset(enum card_base_type type, rt_uint8_t in_key_b[KEY_LENGTH]);
+rt_bool_t rfic_card_write(enum card_base_type type, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *buffer, rt_uint16_t buf_length);
+rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, rt_uint32_t *out_value);
+rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value);
 
 #endif

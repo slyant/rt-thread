@@ -4,12 +4,10 @@
 #include <cJSON_util.h>
 #include <ic_card_protocol.h>
 #include <rng_helper.h>
-#include <app_rfic.h>
-#include <app_lcd.h>
 #include <app_config.h>
 
 static struct rt_mutex mutex_rfic;
-#define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER)
+#define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER);rfic_scan_reset()
 #define IC_UNLOCK()		rt_mutex_release(&mutex_rfic)
 
 //应用卡处理
@@ -34,8 +32,7 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 				hex2bytes(bkey_str, KEY_LENGTH*2, bkey);
 				if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
 				{//密钥卡验证通过
-					sys_status.set_screen_id(UI_SYS_CFG);
-					sys_status.set_workmodel(CONFIG_MANAGE_MODEL);
+					sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 				}
 				else
 				{
@@ -103,300 +100,22 @@ static void card_app_handle(card_app_type_t type, const cJSON *root)
 	}
 }
 
-//初始化密钥卡
-rt_bool_t init_card_key(void)
-{
-	rt_bool_t result = RT_FALSE;
-	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
-		return result;
-	IC_LOCK();
-	if(rfid_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
-	{
-		rt_kprintf("init_card_key ok!\n");
-		result = RT_TRUE;
-	}
-	else
-	{
-		rt_kprintf("init_card_key error!\n");
-	}
-	IC_UNLOCK();
-	return result;
-}
 
-//重置密钥卡
-rt_bool_t reset_card_key(void)
-{
-	rt_bool_t result = RT_FALSE;
-	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
-		return result;	
-	IC_LOCK();
-	if(rfid_card_reset(CARD_TYPE_KEY, RT_NULL))
-	{
-		rt_kprintf("reset_card_key OK!\n");
-		result = RT_TRUE;
-	}
-	else
-	{
-		rt_kprintf("reset_card_key ERROR!\n");
-	}
-	IC_UNLOCK();
-	return result;
-}
-
-//扫描卡子线程
-static void sub_scan_thread_entry(void *params)
-{	
-	rt_mailbox_t auth_key_mb = (rt_mailbox_t)params;
-	
-	rt_kprintf("please auth key card...\n");	
-	while(1)
-	{		
-		rt_uint8_t *temp = RT_NULL;
-		rfid_scan_info_t scan_info = rt_calloc(1, sizeof(struct rfid_scan_info));
-		RT_ASSERT(scan_info != RT_NULL);
-		scan_info->buffer = &temp;
-		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, scan_info);		
-		if(type != CARD_TYPE_NULL)
-		{
-			if(rt_mb_send(auth_key_mb, (rt_base_t)scan_info) != RT_EOK)
-			{
-				if(*scan_info->buffer != RT_NULL) 
-					rt_free(*scan_info->buffer);
-				rt_free(scan_info);
-			}
-		}
-		else
-		{
-			if(*scan_info->buffer != RT_NULL)
-				rt_free(*scan_info->buffer);
-			rt_free(scan_info);
-		}		
-		rt_thread_mdelay(50);
-	}
-}
-//验证密钥卡
-static rt_bool_t check_abkey(char *buffer)
-{
-	rt_bool_t result = RT_FALSE;
-	cJSON *root = cJSON_Parse(buffer);
-	if(root != RT_NULL)
-	{
-		int type;
-		if(cJSON_item_get_number(root, "Type", &type) == 0)
-		{
-			if(type == CARD_APP_TYPE_ABKEY)
-			{//是密钥卡
-				cJSON *fileds = cJSON_GetObjectItem(root, "Fileds");
-				if(fileds != RT_NULL)
-				{
-					char *_akey = (char*)cJSON_item_get_string(fileds, "AKey");
-					char *_bkey = (char*)cJSON_item_get_string(fileds, "BKey");
-					if(_akey != RT_NULL && _bkey != RT_NULL)
-					{
-						rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];
-						hex2bytes(_akey, KEY_LENGTH * 2, akey);
-						hex2bytes(_bkey, KEY_LENGTH * 2, bkey);
-						if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
-						{//验证通过
-							result = RT_TRUE;
-						}
-					}
-				}
-			}			
-		}
-		cJSON_Delete(root);
-	}
-	return result;
-}
-
-//创建密钥卡信息
-static rt_uint16_t create_card_key_info(rt_uint8_t *out_akey, rt_uint8_t *out_bkey, rt_uint8_t **out_buffer)
-{
-	rt_uint16_t buf_len = 0;
-	get_rnd_bytes(KEY_LENGTH, out_akey);
-	get_rnd_bytes(KEY_LENGTH, out_bkey);
-
-	cJSON *root = cJSON_CreateObject();
-	if(root != RT_NULL)
-	{
-		cJSON_AddNumberToObject(root,"Type",CARD_APP_TYPE_ABKEY);
-		cJSON *fileds = cJSON_CreateObject();
-		if(fileds != RT_NULL)
-		{           
-            char* akey_str = rt_calloc(1, KEY_LENGTH * 2 + 1);
-            char* bkey_str = rt_calloc(1, KEY_LENGTH * 2 + 1);
-            buffer2hex(out_akey, KEY_LENGTH, akey_str);
-            buffer2hex(out_bkey, KEY_LENGTH, bkey_str);
-            cJSON_AddStringToObject(fileds, "AKey", akey_str);
-            cJSON_AddStringToObject(fileds, "BKey", bkey_str);
-			rt_free(akey_str); rt_free(bkey_str);
-			cJSON_AddItemToObject(root,"Fileds",fileds);
-			*out_buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
-            buf_len = rt_strlen((char*)*out_buffer);
-		}
-		cJSON_Delete(root);   
-	}
-	return buf_len;
-}
-
-static rt_bool_t write_card_key_and_update_syskey(void)
-{
-	rt_bool_t rest = RT_FALSE;
-    rt_uint16_t buf_len;
-	rt_uint8_t *buffer = RT_NULL;
-	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];	 
-    buf_len = create_card_key_info(akey, bkey, &buffer);   
-	if(buf_len > 0 && buffer != RT_NULL)
-	{
-		if(rfid_card_write(CARD_TYPE_KEY, akey, bkey, buffer, buf_len) == RT_TRUE)
-		{//写密钥卡成功
-			rt_kprintf("rfid_card_write OK:\n%s\n", buffer);
-			//保存系统密钥
-			struct sysinfo sysinfo;
-			if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
-			{
-				rt_memcpy(sysinfo.key_a, akey, KEY_LENGTH);
-				rt_memcpy(sysinfo.key_b, bkey, KEY_LENGTH);
-				if(sysinfo_update(&sysinfo) == 0)
-				{
-					rt_memcpy(sys_config.keya, akey, KEY_LENGTH);
-					rt_memcpy(sys_config.keyb, bkey, KEY_LENGTH);
-					rt_kprintf("sysinfo_update OK!\n");
-					rest = RT_TRUE;
-				}
-			}
-			else
-			{
-				rt_kprintf("sysinfo_update ERROR!\n");
-			}
-		}
-		else
-		{
-			rt_kprintf("rfid_card_write ERROR:\n%s\n", buffer);
-		}
-	}
-	if(buffer != RT_NULL)
-		rt_free(buffer);
-	return rest;
-}
-
-//创建密钥卡
-rt_bool_t create_app_abkey(void)
-{	
-	rt_bool_t rest = RT_FALSE;
-	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL)
-		return rest;
-	IC_LOCK();
-	if(sys_config.abkey_exist())
-	{//存在系统密钥		
-		//需要先验证系统密钥
-		rt_mailbox_t auth_key_mb = rt_mb_create("auth_key", 1, RT_IPC_FLAG_FIFO);
-		RT_ASSERT(auth_key_mb != RT_NULL);
-		
-		//扫描卡子线程
-		rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, auth_key_mb, 
-												1*1024, 5, 20);
-		if(thread != RT_NULL)
-			rt_thread_startup(thread);
-		
-		rt_uint8_t pass = 0, retry = 3;		
-		rt_ubase_t p = 0;
-		do
-		{
-			//等待接收邮件
-			if(rt_mb_recv(auth_key_mb, &p, RT_WAITING_FOREVER)==RT_EOK)
-			{
-				if(p != 0)
-				{
-					rfid_scan_info_t scan_info = (rfid_scan_info_t)p;
-					if(scan_info->buf_len > 0 && *scan_info->buffer != RT_NULL)
-					{					
-						//验证密钥卡
-						if(check_abkey((char*)*scan_info->buffer))
-						{//验证通过							
-							pass = 1;
-						}
-						else
-						{//验证失败
-							rt_kprintf("sys abkey authentication failed\n");
-						}
-					}
-					else
-					{
-						rt_kprintf("rx_data:null\n");
-					}
-					if(*scan_info->buffer != RT_NULL)
-						rt_free(*scan_info->buffer);
-					if(scan_info != RT_NULL)
-						rt_free(scan_info);
-				}
-			}		
-			retry--;
-		}
-		while(pass == 0 && retry > 0);
-		
-		if(thread != RT_NULL)
-			rt_thread_delete(thread);
-
-		if(auth_key_mb != RT_NULL)
-			rt_mb_delete(auth_key_mb);
-		if(pass)
-		{//验证通过,更新卡密钥
-			write_card_key_and_update_syskey();
-			rest = RT_TRUE;
-		}
-		else
-		{
-			rt_kprintf("sys abkey authentication failed!\n");
-		}
-	}
-	else
-	{//不存在系统密钥,则创建系统密钥，先写卡，后保存到系统
-		rt_kprintf("sys abkey is not exist!\n");
-		rest = write_card_key_and_update_syskey();
-	}
-	IC_UNLOCK();
-	return rest;
-}
-
-//初始化应用卡
-rt_bool_t init_card_app(void)
-{
-	return RT_FALSE;
-}
-
-//重置应用卡
-rt_bool_t reset_card_app(void)
-{
-	return RT_FALSE;
-}
-
-//创建配置卡
-rt_bool_t create_app_config(void)
-{
-	return RT_FALSE;
-}
-
-//创建授权卡
-rt_bool_t create_app_power(void)
-{
-	return RT_FALSE;
-}
-
-//扫描卡工作线程
+//扫描卡主线程
 static void main_scan_thread_entry(void* params)
 {	
-	struct rfid_scan_info scan_info;
-	rt_memset(&scan_info, 0x00, sizeof(struct rfid_scan_info));	
+	struct rfic_scan_info scan_info;
+	rt_memset(&scan_info, 0x00, sizeof(struct rfic_scan_info));	
 	rt_uint8_t *tem_buf = RT_NULL;
 	scan_info.buffer = &tem_buf;
 	while(1)
 	{		
 		rt_thread_mdelay(50);		
 		if(sys_status.get_workmodel() != WORK_ON_MODEL) continue;
+		
 		IC_LOCK();
 		*scan_info.buffer = RT_NULL;
-		card_base_type_t type = rfid_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
+		enum card_base_type type = rfic_scan_handle(sys_config.keya, sys_config.keyb, &scan_info);
 		IC_UNLOCK();
 		switch((int)type)
 		{
@@ -472,6 +191,271 @@ static void main_scan_thread_entry(void* params)
 	}
 }
 
+//初始化密钥卡
+rt_bool_t init_card_key(void)
+{
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;
+	
+	IC_LOCK();
+	if(rfic_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
+	{
+		rt_kprintf("init_card_key ok!\n");
+		result = RT_TRUE;
+	}
+	else
+	{
+		rt_kprintf("init_card_key error!\n");
+	}
+	IC_UNLOCK();
+	return result;
+}
+
+//重置密钥卡
+rt_bool_t reset_card_key(void)
+{
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;	
+	
+	IC_LOCK();
+	if(rfic_card_reset(CARD_TYPE_KEY, RT_NULL))
+	{
+		rt_kprintf("reset_card_key OK!\n");
+		result = RT_TRUE;
+	}
+	else
+	{
+		rt_kprintf("reset_card_key ERROR!\n");
+	}
+	IC_UNLOCK();
+	return result;
+}
+
+//扫描卡子线程
+static void sub_scan_thread_entry(void *params)
+{	
+	rt_mailbox_t sub_scan_mb = (rt_mailbox_t)params;		
+	while(1)
+	{		
+		rt_uint8_t *temp = RT_NULL;
+		rfic_scan_info_t scan_info = rt_calloc(1, sizeof(struct rfic_scan_info));
+		RT_ASSERT(scan_info != RT_NULL);
+		scan_info->buffer = &temp;
+		enum card_base_type type = rfic_scan_handle(sys_config.keya, sys_config.keyb, scan_info);		
+		if(type != CARD_TYPE_NULL)
+		{
+			if(rt_mb_send(sub_scan_mb, (rt_base_t)scan_info) != RT_EOK)
+			{
+				if(*scan_info->buffer != RT_NULL) 
+					rt_free(*scan_info->buffer);
+				rt_free(scan_info);
+			}
+		}
+		else
+		{
+			if(*scan_info->buffer != RT_NULL)
+				rt_free(*scan_info->buffer);
+			rt_free(scan_info);
+		}		
+		rt_thread_mdelay(50);
+	}
+}
+//解析密钥卡
+static rt_bool_t parse_abkey(char *buffer, rt_uint8_t out_akey[KEY_LENGTH], rt_uint8_t out_bkey[KEY_LENGTH])
+{
+	rt_bool_t result = RT_FALSE;
+	cJSON *root = cJSON_Parse(buffer);
+	if(root != RT_NULL)
+	{
+		int type;
+		if(cJSON_item_get_number(root, "Type", &type) == 0)
+		{
+			if(type == CARD_APP_TYPE_ABKEY)
+			{//是密钥卡
+				cJSON *fileds = cJSON_GetObjectItem(root, "Fileds");
+				if(fileds != RT_NULL)
+				{
+					char *_akey = (char*)cJSON_item_get_string(fileds, "AKey");
+					char *_bkey = (char*)cJSON_item_get_string(fileds, "BKey");
+					if(_akey != RT_NULL && _bkey != RT_NULL)
+					{
+						hex2bytes(_akey, KEY_LENGTH * 2, out_akey);
+						hex2bytes(_bkey, KEY_LENGTH * 2, out_bkey);
+						result = RT_TRUE;
+					}
+				}
+			}			
+		}
+		cJSON_Delete(root);
+	}
+	return result;
+}
+
+//创建密钥卡信息
+static rt_uint16_t create_card_key_info(rt_uint8_t in_akey[KEY_LENGTH], rt_uint8_t in_bkey[KEY_LENGTH], rt_uint8_t **out_buffer)
+{
+	rt_uint16_t buf_len = 0;
+	cJSON *root = cJSON_CreateObject();
+	if(root != RT_NULL)
+	{
+		cJSON_AddNumberToObject(root,"Type",CARD_APP_TYPE_ABKEY);
+		cJSON *fileds = cJSON_CreateObject();
+		if(fileds != RT_NULL)
+		{           
+            char* akey_str = rt_calloc(1, KEY_LENGTH * 2 + 1);
+            char* bkey_str = rt_calloc(1, KEY_LENGTH * 2 + 1);
+            buffer2hex(in_akey, KEY_LENGTH, akey_str);
+            buffer2hex(in_bkey, KEY_LENGTH, bkey_str);
+            cJSON_AddStringToObject(fileds, "AKey", akey_str);
+            cJSON_AddStringToObject(fileds, "BKey", bkey_str);
+			rt_free(akey_str); rt_free(bkey_str);
+			cJSON_AddItemToObject(root,"Fileds",fileds);
+			*out_buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
+            buf_len = rt_strlen((char*)*out_buffer);
+		}
+		cJSON_Delete(root);   
+	}
+	return buf_len;
+}
+//写密钥卡
+static rt_bool_t write_card_key(rt_uint8_t in_akey[KEY_LENGTH], rt_uint8_t in_bkey[KEY_LENGTH])
+{
+	rt_bool_t result = RT_FALSE;
+    rt_uint16_t buf_len;
+	rt_uint8_t *buffer = RT_NULL;
+	
+    buf_len = create_card_key_info(in_akey, in_bkey, &buffer);   
+	if(buf_len > 0 && buffer != RT_NULL)
+	{
+		if(rfic_card_write(CARD_TYPE_KEY, in_akey, in_bkey, buffer, buf_len) == RT_TRUE)
+		{//写密钥卡成功
+			rt_kprintf("rfic_card_write OK:\n%s\n", buffer);
+			result = RT_TRUE;
+		}
+		else
+		{
+			rt_kprintf("rfic_card_write ERROR:\n%s\n", buffer);
+		}
+	}
+	if(buffer != RT_NULL)
+		rt_free(buffer);
+	return result;
+}
+
+//创建密钥卡
+rt_bool_t create_card_key(void)
+{	
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL)
+		return result;
+		
+	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];	
+	get_rnd_bytes(KEY_LENGTH, akey);
+	get_rnd_bytes(KEY_LENGTH, bkey);
+	IC_LOCK();	
+	result = write_card_key(akey, bkey);
+	IC_UNLOCK();
+	if(result)
+	{
+		result = sys_config.update_sys_key(akey, bkey);
+	}	
+	return result;
+}
+
+//备份密钥卡
+rt_bool_t backup_card_key(void)
+{	
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;
+	
+	IC_LOCK();
+	if(sys_config.abkey_exist())
+	{//存在系统密钥
+		result = write_card_key(sys_config.keya, sys_config.keyb);
+	}
+	else
+	{//不存在系统密钥
+		rt_kprintf("sys abkey is not exist!\n");
+	}
+	IC_UNLOCK();
+	return result;
+}
+
+//恢复密钥卡
+rt_bool_t restore_card_key(void)
+{	
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL)
+		return result;
+	
+    rt_mailbox_t sub_scan_mb = rt_mb_create("sub_scan", 1, RT_IPC_FLAG_FIFO);
+    RT_ASSERT(sub_scan_mb != RT_NULL);   
+    
+    //扫描卡子线程
+    IC_LOCK();
+    rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, sub_scan_mb, 
+                                            1*1024, 5, 20);
+    if(thread != RT_NULL)
+        rt_thread_startup(thread);
+    
+    rt_ubase_t p = 0;
+    //等待接收邮件
+    if(rt_mb_recv(sub_scan_mb, &p, rt_tick_from_millisecond(500))==RT_EOK)
+    {
+        if(p != 0)
+        {
+            rfic_scan_info_t scan_info = (rfic_scan_info_t)p;
+            if(scan_info->buf_len > 0 && *scan_info->buffer != RT_NULL)
+            {					
+                rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];
+                //解析密钥卡
+                if(parse_abkey((char*)*scan_info->buffer, akey, bkey))
+                {//解析成功
+                    result = sys_config.update_sys_key(akey, bkey);
+                }
+            }
+            if(*scan_info->buffer != RT_NULL)
+                rt_free(*scan_info->buffer);
+            if(scan_info != RT_NULL)
+                rt_free(scan_info);
+        }
+    }    
+    if(thread != RT_NULL)
+        rt_thread_delete(thread);
+    if(sub_scan_mb != RT_NULL)
+        rt_mb_delete(sub_scan_mb);
+    IC_UNLOCK();
+    
+	return result;
+}
+
+//初始化应用卡
+rt_bool_t init_card_app(void)
+{
+	return RT_FALSE;
+}
+
+//重置应用卡
+rt_bool_t reset_card_app(void)
+{
+	return RT_FALSE;
+}
+
+//创建配置卡
+rt_bool_t create_app_config(void)
+{
+	return RT_FALSE;
+}
+
+//创建授权卡
+rt_bool_t create_app_power(void)
+{
+	return RT_FALSE;
+}
+
 void app_rfic_startup(void)
 {
 	rt_mutex_init(&mutex_rfic, "ic_lock", RT_IPC_FLAG_FIFO);
@@ -481,3 +465,69 @@ void app_rfic_startup(void)
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);	
 }
+
+/*
+	if(sys_config.abkey_exist())
+	{//存在系统密钥		
+		//需要先验证系统密钥
+		rt_mailbox_t auth_key_mb = rt_mb_create("auth_key", 1, RT_IPC_FLAG_FIFO);
+		RT_ASSERT(auth_key_mb != RT_NULL);
+		
+		//扫描卡子线程
+		rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, auth_key_mb, 
+												1*1024, 5, 20);
+		if(thread != RT_NULL)
+			rt_thread_startup(thread);
+		
+		rt_uint8_t pass = 0, retry = 3;		
+		rt_ubase_t p = 0;
+		do
+		{
+			//等待接收邮件
+			if(rt_mb_recv(auth_key_mb, &p, RT_WAITING_FOREVER)==RT_EOK)
+			{
+				if(p != 0)
+				{
+					rfic_scan_info_t scan_info = (rfic_scan_info_t)p;
+					if(scan_info->buf_len > 0 && *scan_info->buffer != RT_NULL)
+					{					
+						//验证密钥卡
+						if(check_abkey((char*)*scan_info->buffer))
+						{//验证通过							
+							pass = 1;
+						}
+						else
+						{//验证失败
+							rt_kprintf("sys abkey authentication failed\n");
+						}
+					}
+					else
+					{
+						rt_kprintf("rx_data:null\n");
+					}
+					if(*scan_info->buffer != RT_NULL)
+						rt_free(*scan_info->buffer);
+					if(scan_info != RT_NULL)
+						rt_free(scan_info);
+				}
+			}		
+			retry--;
+		}
+		while(pass == 0 && retry > 0);
+		
+		if(thread != RT_NULL)
+			rt_thread_delete(thread);
+
+		if(auth_key_mb != RT_NULL)
+			rt_mb_delete(auth_key_mb);
+		if(pass)
+		{//验证通过,更新卡密钥
+			write_card_key_and_update_syskey();
+			rest = RT_TRUE;
+		}
+		else
+		{
+			rt_kprintf("sys abkey authentication failed!\n");
+		}
+	}
+*/

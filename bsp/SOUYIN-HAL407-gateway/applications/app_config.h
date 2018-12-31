@@ -7,10 +7,14 @@
 #include <db_include.h>
 #include <app_beep.h>
 #include <app_gps.h>
+#include <app_rfic.h>
+#include <app_lcd.h>
 #include <any_convert.h>
 
 #define INIT_KEY_LEN		6	//初始化密钥长度
 #define SYSINFO_DB_KEY_ID	1   //系统信息主键ID
+#define CONFIG_CARD_MAX_COUNT	3	//配置卡最大数量
+#define POWER_CARD_MAX_COUNT	3	//授权卡最大数量
 
 enum sys_workmodel
 {
@@ -30,6 +34,7 @@ struct sys_config
 	rt_uint8_t keya[INIT_KEY_LEN];
 	rt_uint8_t keyb[INIT_KEY_LEN];    
 	rt_bool_t (*abkey_exist)(void);
+	rt_bool_t (*update_sys_key)(rt_uint8_t*, rt_uint8_t*);
 };
 typedef struct sys_config *sys_config_t;
 
@@ -37,12 +42,9 @@ struct sys_status
 {		
 	void (*restart)(void);
 	void (*set_workmodel)(enum sys_workmodel);
-	enum sys_workmodel (*get_workmodel)(void);
-	rt_bool_t (*get_datetime)(calendar_t cal);
-	void (*set_datetime)(calendar_t cal);
-	void (*set_screen_id)(rt_uint16_t id);
-	void (*set_screen_back)(void);
-	rt_uint16_t (*get_screen_id)(void);
+	enum sys_workmodel(*get_workmodel)(void);	
+	rt_bool_t (*get_datetime)(calendar_t);
+	void (*set_datetime)(calendar_t);
 };
 typedef struct sys_status *sys_status_t;
 

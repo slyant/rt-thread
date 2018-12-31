@@ -15,8 +15,10 @@ const unsigned char default_money_bag_value[BLOCK_SIZE] = {0x00,0x00,0x00,0x00,0
 const unsigned char default_key[KEY_LENGTH] = {0xff,0xff,0xff,0xff,0xff,0xff};
 const unsigned char card_inf_blocks[CARD_INF_BLOCK_COUNT] = {4,5,6,8,9,10,12,13,14,16,17,18,20,21,22,24,25,26};//,28,29,30,32,33,34,36,37,38,40,41,42,44,45,46,48,49,50,52,53,54,56,57,58,60,61,62
 
+static rt_uint8_t find_tag;
+    
 //初始化电子钱包
-static int rfid_money_init(rt_uint8_t *card_id, rt_uint8_t *in_key_b, rt_uint8_t *ctrl_buffer, rt_bool_t use_money_bag)
+static int rfic_money_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *ctrl_buffer, rt_bool_t use_money_bag)
 {
 	int result = 0;
 	int i;
@@ -61,19 +63,24 @@ static int rfid_money_init(rt_uint8_t *card_id, rt_uint8_t *in_key_b, rt_uint8_t
 _EXIT:
 	return result;
 }
+
+void rfic_scan_reset(void)
+{
+    find_tag = 0;
+}
+
 /*
 function: 扫描IC卡,并返回扫描结果
 param:
 in_key_a: in 应用卡A钥
 in_key_b: in 应用卡B钥
 out_result: out 输出卡信息，在外部释放
-return: 卡基础类型 card_base_type_t
+return: 卡基础类型 enum card_base_type
 */
-card_base_type_t rfid_scan_handle(rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rfid_scan_info_t out_result)
-{
-	static rt_uint8_t find_tag;
+enum card_base_type rfic_scan_handle(rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rfic_scan_info_t out_result)
+{	
 	rt_uint8_t auth_index = 0;
-	card_base_type_t card_base_type = CARD_TYPE_NULL;
+	enum card_base_type card_base_type = CARD_TYPE_NULL;
 	rt_uint8_t status, block_count;
 	rt_uint16_t i, inf_len;
 	rt_uint8_t check_buf[BLOCK_SIZE*2];//用于存放CARD_CHECK_BLOCK和CARD_LEN_BLOCK或MD5结果
@@ -235,7 +242,7 @@ _EXIT:
 }
 
 //初始化卡
-rt_bool_t rfid_card_init(card_base_type_t type, rt_bool_t use_money_bag, rt_uint8_t *in_key_a, rt_uint8_t *in_key_b)
+rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_money_bag, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH])
 {
 	rt_uint8_t status, card_id[4], result = RT_FALSE;
 	rt_uint16_t i;
@@ -310,7 +317,7 @@ rt_bool_t rfid_card_init(card_base_type_t type, rt_bool_t use_money_bag, rt_uint
 				if(type == CARD_TYPE_APP)
 				{//应用卡
 					//处理电子钱包
-					if(rfid_money_init(card_id, (rt_uint8_t*)default_key, temp_buf, use_money_bag) != MI_OK)
+					if(rfic_money_init(card_id, (rt_uint8_t*)default_key, temp_buf, use_money_bag) != MI_OK)
 					{
 						goto _EXIT;
 					}
@@ -324,7 +331,7 @@ _EXIT:
 }
 
 //重置卡
-rt_bool_t rfid_card_reset(card_base_type_t type, rt_uint8_t *in_key_b)
+rt_bool_t rfic_card_reset(enum card_base_type type, rt_uint8_t in_key_b[KEY_LENGTH])
 {
 	rt_uint8_t status, card_id[4], result = RT_FALSE;
 	rt_uint16_t i;
@@ -423,7 +430,7 @@ _EXIT:
 }
 
 //写卡
-rt_bool_t rfid_card_write(card_base_type_t type, rt_uint8_t *in_key_a, rt_uint8_t *in_key_b, rt_uint8_t *buffer, rt_uint16_t buf_length)
+rt_bool_t rfic_card_write(enum card_base_type type, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *buffer, rt_uint16_t buf_length)
 {
 	rt_uint8_t status, card_id[4], result = RT_FALSE;
 	rt_uint16_t i, block_count;
@@ -509,7 +516,7 @@ _EXIT:
 	return result;
 }
 
-rt_bool_t rfic_money_read(rt_uint8_t *in_key_a, rt_bool_t *out_stat, rt_uint32_t *out_value)
+rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, rt_uint32_t *out_value)
 {
 	rt_uint8_t status, card_id[4], result = RT_FALSE;
 	rt_uint16_t i;
@@ -581,7 +588,7 @@ _EXIT:
 	return result;	
 }
 //value>0:充值 value<0:扣款
-rt_bool_t rfic_money_write(rt_uint8_t *in_key_b, rt_int32_t value)
+rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value)
 {
 	rt_uint8_t status, card_id[4], result = RT_FALSE;
 	rt_uint16_t i;

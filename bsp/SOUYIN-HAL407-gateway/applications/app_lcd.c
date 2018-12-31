@@ -1,8 +1,6 @@
 #include <rtthread.h>
-#include <app_lcd.h>
 #include <uart_lcd_process.h>
 #include <hmi_driver.h>
-#include <app_rfic.h>
 #include <app_config.h>
 
 const char SYS_ERR[] = {0xCF, 0xB5, 0xCD, 0xB3, 0xB4, 0xED, 0xCE, 0xF3, 0x3A, 0x00};		//系统错误:
@@ -59,11 +57,12 @@ void lcd_show_message(const char *title, const char *msg)
     SetTextValue(UI_MESSAGE, MESSAGE_TEXT_MSGBOX, (unsigned char *)msg);
 }
 
+//密钥卡设置
 static void abkey_card_handle(unsigned short control_id)
 {
     switch(control_id)
     {
-    case ABKEY_CARD_BTN_INIT:
+    case ABKEY_CARD_BTN_INIT:		//密钥卡初始化
 		if(init_card_key())
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
@@ -73,8 +72,8 @@ static void abkey_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_FAILED);
 		}        
         break;
-    case ABKEY_CARD_BTN_CREATE:
-		if(create_app_abkey())
+    case ABKEY_CARD_BTN_CREATE:		//密钥卡创建
+		if(create_card_key())
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
 		}
@@ -83,7 +82,7 @@ static void abkey_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_FAILED);
 		}
         break;
-    case ABKEY_CARD_BTN_RESET:
+    case ABKEY_CARD_BTN_RESET:		//密钥卡重置
 		if(reset_card_key())
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
@@ -93,28 +92,91 @@ static void abkey_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_FAILED);
 		}
         break;
-    case ABKEY_CARD_BTN_BACKUP:
+    case ABKEY_CARD_BTN_BACKUP:		//密钥卡备份
+		if(backup_card_key())
+		{
+			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
+		}
+		else
+		{
+			lcd_show_message(MSG_RESULT, MSG_FAILED);
+		}		
         break;
-    case ABKEY_CARD_BTN_IMPORT:
+    case ABKEY_CARD_BTN_IMPORT:		//密钥卡恢复
+		if(restore_card_key())
+		{
+			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
+		}
+		else
+		{
+			lcd_show_message(MSG_RESULT, MSG_FAILED);
+		}		
         break;
-    case ABKEY_CARD_BTN_RESTART:
+    case ABKEY_CARD_BTN_RESTART:	//重启
         sys_status.restart();
-
         break;
     default:
         break;
     }
 }
 
+//系统配置
+static void sys_config_handle(unsigned short control_id)
+{
+	switch(control_id)
+    {
+    case SYS_CFG_BTN_ABKEY_CARD:	//密钥卡设置
+		lcd_set_screen_id(UI_ABKEY_CARD);
+		break;
+	case SYS_CFG_BTN_CFG_CARD:		//配置卡设置
+        lcd_set_screen_id(UI_CFG_CARD);
+		break;
+	case SYS_CFG_BTN_POWER_CARD:	//授权卡设置
+		break;
+	case SYS_CFG_BTN_EXIT:			//退出重启
+		sys_status.restart();
+		break;
+	default:
+		break;
+	}	
+}
+//配置卡设置
+static void cfg_card_handle(unsigned short control_id)
+{
+	switch(control_id)
+    {
+    case CFG_CARD_BTN_INIT:         //初始化
+        
+		break;
+	case CFG_CARD_BTN_RESET:		//重置
+        
+		break;
+	case CFG_CARD_BTN_MANAGE:	    //卡管理
+		break;
+	case CFG_CARD_BTN_CREATE:	    //制卡
+		break;    
+	case CFG_CARD_BTN_BACK:			//返回
+		lcd_set_screen_back();
+		break;
+	default:
+		break;
+	}	
+}
 static void lcd_notify_button(unsigned short screen_id, unsigned short control_id, void *params)
 {
     //unsigned char state = (unsigned char)params;
     switch(screen_id)
     {
-    case UI_ABKEY_CARD:
+    case UI_ABKEY_CARD:		//密钥卡设置
         abkey_card_handle(control_id);
         break;
-    case UI_MESSAGE:
+	case UI_SYS_CFG:		//系统配置
+		sys_config_handle(control_id);
+		break;
+    case UI_CFG_CARD:
+        cfg_card_handle(control_id);
+        break;
+    case UI_MESSAGE:		//提示信息
         if(control_id == MESSAGE_BTN_BACK)
             lcd_set_screen_back();
         break;

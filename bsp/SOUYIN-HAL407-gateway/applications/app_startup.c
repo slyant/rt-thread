@@ -1,7 +1,5 @@
 #include <app_config.h>
-#include <app_gps.h>
 #include <drv_pcf8563.h>
-#include <app_lcd.h>
 #include <stm32f4xx_hal_cortex.h>
 
 const char* INIT_SYS_TITLE = "公交自助收银管理系统V1.0\0";
@@ -67,11 +65,56 @@ static void load_datetime(void)
 static void set_workmodel(enum sys_workmodel model)
 {
 	workmodel = model;
+	switch(model)
+	{
+	case CONFIG_ABKEY_MODEL:
+		lcd_set_screen_id(UI_ABKEY_CARD);
+		break;
+	case CONFIG_MANAGE_MODEL:
+		lcd_set_screen_id(UI_SYS_CFG);
+		break;
+	case WORK_MANAGE_MODEL:
+		lcd_set_screen_id(UI_OPEN_DOOR);
+		break;
+	case WORK_ON_MODEL:
+		lcd_set_screen_id(UI_MAIN);
+		break;
+	case WORK_OFF_MODEL:
+		lcd_set_screen_id(UI_MAIN);
+		break;
+	default:
+		lcd_set_screen_id(UI_MAIN);
+		break;
+	}
 }
 
 static enum sys_workmodel get_workmodel(void)
 {
 	return workmodel;
+}
+
+static rt_bool_t update_sys_key(rt_uint8_t *in_akey, rt_uint8_t *in_bkey)
+{
+	rt_bool_t result = RT_FALSE;
+	//保存系统密钥
+	struct sysinfo sysinfo;
+	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
+	{
+		rt_memcpy(sysinfo.key_a, in_akey, INIT_KEY_LEN);
+		rt_memcpy(sysinfo.key_b, in_bkey, INIT_KEY_LEN);
+		if(sysinfo_update(&sysinfo) == 0)
+		{
+			rt_memcpy(sys_config.keya, in_akey, INIT_KEY_LEN);
+			rt_memcpy(sys_config.keyb, in_bkey, INIT_KEY_LEN);
+			rt_kprintf("sysinfo_update OK!\n");
+			result = RT_TRUE;
+		}
+	}
+	else
+	{
+		rt_kprintf("sysinfo_update ERROR!\n");
+	}	
+	return result;
 }
 
 static rt_bool_t sys_abkey_exist(void)
@@ -103,9 +146,7 @@ void app_startup(void)
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
 	sys_status.get_workmodel = get_workmodel;
 	sys_status.set_workmodel = set_workmodel;
-	sys_status.get_screen_id = lcd_get_screen_id;
-	sys_status.set_screen_id = lcd_set_screen_id;
-	sys_status.set_screen_back = lcd_set_screen_back;
+	sys_config.update_sys_key = update_sys_key;
 	sys_status.get_datetime = get_datetime;
 	sys_status.set_datetime = set_datetime;
 	sys_status.restart = sys_restart;	
@@ -138,13 +179,18 @@ void app_startup(void)
 	rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
 		
 	if(sys_config.abkey_exist())
-	{
-		sys_status.set_screen_id(UI_MAIN);
-		sys_status.set_workmodel(WORK_ON_MODEL);
+	{		
+		if(cardinfo_count_by_type(CARD_APP_TYPE_CONFIG) < CONFIG_CARD_MAX_COUNT)
+		{
+			sys_status.set_workmodel(CONFIG_MANAGE_MODEL);
+		}
+		else
+		{
+			sys_status.set_workmodel(WORK_ON_MODEL);
+		}
 	}
 	else
 	{
-		sys_status.set_screen_id(UI_ABKEY_CARD);
 		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 	}
 }
