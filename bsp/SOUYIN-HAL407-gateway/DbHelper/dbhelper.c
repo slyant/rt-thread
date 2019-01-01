@@ -2,6 +2,7 @@
 //#include <string.h>
 #include <ctype.h>
 #include <rtthread.h>
+#include <dfs_posix.h>
 #include <dbhelper.h>
 
 #define DB_DEBUG_EN	1
@@ -24,6 +25,11 @@ int db_helper_init(void)
         return -1;
     }
     return 0;
+}
+
+int db_delete_database(void)
+{
+	return unlink(DB_NAME);
 }
 
 int db_create_database(const char* sqlstr)
@@ -335,13 +341,36 @@ DB_TR_EXEC_OK:
     return rc;
 }
 
-static int db_get_count(sqlite3_stmt *stmt,void *arg)
+int db_get_scalar_int(sqlite3_stmt *stmt, void *arg)
 {
-    int ret,*count=arg;
+    int ret;
+	int *int_value = arg;
     ret = sqlite3_step(stmt);
     if(ret != SQLITE_ROW)
         return SQLITE_EMPTY;
-    *count = db_stmt_get_int(stmt,0);
+    *int_value = db_stmt_get_int(stmt, 0);
+    return SQLITE_OK;
+}
+
+int db_get_scalar_double(sqlite3_stmt *stmt, void *arg)
+{
+    int ret;
+	double *double_value = arg;
+    ret = sqlite3_step(stmt);
+    if(ret != SQLITE_ROW)
+        return SQLITE_EMPTY;
+    *double_value = db_stmt_get_double(stmt, 0);
+    return SQLITE_OK;
+}
+
+int db_get_scalar_text(sqlite3_stmt *stmt, void *arg)
+{
+    int ret;
+	char *text_value = arg;
+    ret = sqlite3_step(stmt);
+    if(ret != SQLITE_ROW)
+        return SQLITE_EMPTY;
+	db_stmt_get_text(stmt, 0, text_value);
     return SQLITE_OK;
 }
 
@@ -353,19 +382,19 @@ static int db_get_count(sqlite3_stmt *stmt,void *arg)
  *  Return     :  查询到计数返回计数，否则一律返回0 
  * =====================================================================================
  */
-int db_query_count_result(const char *sql,const char *fmt,...)
+int db_query_count_result(const char *sql, const char *fmt, ...)
 {
     int ret,count=0;
 	va_list args;
     if(fmt)
 	{        
         va_start(args,fmt);
-        ret = _db_query_by_varpara(sql,db_get_count,&count,fmt,args);
+        ret = _db_query_by_varpara(sql, db_get_scalar_int, &count, fmt, args);
         va_end(args);        
     }
 	else
 	{
-		ret = _db_query_by_varpara(sql,db_get_count,&count,fmt,args);
+		ret = _db_query_by_varpara(sql, db_get_scalar_int, &count, fmt, args);
 	} 
     if(ret == SQLITE_OK)
         return count;

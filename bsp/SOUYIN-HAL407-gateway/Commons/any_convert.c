@@ -1,6 +1,16 @@
 #include <stdio.h>
 #include <any_convert.h>
 
+unsigned long bytes2uint32(unsigned char bytes[4])
+{
+	unsigned long result = 0;
+	result = bytes[3]; result <<= 8;
+	result |= bytes[2]; result <<=8;
+	result |= bytes[1]; result <<=8;
+	result |= bytes[0];
+	return result;
+}
+
 //字符串转整数
 long str2int32(unsigned char *str)
 {

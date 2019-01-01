@@ -12,15 +12,17 @@ struct cardinfo{
 };
 typedef struct cardinfo *cardinfo_t;
 
+int cardinfo_get_max_num(void);
 int cardinfo_get_by_num(cardinfo_t e, int num);
 int cardinfo_get_by_cardid(cardinfo_t e, int card_id);
 int cardinfo_get_by_type(record_queue_t q, int type);
 int cardinfo_count_by_num(int num);
 int cardinfo_count_by_cardid(int card_id);
 int cardinfo_count_by_type(int type);
+int cardinfo_count_by_any(int num, int card_id, int type, char *pwd);
 int cardinfo_get_all(record_queue_t q);
 int cardinfo_add(cardinfo_t e);
-int cardinfo_del(int id);
+int cardinfo_del(int num);
 int cardinfo_del_all(void);
 int cardinfo_update(cardinfo_t e);
 void cardinfo_free_queue(record_queue_t h);

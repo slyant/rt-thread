@@ -5,6 +5,7 @@
 #include <board.h>
 
 #include <db_include.h>
+#include <rng_helper.h>
 #include <app_beep.h>
 #include <app_gps.h>
 #include <app_rfic.h>
@@ -18,11 +19,12 @@
 
 enum sys_workmodel
 {
-	CONFIG_ABKEY_MODEL = 0,
-	CONFIG_MANAGE_MODEL,
-	WORK_MANAGE_MODEL,
-	WORK_ON_MODEL,
-	WORK_OFF_MODEL
+	WAITE_RESTART_MODEL = 0,	//等待重启模式
+	CONFIG_ABKEY_MODEL,			//密钥卡设置模式
+	CONFIG_MANAGE_MODEL,		//系统配置模式
+	WORK_MANAGE_MODEL,			//管理员模式
+	WORK_ON_MODEL,				//正常工作模式
+	WORK_OFF_MODEL				//停止工作模式
 };
 
 struct sys_config
@@ -32,7 +34,8 @@ struct sys_config
 	rt_uint16_t node_count;
 	rt_uint16_t door_count;
 	rt_uint8_t keya[INIT_KEY_LEN];
-	rt_uint8_t keyb[INIT_KEY_LEN];    
+	rt_uint8_t keyb[INIT_KEY_LEN];  
+	rt_bool_t (*sys_reset)(void);	
 	rt_bool_t (*abkey_exist)(void);
 	rt_bool_t (*update_sys_key)(rt_uint8_t*, rt_uint8_t*);
 };
@@ -43,8 +46,8 @@ struct sys_status
 	void (*restart)(void);
 	void (*set_workmodel)(enum sys_workmodel);
 	enum sys_workmodel(*get_workmodel)(void);	
-	rt_bool_t (*get_datetime)(calendar_t);
-	void (*set_datetime)(calendar_t);
+	rt_bool_t (*get_datetime)(struct calendar **);
+	void (*set_datetime)(struct calendar *);
 };
 typedef struct sys_status *sys_status_t;
 

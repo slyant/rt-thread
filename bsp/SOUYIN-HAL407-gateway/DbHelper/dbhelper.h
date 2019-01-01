@@ -7,6 +7,7 @@
 #define DB_SQL_MAX_LEN 1024
 
 int db_helper_init(void);
+int db_delete_database(void);
 int db_create_database(const char* sqlstr);
 //执行没有返回的SQL语句
 int db_nonquery_operator(const char *sqlstr,int (*bind)(sqlite3_stmt *,int index,void * arg),void *param);
@@ -20,6 +21,9 @@ int db_query_by_varpara(const char *sql,int (*create)(sqlite3_stmt *stmt,void *a
 int db_query_count_result(const char *sql,const char *fmt,...);
 //执行查询并返回查询结果的第一行第一列
 int db_query_scalar_result(const char *sql,int (*create)(sqlite3_stmt *stmt,void *arg),void *arg,const char *fmt,...);
+int db_get_scalar_int(sqlite3_stmt *stmt, void *arg);
+int db_get_scalar_double(sqlite3_stmt *stmt, void *arg);
+int db_get_scalar_text(sqlite3_stmt *stmt, void *arg);
 //对sqlite3_column_blob的二次封装
 int db_stmt_get_blob(sqlite3_stmt *stmt,int index,unsigned char *out);
 //对sqlite3_column_text的二次封装

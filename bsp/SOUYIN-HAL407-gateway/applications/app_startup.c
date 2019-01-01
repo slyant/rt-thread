@@ -10,16 +10,38 @@ static enum sys_workmodel workmodel;
 struct sys_status sys_status;
 struct sys_config sys_config;
 
+//系统重置
+static rt_bool_t sys_reset(void)
+{
+	return db_delete_database() == 0 ? RT_TRUE:RT_FALSE;
+}
+//系统重启
 static void sys_restart(void)
 {
 	HAL_NVIC_SystemReset();
 }
-static void set_datetime(calendar_t cal)
+static void set_datetime(struct calendar *cal)
 {	
 	rtc_set_time(cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
 	lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 }
 
+static rt_bool_t get_datetime(struct calendar **cal)
+{
+	int year, month, mday, wday, hour, min, sec;	
+	if(rtc_get_time(&year, &month, &mday, &wday, &hour, &min, &sec))
+	{		
+		(*cal)->year = year;
+		(*cal)->month = month;
+		(*cal)->mday = mday;
+		(*cal)->wday = wday;
+		(*cal)->hour = hour;
+		(*cal)->min = min;
+		(*cal)->sec = sec;	
+		return RT_TRUE;
+	}		
+	return RT_FALSE;
+}
 static void gps_update_hook(calendar_t cal)
 {
 	static int count = 0;
@@ -35,27 +57,11 @@ static void gps_update_hook(calendar_t cal)
 	count++;
 }
 
-static rt_bool_t get_datetime(calendar_t cal)
-{
-	int year, month, mday, wday, hour, min, sec;	
-	if(rtc_get_time(&year, &month, &mday, &wday, &hour, &min, &sec))
-	{		
-		cal->year = year;
-		cal->month = month;
-		cal->mday = mday;
-		cal->wday = wday;
-		cal->hour = hour;
-		cal->min = min;
-		cal->sec = sec;	
-		return RT_TRUE;
-	}		
-	return RT_FALSE;
-}
 
 static void load_datetime(void)
 {
 	calendar_t cal = rt_calloc(1, sizeof(struct calendar));
-	if(get_datetime(cal))
+	if(get_datetime(&cal))
 	{
 		lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 	}
@@ -83,7 +89,6 @@ static void set_workmodel(enum sys_workmodel model)
 		lcd_set_screen_id(UI_MAIN);
 		break;
 	default:
-		lcd_set_screen_id(UI_MAIN);
 		break;
 	}
 }
@@ -147,11 +152,12 @@ void app_startup(void)
 	sys_status.get_workmodel = get_workmodel;
 	sys_status.set_workmodel = set_workmodel;
 	sys_config.update_sys_key = update_sys_key;
+	sys_config.sys_reset = sys_reset;
 	sys_status.get_datetime = get_datetime;
 	sys_status.set_datetime = set_datetime;
-	sys_status.restart = sys_restart;	
+	sys_status.restart = sys_restart;
 	sys_status.set_workmodel(WORK_OFF_MODEL);
-	
+	lcd_wakeup();
 	load_datetime();
 
 	extern void app_sqlite_init(void);

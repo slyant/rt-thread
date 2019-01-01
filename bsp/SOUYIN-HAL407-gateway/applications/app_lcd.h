@@ -1,6 +1,15 @@
 #ifndef __APP_LCD_H__
 #define __APP_LCD_H__
 
+struct temp_card_info
+{
+	int num;
+	char pwd[17];
+};
+typedef struct temp_card_info *temp_card_info_t;
+
+#define LCD_BACK_LIGHT		30		//LCD背光亮度
+
 /*************************  UI界面 ID  *************************/
 #define UI_MAIN				0       //主界面
 #define UI_SYS_CFG        	1       //系统配置
@@ -26,7 +35,7 @@
 #define SYS_CFG_BTN_LOCK_ABKEY_CARD 12     //锁钥卡设置
 #define SYS_CFG_BTN_SYS_DATETIME	13     //时间校准
 #define SYS_CFG_BTN_OTHER_SETTING   14     //银柜设置
-#define SYS_CFG_BTN_EXIT    		15     //退出
+#define SYS_CFG_BTN_RESTART    		15     //重启
 /****************************************************************/
 
 /************************  UI_ABKEY_CARD 控件ID  ****************/
@@ -34,14 +43,15 @@
 #define ABKEY_CARD_BTN_CREATE     	32      //制卡
 #define ABKEY_CARD_BTN_RESET     	33      //重置
 #define ABKEY_CARD_BTN_BACKUP     	34      //备份
-#define ABKEY_CARD_BTN_IMPORT     	35      //恢复(导入)
+#define ABKEY_CARD_BTN_IMPORT     	35      //还原
+#define ABKEY_CARD_BTN_SYS_RESET	6		//系统重置
 #define ABKEY_CARD_BTN_RESTART     	36      //重启
 /****************************************************************/
 
 /***********************  UI_CFG_CARD 控件ID  *******************/
 #define CFG_CARD_BTN_INIT    		43      //初始化
 #define CFG_CARD_BTN_RESET     	    41      //重置
-#define CFG_CARD_BTN_MANAGE     	42      //卡管理
+#define CFG_CARD_BTN_CLEAR	     	42      //清空卡记录
 #define CFG_CARD_TEXT_NUMBER        46      //卡编号
 #define CFG_CARD_BTN_CREATE     	44      //制卡
 #define CFG_CARD_BTN_BACK     	    45      //返回
@@ -59,5 +69,6 @@ void lcd_set_screen_id(rt_uint16_t screen_id);
 rt_uint16_t lcd_get_screen_id(void);
 void lcd_set_screen_back(void);
 void lcd_set_datetime(int year, int month, int mday, int wday, int hour, int min, int sec);
+void lcd_wakeup(void);
 
 #endif

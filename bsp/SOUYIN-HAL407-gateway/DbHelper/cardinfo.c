@@ -139,6 +139,24 @@ int cardinfo_count_by_type(int type)
 	return db_query_count_result("select count(*) from cardinfo where type=?;", "%d", type);
 }
 
+int cardinfo_count_by_any(int num, int card_id, int type, char *pwd)
+{
+	return db_query_count_result("select count(*) from cardinfo where num=? and id=? and type=? and pwd='?';", "%d%d%d%s", num, card_id, type, pwd);
+}
+
+int cardinfo_get_max_num(void)
+{
+	int max_num;
+	if(db_query_scalar_result("select max(num) from cardinfo;", db_get_scalar_int, &max_num, RT_NULL) == 0)
+	{
+		return max_num;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 //返回查询到的记录数
 int cardinfo_get_all(record_queue_t q)
 {
@@ -158,9 +176,9 @@ int cardinfo_update(cardinfo_t e)
 }
 
 //删除指定主键的记录，操作成功返回0
-int cardinfo_del(int id)
+int cardinfo_del(int num)
 {
-	return db_nonquery_by_varpara("delete from cardinfo where num=?;", "%d", id);
+	return db_nonquery_by_varpara("delete from cardinfo where num=?;", "%d", num);
 }
 FINSH_FUNCTION_EXPORT(cardinfo_del, cardinfo del);
 

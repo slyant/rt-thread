@@ -243,11 +243,8 @@ void GUI_Ellipse (unsigned short x0, unsigned short y0, unsigned short x1,unsign
 void GUI_EllipseFill (unsigned short x0, unsigned short y0, unsigned short x1,unsigned short y1 );
 
 /*! 
- *  \brief      画线
- *  \param  x0 起始位置X坐标
- *  \param  y0 起始位置Y坐标
- *  \param  x1 结束位置X坐标
- *  \param  y1 结束位置Y坐标
+ *  \brief      设置背光亮度
+ *  \param  light_level 亮度值
  */
 void SetBackLight(unsigned char light_level);
 

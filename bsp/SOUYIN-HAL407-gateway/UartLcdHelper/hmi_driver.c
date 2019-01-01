@@ -1,5 +1,3 @@
-
-
 #include <rtthread.h>
 #include <hmi_driver.h>
 

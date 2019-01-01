@@ -11,95 +11,104 @@ static struct rt_mutex mutex_rfic;
 #define IC_UNLOCK()		rt_mutex_release(&mutex_rfic)
 
 //应用卡处理
-static void card_app_handle(card_app_type_t type, const cJSON *root)
+static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, const cJSON *root)
 {
 	if(root == RT_NULL)	return;
 	cJSON *fileds = cJSON_GetObjectItem((cJSON*)root, "Fileds");
 	if(fileds == RT_NULL) return;
 
+	rt_uint32_t c_id;
 	switch((int)type)
 	{
-		case CARD_APP_TYPE_ABKEY:
-			{
-				rt_kprintf("CARD_APP_TYPE_ABKEY\n");
-				char *akey_str = (char*)cJSON_item_get_string(fileds, "AKey");
-				char *bkey_str = (char*)cJSON_item_get_string(fileds, "BKey");
-				rt_kprintf("AKey:%s\n", akey_str);
-				rt_kprintf("BKey:%s\n", akey_str);
-				rt_uint8_t *akey = rt_calloc(1, KEY_LENGTH);
-				rt_uint8_t *bkey = rt_calloc(1, KEY_LENGTH);
-				hex2bytes(akey_str, KEY_LENGTH*2, akey);
-				hex2bytes(bkey_str, KEY_LENGTH*2, bkey);
-				if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
-				{//密钥卡验证通过
-					sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
-				}
-				else
-				{
-					beep_on(2);
-				}
-				rt_free(akey);
-				rt_free(bkey);
+	case CARD_APP_TYPE_ABKEY:
+		{
+			rt_kprintf("CARD_APP_TYPE_ABKEY\n");
+			char *akey_str = (char*)cJSON_item_get_string(fileds, "AKey");
+			char *bkey_str = (char*)cJSON_item_get_string(fileds, "BKey");
+			rt_kprintf("AKey:%s\n", akey_str);
+			rt_kprintf("BKey:%s\n", akey_str);
+			rt_uint8_t *akey = rt_calloc(1, KEY_LENGTH);
+			rt_uint8_t *bkey = rt_calloc(1, KEY_LENGTH);
+			hex2bytes(akey_str, KEY_LENGTH*2, akey);
+			hex2bytes(bkey_str, KEY_LENGTH*2, bkey);
+			if(rt_memcmp(sys_config.keya, akey, KEY_LENGTH) == 0 && rt_memcmp(sys_config.keyb, bkey, KEY_LENGTH) == 0)
+			{//密钥卡验证通过
+				sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 			}
-			break;
-		case CARD_APP_TYPE_CONFIG:
+			else
 			{
-				rt_kprintf("CARD_APP_TYPE_CONFIG\n");
-				int num;
-				cJSON_item_get_number(fileds, "Num", &num);
-				char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
-				rt_kprintf("Num:%d\n", num);
-				rt_kprintf("Pwd:%s\n", pwd);
+				beep_on(2);
 			}
-			break;
-		case CARD_APP_TYPE_POWER:
+			rt_free(akey);
+			rt_free(bkey);
+		}
+		break;
+	case CARD_APP_TYPE_CONFIG:
+		{
+			rt_kprintf("CARD_APP_TYPE_CONFIG\n");
+			int num;
+			cJSON_item_get_number(fileds, "Num", &num);
+			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
+			rt_kprintf("Num:%d\n", num);
+			rt_kprintf("Pwd:%s\n", pwd);
+			c_id = bytes2uint32(card_id);
+			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_CONFIG, pwd)>0)
+			{//配置卡验证通过
+				sys_status.set_workmodel(CONFIG_MANAGE_MODEL);
+			}
+			else
 			{
-				rt_kprintf("CARD_APP_TYPE_POWER\n");
-				int num;
-				cJSON_item_get_number(fileds, "Num", &num);
-				char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
-				rt_kprintf("Num:%d\n", num);
-				rt_kprintf("Pwd:%s\n", pwd);
+				beep_on(2);
 			}
-			break;	
-		case CARD_APP_TYPE_EKEY:
-			{
-				rt_kprintf("CARD_APP_TYPE_EKEY\n");
-				int num;
-				cJSON_item_get_number(fileds, "Num", &num);
-				char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
-				rt_kprintf("Num:%d\n", num);
-				rt_kprintf("Pwd:%s\n", pwd);
-			}
-			break;
-		case CARD_APP_TYPE_DRIVER:
-			{
-				rt_kprintf("CARD_APP_TYPE_DRIVER\n");
-				int num;
-				cJSON_item_get_number(fileds, "Num", &num);
-				char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
-				rt_kprintf("Num:%d\n", num);
-				rt_kprintf("Pwd:%s\n", pwd);
-			}
-			break;
-		case CARD_APP_TYPE_LOCKKEY:
-			{
-				rt_kprintf("CARD_APP_TYPE_LOCKKEY\n");
-				int num;
-				cJSON_item_get_number(fileds, "Num", &num);
-				char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
-				rt_kprintf("Num:%d\n", num);
-				rt_kprintf("Pwd:%s\n", pwd);
-			}
-			break;
-		// case CARD_APP_TYPE_UNKNOW:
-		// 	break;
-		default:
-			rt_kprintf("CARD_APP_TYPE_UNKNOW\n");
-			break;
+		}
+		break;
+	case CARD_APP_TYPE_POWER:
+		{
+			rt_kprintf("CARD_APP_TYPE_POWER\n");
+			int num;
+			cJSON_item_get_number(fileds, "Num", &num);
+			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
+			rt_kprintf("Num:%d\n", num);
+			rt_kprintf("Pwd:%s\n", pwd);
+		}
+		break;	
+	case CARD_APP_TYPE_EKEY:
+		{
+			rt_kprintf("CARD_APP_TYPE_EKEY\n");
+			int num;
+			cJSON_item_get_number(fileds, "Num", &num);
+			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
+			rt_kprintf("Num:%d\n", num);
+			rt_kprintf("Pwd:%s\n", pwd);
+		}
+		break;
+	case CARD_APP_TYPE_DRIVER:
+		{
+			rt_kprintf("CARD_APP_TYPE_DRIVER\n");
+			int num;
+			cJSON_item_get_number(fileds, "Num", &num);
+			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
+			rt_kprintf("Num:%d\n", num);
+			rt_kprintf("Pwd:%s\n", pwd);
+		}
+		break;
+	case CARD_APP_TYPE_LOCKKEY:
+		{
+			rt_kprintf("CARD_APP_TYPE_LOCKKEY\n");
+			int num;
+			cJSON_item_get_number(fileds, "Num", &num);
+			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
+			rt_kprintf("Num:%d\n", num);
+			rt_kprintf("Pwd:%s\n", pwd);
+		}
+		break;
+	// case CARD_APP_TYPE_UNKNOW:
+	// 	break;
+	default:
+		rt_kprintf("CARD_APP_TYPE_UNKNOW\n");
+		break;
 	}
 }
-
 
 //扫描卡主线程
 static void main_scan_thread_entry(void* params)
@@ -120,10 +129,12 @@ static void main_scan_thread_entry(void* params)
 		switch((int)type)
 		{
 			case CARD_TYPE_BLANK:	//空白卡
+				lcd_wakeup();
 				beep_on(1);
 				rt_kprintf("CARD_TYPE_BLANK ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);				
 				break;
 			case CARD_TYPE_KEY:		//密钥卡
+				lcd_wakeup();
 				beep_on(1);
 				rt_kprintf("CARD_TYPE_KEY ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
 				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
@@ -135,7 +146,7 @@ static void main_scan_thread_entry(void* params)
 						int ret = cJSON_item_get_number(root, "Type", &type);
 						if(ret == 0 && type == CARD_APP_TYPE_ABKEY)
 						{
-							card_app_handle((card_app_type_t)type, root);							
+							card_app_handle(scan_info.card_id, (enum card_app_type)type, root);							
 						}
 						else
 						{
@@ -152,6 +163,7 @@ static void main_scan_thread_entry(void* params)
 				}
 				break;
 			case CARD_TYPE_APP:
+				lcd_wakeup();
 				beep_on(1);
 				rt_kprintf("CARD_TYPE_APP ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
 				if(*scan_info.buffer != RT_NULL && scan_info.buf_len > 0)
@@ -163,7 +175,7 @@ static void main_scan_thread_entry(void* params)
 						int ret = cJSON_item_get_number(root, "Type", &type);
 						if(ret == 0)
 						{
-							card_app_handle((card_app_type_t)type, root);
+							card_app_handle(scan_info.card_id, (enum card_app_type)type, root);
 						}
 						else
 						{
@@ -178,6 +190,7 @@ static void main_scan_thread_entry(void* params)
 				}
 				break;
 			case CARD_TYPE_UNKNOW:
+				lcd_wakeup();
 				beep_on(3);
 				rt_kprintf("CARD_TYPE_UNKNOW ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);
 				break;
@@ -222,12 +235,12 @@ rt_bool_t reset_card_key(void)
 	IC_LOCK();
 	if(rfic_card_reset(CARD_TYPE_KEY, RT_NULL))
 	{
-		rt_kprintf("reset_card_key OK!\n");
+		rt_kprintf("reset_card_key ok!\n");
 		result = RT_TRUE;
 	}
 	else
 	{
-		rt_kprintf("reset_card_key ERROR!\n");
+		rt_kprintf("reset_card_key error!\n");
 	}
 	IC_UNLOCK();
 	return result;
@@ -300,7 +313,7 @@ static rt_uint16_t create_card_key_info(rt_uint8_t in_akey[KEY_LENGTH], rt_uint8
 	cJSON *root = cJSON_CreateObject();
 	if(root != RT_NULL)
 	{
-		cJSON_AddNumberToObject(root,"Type",CARD_APP_TYPE_ABKEY);
+		cJSON_AddNumberToObject(root, "Type", CARD_APP_TYPE_ABKEY);
 		cJSON *fileds = cJSON_CreateObject();
 		if(fileds != RT_NULL)
 		{           
@@ -311,7 +324,7 @@ static rt_uint16_t create_card_key_info(rt_uint8_t in_akey[KEY_LENGTH], rt_uint8
             cJSON_AddStringToObject(fileds, "AKey", akey_str);
             cJSON_AddStringToObject(fileds, "BKey", bkey_str);
 			rt_free(akey_str); rt_free(bkey_str);
-			cJSON_AddItemToObject(root,"Fileds",fileds);
+			cJSON_AddItemToObject(root, "Fileds", fileds);
 			*out_buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
             buf_len = rt_strlen((char*)*out_buffer);
 		}
@@ -330,20 +343,19 @@ static rt_bool_t write_card_key(rt_uint8_t in_akey[KEY_LENGTH], rt_uint8_t in_bk
 	if(buf_len > 0 && buffer != RT_NULL)
 	{
 		if(rfic_card_write(CARD_TYPE_KEY, in_akey, in_bkey, buffer, buf_len) == RT_TRUE)
-		{//写密钥卡成功
-			rt_kprintf("rfic_card_write OK:\n%s\n", buffer);
+		{//写卡成功
+			rt_kprintf("rfic_card_write ok:\n%s\n", buffer);
 			result = RT_TRUE;
 		}
 		else
 		{
-			rt_kprintf("rfic_card_write ERROR:\n%s\n", buffer);
+			rt_kprintf("rfic_card_write error:\n%s\n", buffer);
 		}
 	}
 	if(buffer != RT_NULL)
 		rt_free(buffer);
 	return result;
 }
-
 //创建密钥卡
 rt_bool_t create_card_key(void)
 {	
@@ -433,28 +445,158 @@ rt_bool_t restore_card_key(void)
 }
 
 //初始化应用卡
-rt_bool_t init_card_app(void)
+rt_bool_t init_card_app(rt_bool_t use_money_bag)
 {
-	return RT_FALSE;
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;
+	
+	IC_LOCK();
+	if(rfic_card_init(CARD_TYPE_APP, use_money_bag, sys_config.keya, sys_config.keyb))
+	{
+		rt_kprintf("init_card_app ok!\n");
+		result = RT_TRUE;
+	}
+	else
+	{
+		rt_kprintf("init_card_app error!\n");
+	}
+	IC_UNLOCK();
+	return result;
 }
-
 //重置应用卡
 rt_bool_t reset_card_app(void)
 {
-	return RT_FALSE;
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;
+	
+	IC_LOCK();
+	if(rfic_card_reset(CARD_TYPE_APP, sys_config.keyb))
+	{
+		rt_kprintf("init_card_key ok!\n");
+		result = RT_TRUE;
+	}
+	else
+	{
+		rt_kprintf("init_card_key error!\n");
+	}
+	IC_UNLOCK();
+	return result;
 }
-
+//创建应用卡信息
+static rt_uint16_t create_card_app_info(enum card_app_type type, rt_uint16_t num, char *pwd, rt_uint8_t **out_buffer)
+{
+	rt_uint16_t buf_len = 0;
+	cJSON *root = cJSON_CreateObject();
+	if(root != RT_NULL)
+	{
+		cJSON_AddNumberToObject(root, "Type", type);
+		cJSON *fileds = cJSON_CreateObject();
+		if(fileds != RT_NULL)
+		{           
+            cJSON_AddNumberToObject(fileds, "Num", num);
+            cJSON_AddStringToObject(fileds, "Pwd", pwd);
+			cJSON_AddItemToObject(root, "Fileds", fileds);
+			*out_buffer = (rt_uint8_t*)cJSON_PrintUnformatted(root);     
+            buf_len = rt_strlen((char*)*out_buffer);
+		}
+		cJSON_Delete(root);   
+	}
+	return buf_len;
+}
+//创建应用卡
+static rt_bool_t create_card_app(enum card_app_type type, rt_uint16_t num, char *pwd)
+{
+	rt_bool_t result = RT_FALSE;
+    rt_uint16_t buf_len;
+	rt_uint8_t *buffer = RT_NULL;
+	
+    buf_len = create_card_app_info(type, num, pwd, &buffer);   
+	if(buf_len > 0 && buffer != RT_NULL)
+	{
+		if(rfic_card_write(CARD_TYPE_APP, sys_config.keya, sys_config.keyb, buffer, buf_len) == RT_TRUE)
+		{//写卡成功
+			rt_kprintf("rfic_card_write ok:\n%s\n", buffer);
+			result = RT_TRUE;
+		}
+		else
+		{
+			rt_kprintf("rfic_card_write error:\n%s\n", buffer);
+		}
+	}
+	if(buffer != RT_NULL)
+		rt_free(buffer);
+	return result;
+}
 //创建配置卡
-rt_bool_t create_app_config(void)
+rt_bool_t create_card_config(rt_uint16_t num, char *pwd)
 {
-	return RT_FALSE;
-}
+	rt_bool_t result = RT_FALSE;
+	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
+		return result;
+	
+    rt_mailbox_t sub_scan_mb = rt_mb_create("sub_scan", 1, RT_IPC_FLAG_FIFO);
+    RT_ASSERT(sub_scan_mb != RT_NULL);   
+    
+    //扫描卡子线程
+    IC_LOCK();
+    rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, sub_scan_mb, 
+                                            1*1024, 5, 20);
+    if(thread != RT_NULL)
+        rt_thread_startup(thread);
+	
+    rt_uint32_t card_id;
+    rt_ubase_t p = 0;
+    //等待接收邮件
+    if(rt_mb_recv(sub_scan_mb, &p, rt_tick_from_millisecond(500))==RT_EOK)
+    {
+        if(p != 0)
+        {
+            rfic_scan_info_t scan_info = (rfic_scan_info_t)p;
+			if(scan_info->base_type == CARD_TYPE_APP)
+				result = RT_TRUE;
+			
+			card_id = bytes2uint32(scan_info->card_id);
+				
+            if(*scan_info->buffer != RT_NULL)
+                rt_free(*scan_info->buffer);
+            if(scan_info != RT_NULL)
+                rt_free(scan_info);
+        }
+    }
+    if(thread != RT_NULL)
+        rt_thread_delete(thread);
+    if(sub_scan_mb != RT_NULL)
+        rt_mb_delete(sub_scan_mb);    	
+	
+	if(result)
+	{
+		result = RT_FALSE;
+		cardinfo_t cardinfo = rt_calloc(1, sizeof(struct cardinfo));
+		RT_ASSERT(cardinfo != RT_NULL);		
+		cardinfo->num = num;
+		cardinfo->id = card_id;
+		rt_strncpy(cardinfo->pwd, pwd, rt_strlen(pwd));
+		cardinfo->type = CARD_APP_TYPE_CONFIG;
+		if(cardinfo_add(cardinfo) == 0)
+		{
+			result = RT_TRUE;
+		}
+		if(result)
+		{
+			result = create_card_app(CARD_APP_TYPE_CONFIG, cardinfo->num, cardinfo->pwd);
+			if(! result)
+			{
+				cardinfo_del(cardinfo->num);
+			}
+		}			
+		rt_free(cardinfo);
+	}
+	IC_UNLOCK();
+	return result;
+}	
 
-//创建授权卡
-rt_bool_t create_app_power(void)
-{
-	return RT_FALSE;
-}
 
 void app_rfic_startup(void)
 {

@@ -18,9 +18,9 @@ const unsigned char card_inf_blocks[CARD_INF_BLOCK_COUNT] = {4,5,6,8,9,10,12,13,
 static rt_uint8_t find_tag;
     
 //初始化电子钱包
-static int rfic_money_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *ctrl_buffer, rt_bool_t use_money_bag)
+static rt_bool_t rfic_money_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *ctrl_buffer, rt_bool_t use_money_bag)
 {
-	int result = 0;
+	rt_bool_t result = RT_FALSE;
 	int i;
 	rt_uint8_t temp_buf[BLOCK_SIZE];
 
@@ -59,7 +59,7 @@ static int rfic_money_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_LENGTH
 	{
 		goto _EXIT;
 	}
-	result = 1;
+	result = RT_TRUE;
 _EXIT:
 	return result;
 }
@@ -254,7 +254,7 @@ rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_money_bag, rt_u
 	{
 		if(pcd_anticoll_ex(card_id) == MI_OK)
 		{
-			if(pcd_select_ex(card_id)==MI_OK)
+			if(pcd_select_ex(card_id) == MI_OK)
 			{
 				rt_memcpy(temp_buf, default_data_ctrl, BLOCK_SIZE);
 				if(type == CARD_TYPE_KEY)
@@ -317,7 +317,7 @@ rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_money_bag, rt_u
 				if(type == CARD_TYPE_APP)
 				{//应用卡
 					//处理电子钱包
-					if(rfic_money_init(card_id, (rt_uint8_t*)default_key, temp_buf, use_money_bag) != MI_OK)
+					if(! rfic_money_init(card_id, (rt_uint8_t*)default_key, temp_buf, use_money_bag))
 					{
 						goto _EXIT;
 					}
@@ -553,7 +553,7 @@ rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, 
 				else
 				{//电子钱包启用
 					*out_stat = RT_TRUE;
-					if(!check_tag)
+					if(! check_tag)
 					{
 						*out_value = 0;
 					}
