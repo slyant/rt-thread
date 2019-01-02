@@ -12,7 +12,7 @@ unsigned long bytes2uint32(unsigned char bytes[4])
 }
 
 //字符串转整数
-long str2int32(unsigned char *str)
+long str2int32(char *str)
 {
 	long v = 0;
 	sscanf((char *)str,"%ld",&v);

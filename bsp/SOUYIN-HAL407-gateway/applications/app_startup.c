@@ -2,7 +2,7 @@
 #include <drv_pcf8563.h>
 #include <stm32f4xx_hal_cortex.h>
 
-const char* INIT_SYS_TITLE = "公交自助收银管理系统V1.0\0";
+const char* INIT_SYS_TITLE = "System V1.0\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -157,7 +157,7 @@ void app_startup(void)
 	sys_status.set_datetime = set_datetime;
 	sys_status.restart = sys_restart;
 	sys_status.set_workmodel(WORK_OFF_MODEL);
-	lcd_wakeup();
+	
 	load_datetime();
 
 	extern void app_sqlite_init(void);
@@ -199,4 +199,5 @@ void app_startup(void)
 	{
 		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 	}
+	lcd_wakeup();
 }

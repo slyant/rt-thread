@@ -6,7 +6,7 @@ unsigned char hex2byte(const char p[2]);
 void hex2bytes(char* hex, int len, unsigned char* outbuff);
 
 unsigned long bytes2uint32(unsigned char bytes[4]);
-long str2int32(unsigned char *str);
+long str2int32(char *str);
 char halfbyte2hexchar(const unsigned char halfbyte);
 void byte2hexchar(const unsigned char byte, char out_hex[2]);
 void buffer2hex(unsigned char *buffer, unsigned short int buf_len, char *hex);

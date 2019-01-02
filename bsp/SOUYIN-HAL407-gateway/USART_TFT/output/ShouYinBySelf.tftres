@@ -1,0 +1,32 @@
+<Resource>
+    <pages>
+        <page name="main" id="0" />
+        <page name="sys_cfg" id="1" />
+        <page name="sys_datetime" id="2" />
+        <page name="abkey_card" id="3" />
+        <page name="cfg_card" id="4" />
+        <page name="power_card" id="5" />
+        <page name="key_card" id="6" />
+        <page name="driver_card" id="7" />
+        <page name="lock_abkey_card" id="8" />
+        <page name="other_setting" id="9" />
+        <page name="open_door" id="10" />
+        <page name="error" id="11" />
+        <page name="message" id="12" />
+        <page name="waite" id="13" />
+    </pages>
+    <images>
+        <image id="0" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\shbj.jpg" width="800" height="480" crop="0" effect_left="0" effect_top="0" effect_width="800" effect_height="480" size="768000" />
+        <image id="1" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\蓝台基础部分 -2.png" width="102" height="104" crop="0" effect_left="0" effect_top="0" effect_width="102" effect_height="104" size="21216" />
+        <image id="2" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\shenlan.jpg" width="800" height="480" crop="0" effect_left="0" effect_top="0" effect_width="800" effect_height="480" size="768000" />
+        <image id="3" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="82" height="46" crop="0" effect_left="0" effect_top="0" effect_width="82" effect_height="46" size="7544" />
+        <image id="4" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="82" height="46" crop="0" effect_left="0" effect_top="0" effect_width="82" effect_height="46" size="7544" />
+        <image id="5" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="196" height="49" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="49" size="19208" />
+        <image id="6" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="196" height="49" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="49" size="19208" />
+        <image id="7" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="65" height="60" crop="0" effect_left="0" effect_top="0" effect_width="65" effect_height="60" size="7800" />
+        <image id="8" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="65" height="60" crop="0" effect_left="0" effect_top="0" effect_width="65" effect_height="60" size="7800" />
+        <image id="9" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="196" height="50" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="50" size="19600" />
+        <image id="10" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="196" height="50" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="50" size="19600" />
+    </images>
+    <waves />
+</Resource>

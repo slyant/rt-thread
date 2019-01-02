@@ -12,10 +12,12 @@
 #include <app_lcd.h>
 #include <any_convert.h>
 
-#define INIT_KEY_LEN		6	//初始化密钥长度
-#define SYSINFO_DB_KEY_ID	1   //系统信息主键ID
+#define INIT_KEY_LEN			6	//初始化密钥长度
+#define SYSINFO_DB_KEY_ID		1   //系统信息主键ID
 #define CONFIG_CARD_MAX_COUNT	3	//配置卡最大数量
 #define POWER_CARD_MAX_COUNT	3	//授权卡最大数量
+#define NODE_MAX_COUNT			8	//节点最大数量
+#define DOOR_MAX_COUNT			16	//门最大数量
 
 enum sys_workmodel
 {
@@ -29,10 +31,10 @@ enum sys_workmodel
 
 struct sys_config
 {
-    char sys_title[60];
+    char sys_title[61];
 	rt_uint16_t open_timeout;
-	rt_uint16_t node_count;
-	rt_uint16_t door_count;
+	rt_uint8_t node_count;
+	rt_uint8_t door_count;
 	rt_uint8_t keya[INIT_KEY_LEN];
 	rt_uint8_t keyb[INIT_KEY_LEN];  
 	rt_bool_t (*sys_reset)(void);	

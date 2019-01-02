@@ -141,7 +141,7 @@ int cardinfo_count_by_type(int type)
 
 int cardinfo_count_by_any(int num, int card_id, int type, char *pwd)
 {
-	return db_query_count_result("select count(*) from cardinfo where num=? and id=? and type=? and pwd='?';", "%d%d%d%s", num, card_id, type, pwd);
+	return db_query_count_result("select count(*) from cardinfo where num=? and id=? and type=? and pwd=?;", "%d%d%d%s", num, card_id, type, pwd);
 }
 
 int cardinfo_get_max_num(void)
@@ -181,7 +181,12 @@ int cardinfo_del(int num)
 	return db_nonquery_by_varpara("delete from cardinfo where num=?;", "%d", num);
 }
 FINSH_FUNCTION_EXPORT(cardinfo_del, cardinfo del);
-
+//删除指定卡类型的记录
+int cardinfo_del_by_type(int type)
+{
+	return db_nonquery_by_varpara("delete from cardinfo where type=?;", "%d", type);
+}
+MSH_CMD_EXPORT(cardinfo_del_by_type, cardinfo del by type);
 //删除所有记录，操作成功返回0
 int cardinfo_del_all(void)
 {

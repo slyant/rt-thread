@@ -1,12 +1,23 @@
 #ifndef __APP_LCD_H__
 #define __APP_LCD_H__
 
-struct temp_card_info
+#include <rtthread.h>
+
+struct temp_card
 {
 	int num;
 	char pwd[17];
 };
-typedef struct temp_card_info *temp_card_info_t;
+typedef struct temp_card *temp_card_t;
+
+struct temp_setting
+{
+	char sys_title[61];
+	rt_uint8_t node_count;
+	rt_uint8_t door_count;
+	rt_uint16_t open_timeout;
+};
+typedef struct temp_setting *temp_setting_t;
 
 #define LCD_BACK_LIGHT		30		//LCD背光亮度
 
@@ -20,10 +31,11 @@ typedef struct temp_card_info *temp_card_info_t;
 #define UI_KEY_CARD			6       //钥匙卡设置
 #define UI_DRIVER_CARD		7       //司机卡设置
 #define UI_LOCK_ABKEY_CARD	8       //锁钥卡设置
-#define UI_OTHER_SETTING    9       //银柜管理
+#define UI_OTHER_SETTING    9       //其它设置
 #define UI_OPEN_DOOR		10      //柜门开门管理
 #define UI_ERROR			11      //错误信息
 #define UI_MESSAGE			12      //信息提示
+#define UI_WAITE			13		//请稍候
 /****************************************************************/
 
 /*************************  UI_SYS_CFG 控件ID  ******************/
@@ -34,7 +46,7 @@ typedef struct temp_card_info *temp_card_info_t;
 #define SYS_CFG_BTN_DRIVER_CARD    	11     //司机卡设置
 #define SYS_CFG_BTN_LOCK_ABKEY_CARD 12     //锁钥卡设置
 #define SYS_CFG_BTN_SYS_DATETIME	13     //时间校准
-#define SYS_CFG_BTN_OTHER_SETTING   14     //银柜设置
+#define SYS_CFG_BTN_OTHER_SETTING   14     //其它设置
 #define SYS_CFG_BTN_RESTART    		15     //重启
 /****************************************************************/
 
@@ -56,6 +68,53 @@ typedef struct temp_card_info *temp_card_info_t;
 #define CFG_CARD_BTN_CREATE     	44      //制卡
 #define CFG_CARD_BTN_BACK     	    45      //返回
 /****************************************************************/
+
+/***********************  UI_POWER_CARD 控件ID  *****************/
+#define POWER_CARD_BTN_INIT    		15      //初始化
+#define POWER_CARD_BTN_RESET     	13      //重置
+#define POWER_CARD_BTN_CLEAR	    14      //清空卡记录
+#define POWER_CARD_TEXT_NUMBER      2      	//卡编号
+#define POWER_CARD_BTN_CREATE     	16      //制卡
+#define POWER_CARD_BTN_BACK     	17      //返回
+/****************************************************************/
+
+/***********************  UI_KEY_CARD 控件ID  *******************/
+#define KEY_CARD_BTN_INIT    		15      //初始化
+#define KEY_CARD_BTN_RESET     		13      //重置
+#define KEY_CARD_BTN_CLEAR	    	14      //清空卡记录
+#define KEY_CARD_TEXT_NUMBER      	2      	//卡编号
+#define KEY_CARD_BTN_CREATE     	16      //制卡
+#define KEY_CARD_BTN_BACK     		17      //返回
+/****************************************************************/
+
+/***********************  UI_DRIVER_CARD 控件ID  ****************/
+#define DRIVER_CARD_BTN_INIT    	15      //初始化
+#define DRIVER_CARD_BTN_RESET     	13      //重置
+#define DRIVER_CARD_BTN_CLEAR	    14      //清空卡记录
+#define DRIVER_CARD_TEXT_NUMBER     2      	//卡编号
+#define DRIVER_CARD_BTN_CREATE     	16      //制卡
+#define DRIVER_CARD_BTN_BACK     	17      //返回
+/****************************************************************/
+
+/*********************  UI_LOCK_ABKEY_CARD 控件ID  **************/
+#define LOCK_ABKEY_CARD_BTN_INIT    	15      //初始化
+#define LOCK_ABKEY_CARD_BTN_RESET     	13      //重置
+#define LOCK_ABKEY_CARD_BTN_CLEAR	    14      //清空卡记录
+#define LOCK_ABKEY_CARD_TEXT_NUMBER     2      	//卡编号
+#define LOCK_ABKEY_CARD_BTN_CREATE     	16      //制卡
+#define LOCK_ABKEY_CARD_BTN_BACK     	17      //返回
+/****************************************************************/
+
+/*********************  UI_OTHER_SETTING 控件ID  **************/
+#define OTHER_SETTING_TEXT_SYS_TITLE   		96      //系统标题
+#define OTHER_SETTING_TEXT_NODE_COUNT  		91      //节点数量
+#define OTHER_SETTING_TEXT_DOOR_COUNT  		92      //柜门数量
+#define OTHER_SETTING_TEXT_OPEN_TIMEROUT	93      //开门超时时间
+#define OTHER_SETTING_BTN_ENTER    			10      //确定
+#define OTHER_SETTING_BTN_CANCEL     		11      //取消
+/****************************************************************/
+
+
 
 /*************************  UI_MESSAGE 控件ID  ******************/
 #define MESSAGE_BTN_BACK    		6      //返回

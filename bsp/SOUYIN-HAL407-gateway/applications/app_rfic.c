@@ -7,8 +7,9 @@
 #include <app_config.h>
 
 static struct rt_mutex mutex_rfic;
-#define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER);rfic_scan_reset()
+#define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER)
 #define IC_UNLOCK()		rt_mutex_release(&mutex_rfic)
+#define IC_RESET()		rfic_scan_reset()
 
 //应用卡处理
 static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, const cJSON *root)
@@ -20,7 +21,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 	rt_uint32_t c_id;
 	switch((int)type)
 	{
-	case CARD_APP_TYPE_ABKEY:
+	case CARD_APP_TYPE_ABKEY://密钥卡
 		{
 			rt_kprintf("CARD_APP_TYPE_ABKEY\n");
 			char *akey_str = (char*)cJSON_item_get_string(fileds, "AKey");
@@ -43,7 +44,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			rt_free(bkey);
 		}
 		break;
-	case CARD_APP_TYPE_CONFIG:
+	case CARD_APP_TYPE_CONFIG://配置卡
 		{
 			rt_kprintf("CARD_APP_TYPE_CONFIG\n");
 			int num;
@@ -62,7 +63,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			}
 		}
 		break;
-	case CARD_APP_TYPE_POWER:
+	case CARD_APP_TYPE_POWER://管理卡
 		{
 			rt_kprintf("CARD_APP_TYPE_POWER\n");
 			int num;
@@ -70,6 +71,15 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
 			rt_kprintf("Pwd:%s\n", pwd);
+			c_id = bytes2uint32(card_id);
+			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_POWER, pwd)>0)
+			{//管理卡验证通过
+				sys_status.set_workmodel(WORK_MANAGE_MODEL);
+			}
+			else
+			{
+				beep_on(2);
+			}			
 		}
 		break;	
 	case CARD_APP_TYPE_EKEY:
@@ -117,6 +127,7 @@ static void main_scan_thread_entry(void* params)
 	rt_memset(&scan_info, 0x00, sizeof(struct rfic_scan_info));	
 	rt_uint8_t *tem_buf = RT_NULL;
 	scan_info.buffer = &tem_buf;
+	IC_RESET();
 	while(1)
 	{		
 		rt_thread_mdelay(50);		
@@ -130,7 +141,7 @@ static void main_scan_thread_entry(void* params)
 		{
 			case CARD_TYPE_BLANK:	//空白卡
 				lcd_wakeup();
-				beep_on(1);
+				beep_on(3);
 				rt_kprintf("CARD_TYPE_BLANK ID:%02x%02x%02x%02x\n", scan_info.card_id[0], scan_info.card_id[1], scan_info.card_id[2], scan_info.card_id[3]);				
 				break;
 			case CARD_TYPE_KEY:		//密钥卡
@@ -209,9 +220,9 @@ rt_bool_t init_card_key(void)
 {
 	rt_bool_t result = RT_FALSE;
 	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
-		return result;
+		return result;	
 	
-	IC_LOCK();
+	IC_LOCK();IC_RESET();
 	if(rfic_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
 	{
 		rt_kprintf("init_card_key ok!\n");
@@ -232,7 +243,7 @@ rt_bool_t reset_card_key(void)
 	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
 		return result;	
 	
-	IC_LOCK();
+	IC_LOCK();IC_RESET();
 	if(rfic_card_reset(CARD_TYPE_KEY, RT_NULL))
 	{
 		rt_kprintf("reset_card_key ok!\n");
@@ -366,7 +377,7 @@ rt_bool_t create_card_key(void)
 	rt_uint8_t akey[KEY_LENGTH], bkey[KEY_LENGTH];	
 	get_rnd_bytes(KEY_LENGTH, akey);
 	get_rnd_bytes(KEY_LENGTH, bkey);
-	IC_LOCK();	
+	IC_LOCK();IC_RESET();
 	result = write_card_key(akey, bkey);
 	IC_UNLOCK();
 	if(result)
@@ -383,7 +394,7 @@ rt_bool_t backup_card_key(void)
 	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL && sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
 		return result;
 	
-	IC_LOCK();
+	IC_LOCK();IC_RESET();
 	if(sys_config.abkey_exist())
 	{//存在系统密钥
 		result = write_card_key(sys_config.keya, sys_config.keyb);
@@ -407,7 +418,7 @@ rt_bool_t restore_card_key(void)
     RT_ASSERT(sub_scan_mb != RT_NULL);   
     
     //扫描卡子线程
-    IC_LOCK();
+    IC_LOCK();IC_RESET();
     rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, sub_scan_mb, 
                                             1*1024, 5, 20);
     if(thread != RT_NULL)
@@ -451,7 +462,7 @@ rt_bool_t init_card_app(rt_bool_t use_money_bag)
 	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
 		return result;
 	
-	IC_LOCK();
+	IC_LOCK();IC_RESET();
 	if(rfic_card_init(CARD_TYPE_APP, use_money_bag, sys_config.keya, sys_config.keyb))
 	{
 		rt_kprintf("init_card_app ok!\n");
@@ -471,7 +482,7 @@ rt_bool_t reset_card_app(void)
 	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
 		return result;
 	
-	IC_LOCK();
+	IC_LOCK();IC_RESET();
 	if(rfic_card_reset(CARD_TYPE_APP, sys_config.keyb))
 	{
 		rt_kprintf("init_card_key ok!\n");
@@ -505,8 +516,8 @@ static rt_uint16_t create_card_app_info(enum card_app_type type, rt_uint16_t num
 	}
 	return buf_len;
 }
-//创建应用卡
-static rt_bool_t create_card_app(enum card_app_type type, rt_uint16_t num, char *pwd)
+//写应用卡信息
+static rt_bool_t write_card_app_info(enum card_app_type type, rt_uint16_t num, char *pwd)
 {
 	rt_bool_t result = RT_FALSE;
     rt_uint16_t buf_len;
@@ -529,8 +540,8 @@ static rt_bool_t create_card_app(enum card_app_type type, rt_uint16_t num, char 
 		rt_free(buffer);
 	return result;
 }
-//创建配置卡
-rt_bool_t create_card_config(rt_uint16_t num, char *pwd)
+//创建应用卡
+rt_bool_t create_card_app(enum card_app_type type, rt_uint16_t num, char *pwd)
 {
 	rt_bool_t result = RT_FALSE;
 	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
@@ -540,7 +551,7 @@ rt_bool_t create_card_config(rt_uint16_t num, char *pwd)
     RT_ASSERT(sub_scan_mb != RT_NULL);   
     
     //扫描卡子线程
-    IC_LOCK();
+    IC_LOCK();IC_RESET();
     rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, sub_scan_mb, 
                                             1*1024, 5, 20);
     if(thread != RT_NULL)
@@ -578,14 +589,14 @@ rt_bool_t create_card_config(rt_uint16_t num, char *pwd)
 		cardinfo->num = num;
 		cardinfo->id = card_id;
 		rt_strncpy(cardinfo->pwd, pwd, rt_strlen(pwd));
-		cardinfo->type = CARD_APP_TYPE_CONFIG;
+		cardinfo->type = type;
 		if(cardinfo_add(cardinfo) == 0)
 		{
 			result = RT_TRUE;
 		}
 		if(result)
 		{
-			result = create_card_app(CARD_APP_TYPE_CONFIG, cardinfo->num, cardinfo->pwd);
+			result = write_card_app_info(type, cardinfo->num, cardinfo->pwd);
 			if(! result)
 			{
 				cardinfo_del(cardinfo->num);
