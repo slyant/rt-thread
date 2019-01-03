@@ -4,6 +4,15 @@
 #include <rtthread.h>
 #include <board.h>
 
+#define INIT_KEY_LEN			6		//初始化密钥长度
+#define SYSINFO_KEY_ID			1   	//系统信息主键ID
+#define CONFIG_CARD_MAX_COUNT	3		//配置卡最大数量
+#define POWER_CARD_MAX_COUNT	3		//授权卡最大数量
+#define EKEY_CARD_MAX_COUNT		50		//钥匙卡最大数量
+#define DRIVER_CARD_MAX_COUNT	65535	//司机卡最大数量
+#define NODE_MAX_COUNT			8		//节点最大数量
+#define DOOR_MAX_COUNT			16		//门最大数量
+
 #include <db_include.h>
 #include <rng_helper.h>
 #include <app_beep.h>
@@ -11,13 +20,6 @@
 #include <app_rfic.h>
 #include <app_lcd.h>
 #include <any_convert.h>
-
-#define INIT_KEY_LEN			6	//初始化密钥长度
-#define SYSINFO_DB_KEY_ID		1   //系统信息主键ID
-#define CONFIG_CARD_MAX_COUNT	3	//配置卡最大数量
-#define POWER_CARD_MAX_COUNT	3	//授权卡最大数量
-#define NODE_MAX_COUNT			8	//节点最大数量
-#define DOOR_MAX_COUNT			16	//门最大数量
 
 enum sys_workmodel
 {
@@ -31,7 +33,7 @@ enum sys_workmodel
 
 struct sys_config
 {
-    char sys_title[61];
+	rt_uint8_t en_driver_card;
 	rt_uint16_t open_timeout;
 	rt_uint8_t node_count;
 	rt_uint8_t door_count;
@@ -50,10 +52,11 @@ struct sys_status
 	enum sys_workmodel(*get_workmodel)(void);	
 	rt_bool_t (*get_datetime)(struct calendar **);
 	void (*set_datetime)(struct calendar *);
+    rt_uint8_t door_sta[NODE_MAX_COUNT][DOOR_MAX_COUNT];
 };
 typedef struct sys_status *sys_status_t;
 
-extern const char* INIT_SYS_TITLE;
+extern const char *INIT_SYS_TITLE;
 extern const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN];
 extern const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN];
 extern struct sys_status sys_status;

@@ -13,11 +13,12 @@ static int sysinfo_bind_for_insert(sqlite3_stmt *stmt,int index,void *arg)
 	sysinfo_t e = arg;
 	sqlite3_bind_int(stmt,1,e->id);
 	sqlite3_bind_text(stmt,2,e->sys_title,strlen(e->sys_title),NULL);
-	sqlite3_bind_int(stmt,3,e->open_timeout);
-	sqlite3_bind_int(stmt,4,e->node_count);
-	sqlite3_bind_int(stmt,5,e->door_count);
-	sqlite3_bind_blob(stmt,6,e->key_a,sizeof(e->key_a),NULL);
-	sqlite3_bind_blob(stmt,7,e->key_b,sizeof(e->key_b),NULL);
+	sqlite3_bind_int(stmt,3,e->en_driver_card);
+	sqlite3_bind_int(stmt,4,e->open_timeout);
+	sqlite3_bind_int(stmt,5,e->node_count);
+	sqlite3_bind_int(stmt,6,e->door_count);
+	sqlite3_bind_blob(stmt,7,e->key_a,sizeof(e->key_a),NULL);
+	sqlite3_bind_blob(stmt,8,e->key_b,sizeof(e->key_b),NULL);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE)
 		return rc;
@@ -29,12 +30,13 @@ static int sysinfo_bind_for_update(sqlite3_stmt *stmt,int index,void *arg)
 	int rc;
 	sysinfo_t e = arg;
 	sqlite3_bind_text(stmt,1,e->sys_title,strlen(e->sys_title),NULL);
-	sqlite3_bind_int(stmt,2,e->open_timeout);
-	sqlite3_bind_int(stmt,3,e->node_count);
-	sqlite3_bind_int(stmt,4,e->door_count);
-	sqlite3_bind_blob(stmt,5,e->key_a,sizeof(e->key_a),NULL);
-	sqlite3_bind_blob(stmt,6,e->key_b,sizeof(e->key_b),NULL);
-	sqlite3_bind_int(stmt,7,e->id);
+	sqlite3_bind_int(stmt,2,e->en_driver_card);
+	sqlite3_bind_int(stmt,3,e->open_timeout);
+	sqlite3_bind_int(stmt,4,e->node_count);
+	sqlite3_bind_int(stmt,5,e->door_count);
+	sqlite3_bind_blob(stmt,6,e->key_a,sizeof(e->key_a),NULL);
+	sqlite3_bind_blob(stmt,7,e->key_b,sizeof(e->key_b),NULL);
+	sqlite3_bind_int(stmt,8,e->id);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE)
 		return rc;
@@ -53,11 +55,12 @@ int sysinfo_bind(sqlite3_stmt *stmt,void *arg)
 	{		
 		e->id = db_stmt_get_int(stmt,0);
 		db_stmt_get_text(stmt,1,e->sys_title);
-		e->open_timeout = db_stmt_get_int(stmt,2);
-		e->node_count = db_stmt_get_int(stmt,3);
-		e->door_count = db_stmt_get_int(stmt,4);
-		db_stmt_get_blob(stmt,5,e->key_a);
-		db_stmt_get_blob(stmt,6,e->key_b);
+		e->en_driver_card = db_stmt_get_int(stmt,2);
+		e->open_timeout = db_stmt_get_int(stmt,3);
+		e->node_count = db_stmt_get_int(stmt,4);
+		e->door_count = db_stmt_get_int(stmt,5);
+		db_stmt_get_blob(stmt,6,e->key_a);
+		db_stmt_get_blob(stmt,7,e->key_b);
 	}
 	return 1;
 }
@@ -84,11 +87,12 @@ int sysinfo_queue_bind(sqlite3_stmt *stmt,void *arg)
 		
 		e->id = db_stmt_get_int(stmt,0);
 		db_stmt_get_text(stmt,1,e->sys_title);
-		e->open_timeout = db_stmt_get_int(stmt,2);
-		e->node_count = db_stmt_get_int(stmt,3);
-		e->door_count = db_stmt_get_int(stmt,4);
-		db_stmt_get_blob(stmt,5,e->key_a);
-		db_stmt_get_blob(stmt,6,e->key_b);
+		e->en_driver_card = db_stmt_get_int(stmt,2);
+		e->open_timeout = db_stmt_get_int(stmt,3);
+		e->node_count = db_stmt_get_int(stmt,4);
+		e->door_count = db_stmt_get_int(stmt,5);
+		db_stmt_get_blob(stmt,6,e->key_a);
+		db_stmt_get_blob(stmt,7,e->key_b);
 		
 		rc_queue_insert_tail(q,&(e->queue));
 		count ++;
@@ -105,8 +109,8 @@ void sysinfo_print_queue(record_queue_t q)
 	sysinfo_t e = NULL;
 	rc_queue_foreach(e,q,struct sysinfo,queue)
 	{
-		rt_kprintf("id:%d\nsys_title:%s\nopen_timeout:%d\nnode_count:%d\ndoor_count:%d\n",\
-		e->id, e->sys_title, e->open_timeout,e->node_count, e->door_count);
+		rt_kprintf("id:%d\nsys_title:%s\nen_driver_card:%d\nopen_timeout:%d\nnode_count:%d\ndoor_count:%d\n",\
+		e->id, e->sys_title, e->en_driver_card, e->open_timeout,e->node_count, e->door_count);
 		rt_kprintf("keya:%02x%02x%02x%02x%02x%02x\nkeyb:%02x%02x%02x%02x%02x%02x",\
 		e->key_a[0],e->key_a[1],e->key_a[2],e->key_a[03],e->key_a[04],e->key_a[5],\
 		e->key_b[0],e->key_b[1],e->key_b[2],e->key_b[3],e->key_b[4],e->key_b[5]);
@@ -142,13 +146,13 @@ int sysinfo_get_all(record_queue_t q)
 //添加一条记录，操作成功返回0
 int sysinfo_add(sysinfo_t e)
 {
-  return db_nonquery_operator("insert into sysinfo(id,sys_title,open_timeout,node_count,door_count,key_a,key_b) values (?,?,?,?,?,?,?);",sysinfo_bind_for_insert,e);
+  return db_nonquery_operator("insert into sysinfo(id,sys_title,en_driver_card,open_timeout,node_count,door_count,key_a,key_b) values (?,?,?,?,?,?,?,?);",sysinfo_bind_for_insert,e);
 	//return db_nonquery_by_varpara("insert into sysinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
 }
 //更新一条记录，操作成功返回0
 int sysinfo_update(sysinfo_t e)
 {
-	return db_nonquery_operator("update sysinfo set sys_title=?,open_timeout=?,node_count=?,door_count=?,key_a=?,key_b=? where id=?;",sysinfo_bind_for_update,e);
+	return db_nonquery_operator("update sysinfo set sys_title=?,en_driver_card=?,open_timeout=?,node_count=?,door_count=?,key_a=?,key_b=? where id=?;",sysinfo_bind_for_update,e);
 }
 
 //删除指定主键的记录，操作成功返回0

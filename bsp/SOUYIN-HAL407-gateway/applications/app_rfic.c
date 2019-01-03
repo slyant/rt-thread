@@ -82,7 +82,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			}			
 		}
 		break;	
-	case CARD_APP_TYPE_EKEY:
+	case CARD_APP_TYPE_EKEY://钥匙卡
 		{
 			rt_kprintf("CARD_APP_TYPE_EKEY\n");
 			int num;
@@ -92,7 +92,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			rt_kprintf("Pwd:%s\n", pwd);
 		}
 		break;
-	case CARD_APP_TYPE_DRIVER:
+	case CARD_APP_TYPE_DRIVER://司机卡
 		{
 			rt_kprintf("CARD_APP_TYPE_DRIVER\n");
 			int num;
@@ -102,7 +102,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			rt_kprintf("Pwd:%s\n", pwd);
 		}
 		break;
-	case CARD_APP_TYPE_LOCKKEY:
+	case CARD_APP_TYPE_LOCKKEY://锁钥卡
 		{
 			rt_kprintf("CARD_APP_TYPE_LOCKKEY\n");
 			int num;

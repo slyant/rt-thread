@@ -5,10 +5,11 @@
 
 struct sysinfo{
 	unsigned int id;
-	char sys_title[60];
-	unsigned int open_timeout;
-	unsigned int node_count;
-	unsigned int door_count;
+	char sys_title[61];
+	unsigned char en_driver_card;
+	unsigned short open_timeout;
+	unsigned char node_count;
+	unsigned char door_count;
 	unsigned char key_a[6];
 	unsigned char key_b[6];
 	struct record_queue queue;

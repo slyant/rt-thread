@@ -2,7 +2,7 @@
 #include <drv_pcf8563.h>
 #include <stm32f4xx_hal_cortex.h>
 
-const char* INIT_SYS_TITLE = "System V1.0\0";
+const char *INIT_SYS_TITLE = "System Title\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -80,6 +80,7 @@ static void set_workmodel(enum sys_workmodel model)
 		lcd_set_screen_id(UI_SYS_CFG);
 		break;
 	case WORK_MANAGE_MODEL:
+		lcd_set_open_door();
 		lcd_set_screen_id(UI_OPEN_DOOR);
 		break;
 	case WORK_ON_MODEL:
@@ -102,12 +103,12 @@ static rt_bool_t update_sys_key(rt_uint8_t *in_akey, rt_uint8_t *in_bkey)
 {
 	rt_bool_t result = RT_FALSE;
 	//保存系统密钥
-	struct sysinfo sysinfo;
-	if(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0)
+	sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
+	if(sysinfo_get_by_id(sysinfo, SYSINFO_KEY_ID)>0)
 	{
-		rt_memcpy(sysinfo.key_a, in_akey, INIT_KEY_LEN);
-		rt_memcpy(sysinfo.key_b, in_bkey, INIT_KEY_LEN);
-		if(sysinfo_update(&sysinfo) == 0)
+		rt_memcpy(sysinfo->key_a, in_akey, INIT_KEY_LEN);
+		rt_memcpy(sysinfo->key_b, in_bkey, INIT_KEY_LEN);
+		if(sysinfo_update(sysinfo) == 0)
 		{
 			rt_memcpy(sys_config.keya, in_akey, INIT_KEY_LEN);
 			rt_memcpy(sys_config.keyb, in_bkey, INIT_KEY_LEN);
@@ -119,6 +120,7 @@ static rt_bool_t update_sys_key(rt_uint8_t *in_akey, rt_uint8_t *in_bkey)
 	{
 		rt_kprintf("sysinfo_update ERROR!\n");
 	}	
+	rt_free(sysinfo);
 	return result;
 }
 
@@ -169,21 +171,24 @@ void app_startup(void)
 	extern void app_nrf_gateway_startup(void);	
 	app_nrf_gateway_startup();
 
-	struct sysinfo sysinfo;
-	RT_ASSERT(sysinfo_get_by_id(&sysinfo, SYSINFO_DB_KEY_ID)>0);
+	sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
+	RT_ASSERT(sysinfo_get_by_id(sysinfo, SYSINFO_KEY_ID)>0);
 
-	sys_config.door_count = sysinfo.door_count;
-	sys_config.node_count = sysinfo.node_count;
-	sys_config.open_timeout = sysinfo.open_timeout;
-	rt_strncpy(sys_config.sys_title, sysinfo.sys_title, rt_strlen(sysinfo.sys_title));
-	rt_memcpy(sys_config.keya, sysinfo.key_a, INIT_KEY_LEN);
-	rt_memcpy(sys_config.keyb, sysinfo.key_b, INIT_KEY_LEN);
+	sys_config.en_driver_card = sysinfo->en_driver_card;
+	sys_config.door_count = sysinfo->door_count;
+	sys_config.node_count = sysinfo->node_count;
+	sys_config.open_timeout = sysinfo->open_timeout;
+	rt_memcpy(sys_config.keya, sysinfo->key_a, INIT_KEY_LEN);
+	rt_memcpy(sys_config.keyb, sysinfo->key_b, INIT_KEY_LEN);
 	sys_config.abkey_exist = sys_abkey_exist;
 	
-	rt_kprintf("\nsys_title:%s\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n",sys_config.sys_title, sys_config.open_timeout, sysinfo.door_count, sys_config.node_count);
+	rt_kprintf("\nen_driver_card:%d\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n", sys_config.en_driver_card, sys_config.open_timeout, sysinfo->door_count, sys_config.node_count);
 	rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
 	rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
 		
+	lcd_set_sys_title(sysinfo->sys_title);//设置系统标题
+	rt_free(sysinfo);
+	
 	if(sys_config.abkey_exist())
 	{		
 		if(cardinfo_count_by_type(CARD_APP_TYPE_CONFIG) < CONFIG_CARD_MAX_COUNT)
@@ -199,5 +204,6 @@ void app_startup(void)
 	{
 		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 	}
-	lcd_wakeup();
+	
+	lcd_wakeup();//唤醒屏幕
 }
