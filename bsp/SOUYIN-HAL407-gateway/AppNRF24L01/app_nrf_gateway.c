@@ -1,17 +1,34 @@
 #include <rtthread.h>
-#include <nrf_gateway.h>
-#include <stdlib.h>
 #include <rtdevice.h>
-#include <uart_lcd_process.h>
+#include <nrf_gateway.h>
+#include <app_config.h>
 
 #define APP_USING_LOG
 #ifdef APP_USING_LOG
-	#define LOG		rt_kprintf("[NRF_APP]:");rt_kprintf
+	#define LOG		rt_kprintf("[app.nrf.gateway]:");rt_kprintf
 	#define LOGS	rt_kprintf
 #else
-	#define NRF_LOG(...)
-	#define NRF_LOGS(...)
+	#define LOG(...)
+	#define LOGS(...)
 #endif
+
+rt_uint8_t get_nrf_addr(void)
+{
+	rt_uint8_t res;
+	res=0;
+	res |= rt_pin_read(ADD_SET1);
+	res<<=1;
+	res |= rt_pin_read(ADD_SET2);
+	res<<=1;
+	res |= rt_pin_read(ADD_SET3);
+	res<<=1;
+	res |= rt_pin_read(ADD_SET4);
+	res<<=1;
+	res |= rt_pin_read(ADD_SET5);
+	res<<=1;
+	res |= rt_pin_read(ADD_SET6);
+	return res;
+}
 
 static void on_conn_cb(void* args)
 {
@@ -107,6 +124,18 @@ static void nrfsend(int argc, char** argv)
 	}
 }
 MSH_CMD_EXPORT(nrfsend, nrf send data);
+
+static int nrf_addr_pin_init(void)
+{
+	rt_pin_mode(ADD_SET1,PIN_MODE_INPUT);
+	rt_pin_mode(ADD_SET2,PIN_MODE_INPUT);
+	rt_pin_mode(ADD_SET3,PIN_MODE_INPUT);
+	rt_pin_mode(ADD_SET4,PIN_MODE_INPUT);
+	rt_pin_mode(ADD_SET5,PIN_MODE_INPUT);
+	rt_pin_mode(ADD_SET6,PIN_MODE_INPUT);
+	return 0;
+}
+INIT_DEVICE_EXPORT(nrf_addr_pin_init);
 
 void app_nrf_gateway_startup(void)
 {

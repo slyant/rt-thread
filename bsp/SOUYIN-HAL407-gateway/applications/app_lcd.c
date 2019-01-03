@@ -12,7 +12,7 @@ static const char MSG_OUT_FAILED[] = {0xB2, 0xD9, 0xD7, 0xF7, 0xCA, 0xA7, 0xB0, 
 
 static rt_uint16_t screen_id_list[5];
 static rt_uint8_t btn_all_group_sta;
-static rt_uint8_t btn_gropu_sta[NODE_MAX_COUNT];								  
+static rt_uint8_t btn_gropu_index;								  
 
 static temp_card_t temp_card_info = RT_NULL;
 static temp_setting_t temp_setting_info = RT_NULL;									  
@@ -36,10 +36,16 @@ void lcd_set_open_door(void)
 		BatchSetVisible(control_index++, 0);
 	}
     //设置组按钮初始状态
-	control_index = OPEN_DOOR_BTN_A_GROUP;
 	for(i = 0; i < sys_config.node_count; i++)
 	{
-		BatchSetButtonValue(control_index++, btn_gropu_sta[i]);
+        if(!btn_all_group_sta && i == btn_gropu_index)
+        {
+            BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + i, 1);
+        }
+        else
+        {
+            BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + i, 0);
+        }		
 	}    
 	//设置门按钮可见
 	control_index = OPEN_DOOR_BTN_1;
@@ -576,14 +582,8 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
         SetButtonValue(UI_OPEN_DOOR, OPEN_DOOR_BTN_ALL_GROUP, btn_all_group_sta);
         if(btn_all_group_sta)
         {            
-            BatchBegin(UI_OPEN_DOOR);            
-            for(int i = OPEN_DOOR_BTN_A_GROUP; i < OPEN_DOOR_BTN_A_GROUP + sys_config.node_count; i++)
-            {
-                if(btn_gropu_sta[i - OPEN_DOOR_BTN_A_GROUP] == 1)
-                {
-                    BatchSetButtonValue(i, 0);
-                }
-            }
+            BatchBegin(UI_OPEN_DOOR);
+            BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 0);
             //设置柜门按钮不可见
             for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
             {                
@@ -594,13 +594,7 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
         else
         {
             BatchBegin(UI_OPEN_DOOR);
-            for(int i = OPEN_DOOR_BTN_A_GROUP + 1; i < OPEN_DOOR_BTN_A_GROUP + sys_config.node_count; i++)
-            {
-                if(btn_gropu_sta[i - OPEN_DOOR_BTN_A_GROUP] == 1)
-                {
-                    BatchSetButtonValue(i, 1);
-                }
-            }            
+            BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 1);            
             //设置柜门按钮可见
             for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
             {
@@ -616,17 +610,15 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
             
         }
         else
-        {
-            BatchBegin(UI_OPEN_DOOR);
-            for(int i = 0; i < sys_config.node_count; i++)
+        {            
+            if(control_id != OPEN_DOOR_BTN_A_GROUP + btn_gropu_index)
             {
-                if(btn_gropu_sta[i] == 1)
-                    BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + i, 0);
-            }
-            rt_memset(btn_gropu_sta, 0x00, NODE_MAX_COUNT);
-            btn_gropu_sta[control_id - OPEN_DOOR_BTN_A_GROUP] = 1;
-            BatchSetButtonValue(control_id, 1);
-            BatchEnd();            
+                BatchBegin(UI_OPEN_DOOR);
+                BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 0);
+                btn_gropu_index = control_id - OPEN_DOOR_BTN_A_GROUP;
+                BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 1);               
+                BatchEnd();                
+            }                        
         }
 	}
     else if(control_id == OPEN_DOOR_BTN_EXIT)
@@ -778,7 +770,7 @@ static void lcd_notify_text(unsigned short screen_id, unsigned short control_id,
 void app_lcd_startup(void)
 {	
     btn_all_group_sta = 1;
-    rt_memset(btn_gropu_sta, 0x00, NODE_MAX_COUNT);    
+    btn_gropu_index = 0;
 	uart_lcd_set_button_notify_hook(lcd_notify_button);
     uart_lcd_set_text_notify_hook(lcd_notify_text);
 }

@@ -15,11 +15,14 @@
 
 #include <db_include.h>
 #include <rng_helper.h>
+#include <any_convert.h>
 #include <app_beep.h>
 #include <app_gps.h>
 #include <app_rfic.h>
 #include <app_lcd.h>
-#include <any_convert.h>
+#include <app_door.h>
+#include <app_nrf_gateway.h>
+
 
 enum sys_workmodel
 {
