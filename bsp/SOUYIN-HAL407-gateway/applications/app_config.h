@@ -40,6 +40,7 @@ struct sys_config
 	rt_uint16_t open_timeout;
 	rt_uint8_t node_count;
 	rt_uint8_t door_count;
+    rt_uint8_t group_addr;
 	rt_uint8_t keya[INIT_KEY_LEN];
 	rt_uint8_t keyb[INIT_KEY_LEN];  
 	rt_bool_t (*sys_reset)(void);	
@@ -55,7 +56,8 @@ struct sys_status
 	enum sys_workmodel(*get_workmodel)(void);	
 	rt_bool_t (*get_datetime)(struct calendar **);
 	void (*set_datetime)(struct calendar *);
-    rt_uint8_t door_sta[NODE_MAX_COUNT][DOOR_MAX_COUNT];
+    void (*set_door_group_sta)(rt_uint8_t, rt_uint16_t);
+    rt_uint16_t (*get_door_group_sta)(rt_uint8_t);
 };
 typedef struct sys_status *sys_status_t;
 

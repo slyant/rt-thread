@@ -12,7 +12,7 @@ static char gps_buf[BUF_LEN]={0};
 
 static gps_update_hook_t gps_update_hook = RT_NULL;
 
-void gps_set_update_hook(gps_update_hook_t hook)
+void gps_update_set_hook(gps_update_hook_t hook)
 {
 	gps_update_hook = hook;
 }

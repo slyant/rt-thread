@@ -12,24 +12,6 @@
 	#define LOGS(...)
 #endif
 
-rt_uint8_t get_nrf_addr(void)
-{
-	rt_uint8_t res;
-	res=0;
-	res |= rt_pin_read(ADD_SET1);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET2);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET3);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET4);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET5);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET6);
-	return res;
-}
-
 static void on_conn_cb(void* args)
 {
 	uint8_t node = *(uint8_t*)args;

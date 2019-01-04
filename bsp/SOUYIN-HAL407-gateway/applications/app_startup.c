@@ -6,7 +6,9 @@ const char *INIT_SYS_TITLE = "System Title\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+static rt_mutex_t group_sta_lock = RT_NULL;
 static enum sys_workmodel workmodel;
+static rt_uint16_t door_sta[NODE_MAX_COUNT];
 struct sys_status sys_status;
 struct sys_config sys_config;
 
@@ -25,7 +27,6 @@ static void set_datetime(struct calendar *cal)
 	rtc_set_time(cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
 	lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 }
-
 static rt_bool_t get_datetime(struct calendar **cal)
 {
 	int year, month, mday, wday, hour, min, sec;	
@@ -42,6 +43,27 @@ static rt_bool_t get_datetime(struct calendar **cal)
 	}		
 	return RT_FALSE;
 }
+static void set_door_group_sta(rt_uint8_t group_index, rt_uint16_t sta)
+{
+    rt_mutex_take(group_sta_lock, RT_WAITING_FOREVER);
+    if(group_index < NODE_MAX_COUNT)
+    {
+        door_sta[group_index] = sta;
+    }
+    rt_mutex_release(group_sta_lock);
+}
+static rt_uint16_t get_door_group_sta(rt_uint8_t group_index)
+{
+    rt_uint16_t result = 0;
+    rt_mutex_take(group_sta_lock, RT_WAITING_FOREVER);
+    if(group_index < NODE_MAX_COUNT)
+    {
+        result = door_sta[group_index];
+    }
+    rt_mutex_release(group_sta_lock);
+    return result;
+}
+
 static void gps_update_hook(calendar_t cal)
 {
 	static int count = 0;
@@ -57,6 +79,15 @@ static void gps_update_hook(calendar_t cal)
 	count++;
 }
 
+static void door_update_hook(rt_uint16_t sta)
+{
+    if(sys_config.group_addr < NODE_MAX_COUNT)
+    {
+        set_door_group_sta(sys_config.group_addr, sta);
+        lcd_update_door_sta(sys_config.group_addr, sta);
+    }
+    rt_kprintf("door status:%04X\n", sta);
+}
 
 static void load_datetime(void)
 {
@@ -147,7 +178,13 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 void app_startup(void)
 {
 	rt_assert_set_hook(assert_hook);
-	gps_set_update_hook(gps_update_hook);
+    group_sta_lock = rt_mutex_create("gsta_lock", RT_IPC_FLAG_FIFO);
+    RT_ASSERT(group_sta_lock != RT_NULL);
+    
+    rt_memset(door_sta, 0x00, sizeof(door_sta));
+    sys_config.group_addr = door_get_group_addr();
+	gps_update_set_hook(gps_update_hook);
+    door_update_set_hook(door_update_hook);
 	
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
@@ -157,6 +194,8 @@ void app_startup(void)
 	sys_config.sys_reset = sys_reset;
 	sys_status.get_datetime = get_datetime;
 	sys_status.set_datetime = set_datetime;
+    sys_status.get_door_group_sta = get_door_group_sta;
+    sys_status.set_door_group_sta = set_door_group_sta;
 	sys_status.restart = sys_restart;
 	sys_status.set_workmodel(WORK_OFF_MODEL);
 	

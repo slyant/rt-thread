@@ -16,6 +16,6 @@ typedef struct calendar *calendar_t;
 
 typedef void (*gps_update_hook_t)(calendar_t cal);
 
-void gps_set_update_hook(gps_update_hook_t hook);
+void gps_update_set_hook(gps_update_hook_t hook);
 
 #endif

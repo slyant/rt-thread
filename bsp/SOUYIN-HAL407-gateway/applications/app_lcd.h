@@ -147,5 +147,6 @@ void lcd_set_datetime(int year, int month, int mday, int wday, int hour, int min
 void lcd_set_sys_title(char *title);
 void lcd_wakeup(void);
 void lcd_set_open_door(void);
+void lcd_update_door_sta(rt_uint8_t group_index, rt_uint16_t sta);
 
 #endif
