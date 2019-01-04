@@ -25,10 +25,5 @@
 #define   OE595   86
 #define   CK595   87
 
-typedef struct
-{
-	uint16_t  door_sta;
-	uint16_t open_time;
-}DOOR_REG;
 
 #endif
