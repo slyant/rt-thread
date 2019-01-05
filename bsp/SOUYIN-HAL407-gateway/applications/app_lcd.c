@@ -9,8 +9,7 @@ static const char MSG_SUCCESS[] = {0xB2, 0xD9, 0xD7, 0xF7, 0xB3, 0xC9, 0xB9, 0xA
 static const char MSG_FAILED[] =  {0xB2, 0xD9, 0xD7, 0xF7, 0xCA, 0xA7, 0xB0, 0xDC, 0x21, 0x00};	//操作失败!
 static const char MSG_OUT_FAILED[] = {0xB2, 0xD9, 0xD7, 0xF7, 0xCA, 0xA7, 0xB0, 0xDC, 0xA3, 0xAC, 0xD6, 0xC6, 0xBF, 0xA8, 0xCA, 0xFD, 
 									  0xC1, 0xBF, 0xB3, 0xAC, 0xB3, 0xF6, 0xCF, 0xDE, 0xD6, 0xC6, 0xA3, 0xA1, 0x00};//操作失败，制卡数量超出限制！
-
-#define GET_DOOR_STA(sta,idx)   ((sta & (((rt_uint16_t)0x0001)<<idx))>0?1:0)
+                                   
 static rt_uint16_t screen_id_list[5];
 static rt_uint8_t btn_all_group_sta;
 static rt_uint8_t btn_gropu_index;								  
@@ -59,15 +58,19 @@ void lcd_set_open_door(void)
 		BatchSetVisible(control_index++, 0);
 	}
 	BatchEnd();
-}							
-void lcd_update_door_sta(rt_uint8_t group_index, rt_uint16_t sta)
+}		
+
+#define GET_DOOR_STA(sta,idx)   ((sta & (((rt_uint16_t)0x0001)<<(idx)))>0?1:0)
+
+void lcd_update_door_sta(rt_uint8_t group_index)
 {
-    if(! btn_all_group_sta && group_index == btn_gropu_index)
+    if(sys_status.get_workmodel() == WORK_MANAGE_MODEL && ! btn_all_group_sta && group_index == btn_gropu_index)
     {
+        rt_uint16_t sta = sys_status.get_door_group_sta(group_index);
         BatchBegin(UI_OPEN_DOOR);
         for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
         {                
-            BatchSetButtonValue(i, GET_DOOR_STA(sta,i));
+            BatchSetButtonValue(i, GET_DOOR_STA(sta, i - OPEN_DOOR_BTN_1));
         }
         BatchEnd();
     }
@@ -311,8 +314,13 @@ static void sys_config_handle(unsigned short control_id)
 		lcd_set_screen_id(UI_OTHER_SETTING);
 		break;
 	case SYS_CFG_BTN_RESTART:		//退出重启
+        nrfreset();
+        rt_thread_mdelay(100);
 		sys_status.restart();
 		break;
+    case SYS_CFG_BTN_PAIR:          //节点配对
+        nrf_send_net_pwd();
+        break;
 	default:
 		break;
 	}	
@@ -614,38 +622,33 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
                 BatchSetVisible(i, 1);
             }
             BatchEnd();
-            lcd_update_door_sta(btn_gropu_index, sys_status.get_door_group_sta(btn_gropu_index));
+            lcd_update_door_sta(btn_gropu_index);
         }
     }
     else if(control_id >= OPEN_DOOR_BTN_A_GROUP && control_id <= OPEN_DOOR_BTN_H_GROUP)
     {
         if(btn_all_group_sta)
         {//按组开门
-            
+            door_group_open(control_id - OPEN_DOOR_BTN_A_GROUP);
         }
         else
-        {            
-            if(control_id != OPEN_DOOR_BTN_A_GROUP + btn_gropu_index)
-            {                
-                BatchBegin(UI_OPEN_DOOR);
-                BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 0);//设置之前的分组按钮弹起
-                btn_gropu_index = control_id - OPEN_DOOR_BTN_A_GROUP;
-                BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 1);//设置新的分组按钮按下   
-                //设置柜门按钮可见
-                for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
-                {                    
-                    BatchSetVisible(i, 1);
-                }                
-                BatchEnd();
-                lcd_update_door_sta(btn_gropu_index, sys_status.get_door_group_sta(btn_gropu_index));  
-            }                        
+        {           
+            BatchBegin(UI_OPEN_DOOR);
+            BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 0);//设置之前的分组按钮弹起
+            btn_gropu_index = control_id - OPEN_DOOR_BTN_A_GROUP;
+            BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 1);//设置新的分组按钮按下                 
+            BatchEnd();
+            lcd_update_door_sta(btn_gropu_index); 
         }
 	}
+    else if(control_id >= OPEN_DOOR_BTN_1 && control_id <= OPEN_DOOR_BTN_16)
+    {
+        door_any_open(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
+    }
     else if(control_id == OPEN_DOOR_BTN_EXIT)
     {
         sys_status.set_workmodel(WORK_ON_MODEL);
     }
-
 }
 //保存其它设置到数据库
 static rt_bool_t save_other_setting(void)

@@ -76,6 +76,21 @@
 //按钮Button9的控件ID
 #define  _BTN_SYS_CFG_BUTTON9                                                 15
 
+//画面sys_cfg中按钮Button9弹起时的图片
+#define  _IMG_SYS_CFG_BUTTON9_UP                                               3
+
+//画面sys_cfg中按钮Button9按下时的图片
+#define  _IMG_SYS_CFG_BUTTON9_DOWN                                             4
+
+//按钮Button10的控件ID
+#define  _BTN_SYS_CFG_BUTTON10                                                16
+
+//画面sys_cfg中按钮Button10弹起时的图片
+#define  _IMG_SYS_CFG_BUTTON10_UP                                              3
+
+//画面sys_cfg中按钮Button10按下时的图片
+#define  _IMG_SYS_CFG_BUTTON10_DOWN                                            4
+
 //画面sys_datetime的背景图片
 #define  _IMG_SYS_DATETIME                                                     2
 
@@ -182,10 +197,10 @@
 #define  _BTN_DRIVER_CARD_BUTTON5                                             17
 
 //画面driver_card中按钮Button5弹起时的图片
-#define  _IMG_DRIVER_CARD_BUTTON5_UP                                           3
+#define  _IMG_DRIVER_CARD_BUTTON5_UP                                           5
 
 //画面driver_card中按钮Button5按下时的图片
-#define  _IMG_DRIVER_CARD_BUTTON5_DOWN                                         4
+#define  _IMG_DRIVER_CARD_BUTTON5_DOWN                                         6
 
 //画面lock_abkey_card的背景图片
 #define  _IMG_LOCK_ABKEY_CARD                                                  2
@@ -212,19 +227,19 @@
 #define  _BTN_OTHER_SETTING_BUTTON1                                           10
 
 //画面other_setting中按钮Button1弹起时的图片
-#define  _IMG_OTHER_SETTING_BUTTON1_UP                                         5
+#define  _IMG_OTHER_SETTING_BUTTON1_UP                                         7
 
 //画面other_setting中按钮Button1按下时的图片
-#define  _IMG_OTHER_SETTING_BUTTON1_DOWN                                       6
+#define  _IMG_OTHER_SETTING_BUTTON1_DOWN                                       8
 
 //按钮Button2的控件ID
 #define  _BTN_OTHER_SETTING_BUTTON2                                           11
 
 //画面other_setting中按钮Button2弹起时的图片
-#define  _IMG_OTHER_SETTING_BUTTON2_UP                                         7
+#define  _IMG_OTHER_SETTING_BUTTON2_UP                                         9
 
 //画面other_setting中按钮Button2按下时的图片
-#define  _IMG_OTHER_SETTING_BUTTON2_DOWN                                       8
+#define  _IMG_OTHER_SETTING_BUTTON2_DOWN                                      10
 
 //画面open_door的背景图片
 #define  _IMG_OPEN_DOOR                                                        2
@@ -233,235 +248,235 @@
 #define  _BTN_OPEN_DOOR_BUTTON9                                              101
 
 //画面open_door中按钮Button9弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON9_UP                                             9
+#define  _IMG_OPEN_DOOR_BUTTON9_UP                                            11
 
 //画面open_door中按钮Button9按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON9_DOWN                                          10
+#define  _IMG_OPEN_DOOR_BUTTON9_DOWN                                          12
 
 //按钮Button10的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON10                                             100
 
 //画面open_door中按钮Button10弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON10_UP                                           11
+#define  _IMG_OPEN_DOOR_BUTTON10_UP                                           13
 
 //画面open_door中按钮Button10按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON10_DOWN                                         12
+#define  _IMG_OPEN_DOOR_BUTTON10_DOWN                                         14
 
 //按钮Button1的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON1                                              901
 
 //画面open_door中按钮Button1弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON1_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON1_UP                                            15
 
 //画面open_door中按钮Button1按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON1_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON1_DOWN                                          16
 
 //按钮Button2的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON2                                              902
 
 //画面open_door中按钮Button2弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON2_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON2_UP                                            15
 
 //画面open_door中按钮Button2按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON2_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON2_DOWN                                          16
 
 //按钮Button3的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON3                                              903
 
 //画面open_door中按钮Button3弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON3_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON3_UP                                            15
 
 //画面open_door中按钮Button3按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON3_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON3_DOWN                                          16
 
 //按钮Button4的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON4                                              904
 
 //画面open_door中按钮Button4弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON4_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON4_UP                                            15
 
 //画面open_door中按钮Button4按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON4_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON4_DOWN                                          16
 
 //按钮Button5的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON5                                              905
 
 //画面open_door中按钮Button5弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON5_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON5_UP                                            15
 
 //画面open_door中按钮Button5按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON5_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON5_DOWN                                          16
 
 //按钮Button6的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON6                                              906
 
 //画面open_door中按钮Button6弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON6_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON6_UP                                            15
 
 //画面open_door中按钮Button6按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON6_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON6_DOWN                                          16
 
 //按钮Button7的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON7                                              907
 
 //画面open_door中按钮Button7弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON7_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON7_UP                                            15
 
 //画面open_door中按钮Button7按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON7_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON7_DOWN                                          16
 
 //按钮Button8的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON8                                              908
 
 //画面open_door中按钮Button8弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON8_UP                                            13
+#define  _IMG_OPEN_DOOR_BUTTON8_UP                                            15
 
 //画面open_door中按钮Button8按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON8_DOWN                                          14
+#define  _IMG_OPEN_DOOR_BUTTON8_DOWN                                          16
 
 //按钮Button11的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON11                                             109
 
 //画面open_door中按钮Button11弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON11_UP                                           15
+#define  _IMG_OPEN_DOOR_BUTTON11_UP                                           17
 
 //画面open_door中按钮Button11按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON11_DOWN                                         16
+#define  _IMG_OPEN_DOOR_BUTTON11_DOWN                                         18
 
 //按钮Button12的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON12                                             103
 
 //画面open_door中按钮Button12弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON12_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON12_UP                                           11
 
 //画面open_door中按钮Button12按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON12_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON12_DOWN                                         12
 
 //按钮Button13的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON13                                             105
 
 //画面open_door中按钮Button13弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON13_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON13_UP                                           11
 
 //画面open_door中按钮Button13按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON13_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON13_DOWN                                         12
 
 //按钮Button14的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON14                                             107
 
 //画面open_door中按钮Button14弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON14_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON14_UP                                           11
 
 //画面open_door中按钮Button14按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON14_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON14_DOWN                                         12
 
 //按钮Button16的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON16                                             102
 
 //画面open_door中按钮Button16弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON16_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON16_UP                                           11
 
 //画面open_door中按钮Button16按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON16_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON16_DOWN                                         12
 
 //按钮Button17的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON17                                             104
 
 //画面open_door中按钮Button17弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON17_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON17_UP                                           11
 
 //画面open_door中按钮Button17按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON17_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON17_DOWN                                         12
 
 //按钮Button18的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON18                                             106
 
 //画面open_door中按钮Button18弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON18_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON18_UP                                           11
 
 //画面open_door中按钮Button18按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON18_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON18_DOWN                                         12
 
 //按钮Button19的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON19                                             108
 
 //画面open_door中按钮Button19弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON19_UP                                            9
+#define  _IMG_OPEN_DOOR_BUTTON19_UP                                           11
 
 //画面open_door中按钮Button19按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON19_DOWN                                         10
+#define  _IMG_OPEN_DOOR_BUTTON19_DOWN                                         12
 
 //按钮Button20的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON20                                             909
 
 //画面open_door中按钮Button20弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON20_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON20_UP                                           15
 
 //画面open_door中按钮Button20按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON20_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON20_DOWN                                         16
 
 //按钮Button21的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON21                                             910
 
 //画面open_door中按钮Button21弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON21_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON21_UP                                           15
 
 //画面open_door中按钮Button21按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON21_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON21_DOWN                                         16
 
 //按钮Button22的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON22                                             911
 
 //画面open_door中按钮Button22弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON22_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON22_UP                                           15
 
 //画面open_door中按钮Button22按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON22_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON22_DOWN                                         16
 
 //按钮Button23的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON23                                             912
 
 //画面open_door中按钮Button23弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON23_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON23_UP                                           15
 
 //画面open_door中按钮Button23按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON23_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON23_DOWN                                         16
 
 //按钮Button24的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON24                                             913
 
 //画面open_door中按钮Button24弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON24_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON24_UP                                           15
 
 //画面open_door中按钮Button24按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON24_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON24_DOWN                                         16
 
 //按钮Button25的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON25                                             914
 
 //画面open_door中按钮Button25弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON25_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON25_UP                                           15
 
 //画面open_door中按钮Button25按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON25_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON25_DOWN                                         16
 
 //按钮Button26的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON26                                             915
 
 //画面open_door中按钮Button26弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON26_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON26_UP                                           15
 
 //画面open_door中按钮Button26按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON26_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON26_DOWN                                         16
 
 //按钮Button27的控件ID
 #define  _BTN_OPEN_DOOR_BUTTON27                                             916
 
 //画面open_door中按钮Button27弹起时的图片
-#define  _IMG_OPEN_DOOR_BUTTON27_UP                                           13
+#define  _IMG_OPEN_DOOR_BUTTON27_UP                                           15
 
 //画面open_door中按钮Button27按下时的图片
-#define  _IMG_OPEN_DOOR_BUTTON27_DOWN                                         14
+#define  _IMG_OPEN_DOOR_BUTTON27_DOWN                                         16
 
 //画面message的背景图片
 #define  _IMG_MESSAGE                                                          2
@@ -470,10 +485,10 @@
 #define  _BTN_MESSAGE_BUTTON2                                                  6
 
 //画面message中按钮Button2弹起时的图片
-#define  _IMG_MESSAGE_BUTTON2_UP                                               3
+#define  _IMG_MESSAGE_BUTTON2_UP                                               5
 
 //画面message中按钮Button2按下时的图片
-#define  _IMG_MESSAGE_BUTTON2_DOWN                                             4
+#define  _IMG_MESSAGE_BUTTON2_DOWN                                             6
 
 //画面waite的背景图片
 #define  _IMG_WAITE                                                            2

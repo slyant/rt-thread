@@ -32,11 +32,11 @@
 #define   ADD_SET5   35
 #define   ADD_SET6   34
 
-typedef void (*door_update_hook_t)(rt_uint16_t);
+typedef void (*door_update_hook_t)(rt_uint8_t group_index, rt_uint16_t sta);
 
 rt_uint8_t door_get_group_addr(void);
 void door_update_set_hook(door_update_hook_t hook);
-void door_open(rt_uint8_t door_index);
-void door_group_open(rt_uint8_t door_count);
+void door_any_open(rt_uint8_t group_index, rt_uint8_t door_index);
+void door_group_open(rt_uint8_t group_index);
 
 #endif

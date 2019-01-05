@@ -12,17 +12,25 @@
 	#define LOGS(...)
 #endif
 
+#define CONVERT_TO_NET_ADDR(d)     (ASSIGN_ADDR_START+d)       //将柜门地址转换为网络地址
+#define CONVERT_TO_DOOR_INDEX(d)   (d-ASSIGN_ADDR_START)       //将网络地址转换为柜门地址
+
+static nrf_door_update_hook_t nrf_door_update_hook = RT_NULL;
+
+static void nrf_send_session_key(rt_uint8_t node)
+{
+    
+}
+
 static void on_conn_cb(void* args)
 {
 	uint8_t node = *(uint8_t*)args;
 	LOG("NRF Node %d Connected!\r\n", node);
-	//sark_join_cfg(node);
 }
 static void on_disconn_cb(void* args)
 {
 	uint8_t node = *(uint8_t*)args;
 	LOG("NRF Node %d DisConnected!\r\n", node);
-	//sark_discon_remov(node);
 }
 static void on_send_cb(rt_uint8_t src_addr,rt_uint8_t dst_addr,rt_uint8_t pack_type,rt_uint16_t ID,rt_uint8_t *buf,rt_uint8_t status)
 {
@@ -38,86 +46,80 @@ static void on_send_cb(rt_uint8_t src_addr,rt_uint8_t dst_addr,rt_uint8_t pack_t
 	else
 	{
 		LOGS("fail!\r\n");
-	}	
+	}
 }
 static void on_recv_cb(rt_uint8_t src_addr,rt_uint8_t dst_addr,rt_uint8_t pack_type,rt_uint8_t *buf)
 {
 	LOG("on_recv_cb:src=%d,dst=%d,type=%d,data[0]=%d,data[1]=%d\r\n",src_addr,dst_addr,pack_type,buf[0],buf[1]);
-//	rt_pin_write(LED_0_PIN,buf[0]);
-//	rt_pin_write(LED_1_PIN,buf[1]);
+    if(nrf_door_update_hook != RT_NULL)
+    {
+        payload_data_t payload_data = (payload_data_t)buf;
+        if(payload_data->cmd == CMD_DOOR_STA)
+        {
+            rt_uint8_t group_index = CONVERT_TO_DOOR_INDEX(src_addr);
+            rt_uint16_t sta = payload_data->args.door_sta;
+            nrf_door_update_hook(group_index, sta);
+        }
+    }
 }
+
 static void nrfstatus(void)
 {
 	int i;
 	nrf_node_status node;
 	nrf_get_nodestatus(&node);
-	rt_kprintf("======node_status======\r\n");
-	rt_kprintf("channel=%d\r\n",node.channel);
-	rt_kprintf("addr=%d\r\n",node.addr);
-	rt_kprintf("assign_addr=%d\r\n",node.assign_addr);
-	rt_kprintf("mac:");
+	LOGS("======node_status======\r\n");
+	LOGS("channel=%d\r\n",node.channel);
+	LOGS("addr=%d\r\n",node.addr);
+	LOGS("assign_addr=%d\r\n",node.assign_addr);
+	LOGS("mac:");
 	for(i=0;i<MAC_LEN;i++)
 	{
-		rt_kprintf("%02x",node.node_mac[i]);
+		LOGS("%02x",node.node_mac[i]);
 	}
-	rt_kprintf("\r\n");	
-	rt_kprintf("sys_pwd=%08X\r\n",node.pwd);
-	rt_kprintf("heart_status=%d\r\n",node.heart_status);
-	rt_kprintf("shift_failed_count=%d\r\n",node.shift_failed_count);
-	rt_kprintf("shift_count=%d\r\n",node.shift_count);
-	rt_kprintf("recv_count=%d\r\n",node.recv_count);
-	rt_kprintf("======================\r\n");
+	LOGS("\r\n");	
+	LOGS("sys_pwd=%08X\r\n",node.pwd);
+	LOGS("heart_status=%d\r\n",node.heart_status);
+	LOGS("shift_failed_count=%d\r\n",node.shift_failed_count);
+	LOGS("shift_count=%d\r\n",node.shift_count);
+	LOGS("recv_count=%d\r\n",node.recv_count);
+	LOGS("======================\r\n");
 }
 MSH_CMD_EXPORT(nrfstatus, show nrf status);
 
-static void nrfaddr(int argc, char** argv)
-{	
-	rt_uint8_t addr = 0;
-	if(argc>=2)
-	{
-		addr = atol(argv[1]);
-	}
-	nrf_assign_addr(addr);
-}
-MSH_CMD_EXPORT(nrfaddr, nrf assign addr);
-
-static void nrfreset(void)
+void nrfreset(void)
 {	
 	nrf_reset();
+    LOG("nrfreset\n");
 }
-MSH_CMD_EXPORT(nrfreset, nrf reset);
 
-static void nrfsend(int argc, char** argv)
+void nrf_send_net_pwd(void)
 {
-	if(argc==3)
-	{
-		rt_uint8_t addr = atol(argv[1]);
-		char* data = argv[2];
-		data[0] = (data[0]=='0')?0:1;
-		data[1] = (data[1]=='0')?0:1;
-		if(addr==0)
-		{
-			nrf_send_data_all_nodes(data);
-		}
-		else
-		{
-			nrf_send_data(addr, data);
-		}
-	}
+    nrf_assign_addr(0);
+    LOG("nrf_assign_addr\n");
 }
-MSH_CMD_EXPORT(nrfsend, nrf send data);
 
-static int nrf_addr_pin_init(void)
+void nrf_send_door_open(rt_uint8_t group_index, rt_uint8_t door_index)
 {
-	rt_pin_mode(ADD_SET1,PIN_MODE_INPUT);
-	rt_pin_mode(ADD_SET2,PIN_MODE_INPUT);
-	rt_pin_mode(ADD_SET3,PIN_MODE_INPUT);
-	rt_pin_mode(ADD_SET4,PIN_MODE_INPUT);
-	rt_pin_mode(ADD_SET5,PIN_MODE_INPUT);
-	rt_pin_mode(ADD_SET6,PIN_MODE_INPUT);
-	return 0;
+    payload_data_t payload_data = rt_calloc(1, sizeof(struct payload_data));
+    payload_data->cmd = CMD_DOOR_OPEN;
+    payload_data->args.door_index = door_index;
+    nrf_send_data(CONVERT_TO_NET_ADDR(group_index), payload_data);    
+    rt_free(payload_data);
 }
-INIT_DEVICE_EXPORT(nrf_addr_pin_init);
+
+void nrf_send_group_open(rt_uint8_t group_index)
+{
+    payload_data_t payload_data = rt_calloc(1, sizeof(struct payload_data));
+    payload_data->cmd = CMD_GROUP_OPEN;
+    nrf_send_data(CONVERT_TO_NET_ADDR(group_index), payload_data);    
+    rt_free(payload_data);    
+}
+
+void nrf_set_remote_door_update_hook(nrf_door_update_hook_t hook)
+{
+    nrf_door_update_hook = hook;
+}
 
 void app_nrf_gateway_startup(void)
 {

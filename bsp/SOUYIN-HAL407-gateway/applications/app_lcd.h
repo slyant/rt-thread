@@ -55,6 +55,7 @@ typedef struct temp_setting *temp_setting_t;
 #define SYS_CFG_BTN_SYS_DATETIME	13     //时间校准
 #define SYS_CFG_BTN_OTHER_SETTING   14     //其它设置
 #define SYS_CFG_BTN_RESTART    		15     //重启
+#define SYS_CFG_BTN_PAIR            16     //节点配对
 /****************************************************************/
 
 /************************  UI_ABKEY_CARD 控件ID  ****************/
@@ -147,6 +148,6 @@ void lcd_set_datetime(int year, int month, int mday, int wday, int hour, int min
 void lcd_set_sys_title(char *title);
 void lcd_wakeup(void);
 void lcd_set_open_door(void);
-void lcd_update_door_sta(rt_uint8_t group_index, rt_uint16_t sta);
+void lcd_update_door_sta(rt_uint8_t group_index);
 
 #endif

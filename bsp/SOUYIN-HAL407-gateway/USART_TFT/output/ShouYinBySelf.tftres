@@ -19,20 +19,22 @@
         <image id="0" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\shbj.jpg" width="800" height="480" crop="0" effect_left="0" effect_top="0" effect_width="800" effect_height="480" size="768000" />
         <image id="1" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\蓝台基础部分 -2.png" width="102" height="104" crop="0" effect_left="0" effect_top="0" effect_width="102" effect_height="104" size="21216" />
         <image id="2" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\shenlan.jpg" width="800" height="480" crop="0" effect_left="0" effect_top="0" effect_width="800" effect_height="480" size="768000" />
-        <image id="3" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="140" height="53" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="53" size="14840" />
-        <image id="4" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="140" height="53" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="53" size="14840" />
-        <image id="5" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="138" height="58" crop="0" effect_left="0" effect_top="0" effect_width="138" effect_height="58" size="16008" />
-        <image id="6" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="138" height="58" crop="0" effect_left="0" effect_top="0" effect_width="138" effect_height="58" size="16008" />
-        <image id="7" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="140" height="56" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="56" size="15680" />
-        <image id="8" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="140" height="56" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="56" size="15680" />
-        <image id="9" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="82" height="46" crop="0" effect_left="0" effect_top="0" effect_width="82" effect_height="46" size="7544" />
-        <image id="10" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="82" height="46" crop="0" effect_left="0" effect_top="0" effect_width="82" effect_height="46" size="7544" />
-        <image id="11" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="196" height="49" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="49" size="19208" />
-        <image id="12" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="196" height="49" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="49" size="19208" />
-        <image id="13" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="65" height="60" crop="0" effect_left="0" effect_top="0" effect_width="65" effect_height="60" size="7800" />
-        <image id="14" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="65" height="60" crop="0" effect_left="0" effect_top="0" effect_width="65" effect_height="60" size="7800" />
-        <image id="15" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="196" height="50" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="50" size="19600" />
-        <image id="16" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="196" height="50" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="50" size="19600" />
+        <image id="3" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="142" height="57" crop="0" effect_left="0" effect_top="0" effect_width="142" effect_height="57" size="16188" />
+        <image id="4" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="142" height="57" crop="0" effect_left="0" effect_top="0" effect_width="142" effect_height="57" size="16188" />
+        <image id="5" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="140" height="53" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="53" size="14840" />
+        <image id="6" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="140" height="53" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="53" size="14840" />
+        <image id="7" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="138" height="58" crop="0" effect_left="0" effect_top="0" effect_width="138" effect_height="58" size="16008" />
+        <image id="8" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="138" height="58" crop="0" effect_left="0" effect_top="0" effect_width="138" effect_height="58" size="16008" />
+        <image id="9" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="140" height="56" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="56" size="15680" />
+        <image id="10" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="140" height="56" crop="0" effect_left="0" effect_top="0" effect_width="140" effect_height="56" size="15680" />
+        <image id="11" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="82" height="46" crop="0" effect_left="0" effect_top="0" effect_width="82" effect_height="46" size="7544" />
+        <image id="12" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="82" height="46" crop="0" effect_left="0" effect_top="0" effect_width="82" effect_height="46" size="7544" />
+        <image id="13" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="196" height="49" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="49" size="19208" />
+        <image id="14" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="196" height="49" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="49" size="19208" />
+        <image id="15" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="65" height="60" crop="0" effect_left="0" effect_top="0" effect_width="65" effect_height="60" size="7800" />
+        <image id="16" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="65" height="60" crop="0" effect_left="0" effect_top="0" effect_width="65" effect_height="60" size="7800" />
+        <image id="17" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_close.jpg" width="196" height="50" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="50" size="19600" />
+        <image id="18" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\btn_open.jpg" width="196" height="50" crop="0" effect_left="0" effect_top="0" effect_width="196" effect_height="50" size="19600" />
     </images>
     <waves />
 </Resource>

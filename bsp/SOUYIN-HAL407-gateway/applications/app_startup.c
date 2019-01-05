@@ -79,14 +79,12 @@ static void gps_update_hook(calendar_t cal)
 	count++;
 }
 
-static void door_update_hook(rt_uint16_t sta)
+static void door_update_hook(rt_uint8_t group_index, rt_uint16_t sta)
 {
-    if(sys_config.group_addr < NODE_MAX_COUNT)
-    {
-        set_door_group_sta(sys_config.group_addr, sta);
-        lcd_update_door_sta(sys_config.group_addr, sta);
-    }
-    rt_kprintf("door status:%04X\n", sta);
+    set_door_group_sta(group_index, sta);
+    lcd_update_door_sta(group_index);
+    lcd_wakeup();
+    rt_kprintf("group_index:%d,door_sta:%04X\n", group_index, sta);
 }
 
 static void load_datetime(void)
@@ -182,7 +180,7 @@ void app_startup(void)
     RT_ASSERT(group_sta_lock != RT_NULL);
     
     rt_memset(door_sta, 0x00, sizeof(door_sta));
-    sys_config.group_addr = door_get_group_addr();
+    sys_config.get_group_addr = door_get_group_addr;
 	gps_update_set_hook(gps_update_hook);
     door_update_set_hook(door_update_hook);
 	

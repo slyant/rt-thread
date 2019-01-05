@@ -40,7 +40,7 @@ struct sys_config
 	rt_uint16_t open_timeout;
 	rt_uint8_t node_count;
 	rt_uint8_t door_count;
-    rt_uint8_t group_addr;
+    rt_uint8_t (*get_group_addr)(void);
 	rt_uint8_t keya[INIT_KEY_LEN];
 	rt_uint8_t keyb[INIT_KEY_LEN];  
 	rt_bool_t (*sys_reset)(void);	
