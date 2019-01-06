@@ -336,7 +336,7 @@
               <MiscControls>--no_multibyte_chars</MiscControls>
               <Define>USE_HAL_DRIVER, STM32F407xx, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;AppNRF24L01;Commons;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFICHelper;UartLcdHelper;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
+              <IncludePath>Applications;Commons;DbHelper;.;drivers;Libraries\CMSIS\Device\ST\STM32F4xx\Include;Libraries\CMSIS\Include;Libraries\STM32F4xx_HAL_Driver\Inc;packages\cJSON-v1.0.2;packages\MultiButton-latest;packages\nrf24l01_network-latest;packages\sqlite-v3.19.3;packages\tinycrypt-v1.0.0\include;RFICHelper;UartLcdHelper;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\dfs\filesystems\romfs;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\spi\sfud\inc;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\armlibc;..\..\components\libc\compilers\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -383,57 +383,52 @@
             <File>
               <FileName>app_beep.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_beep.c</FilePath>
+              <FilePath>Applications\app_beep.c</FilePath>
             </File>
             <File>
               <FileName>app_door.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_door.c</FilePath>
+              <FilePath>Applications\app_door.c</FilePath>
             </File>
             <File>
               <FileName>app_gps.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_gps.c</FilePath>
+              <FilePath>Applications\app_gps.c</FilePath>
             </File>
             <File>
               <FileName>app_lcd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_lcd.c</FilePath>
+              <FilePath>Applications\app_lcd.c</FilePath>
             </File>
             <File>
               <FileName>app_led.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_led.c</FilePath>
+              <FilePath>Applications\app_led.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_nrf_gateway.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Applications\app_nrf_gateway.c</FilePath>
             </File>
             <File>
               <FileName>app_rfic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_rfic.c</FilePath>
+              <FilePath>Applications\app_rfic.c</FilePath>
             </File>
             <File>
               <FileName>app_sqlite.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_sqlite.c</FilePath>
+              <FilePath>Applications\app_sqlite.c</FilePath>
             </File>
             <File>
               <FileName>app_startup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\app_startup.c</FilePath>
+              <FilePath>Applications\app_startup.c</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\main.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>AppNRF24L01</GroupName>
-          <Files>
-            <File>
-              <FileName>app_nrf_gateway.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>AppNRF24L01\app_nrf_gateway.c</FilePath>
+              <FilePath>Applications\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1347,7 +1342,7 @@
                 <v6LangP>0</v6LangP>
                 <vShortEn>2</vShortEn>
                 <vShortWch>2</vShortWch>
-                <v6Lto>0</v6Lto>
+                <v6Lto>2</v6Lto>
                 <v6WtE>2</v6WtE>
                 <v6Rtti>2</v6Rtti>
                 <VariousControls>

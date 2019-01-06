@@ -173,7 +173,7 @@ static void door_scan_thread(void* parameter)
         {            
             door_update_hook(door_get_group_addr(), door_sta);
         }
-		rt_thread_mdelay(10);
+		rt_thread_mdelay(100);
 	}
 }
 static int app_door_startup(void)
