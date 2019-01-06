@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "F:/git/rt-thread/include",
+                "F:/git/rt-thread/libcpu/arm/cortex-m4",
+                "F:/git/rt-thread/libcpu/arm/common",
+                "F:/git/rt-thread/components/dfs/include",
+                "F:/git/rt-thread/components/dfs/filesystems/devfs",
+                "F:/git/rt-thread/components/dfs/filesystems/elmfat",
+                "F:/git/rt-thread/components/dfs/filesystems/romfs",
+                "F:/git/rt-thread/components/drivers/include",
+                "F:/git/rt-thread/components/drivers/spi",
+                "F:/git/rt-thread/components/drivers/spi/sfud/inc",
+                "F:/git/rt-thread/components/finsh",
+                "F:/git/rt-thread/components/libc/compilers/armlibc",
+                "d:/Keil_v5/ARM/ARMCC/include",
+
+                "F:/git/rt-thread/bsp/qemu-vexpress-a9"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode":"msvc-x64"
+        }
+    ],
+    "version": 4
+}

@@ -213,7 +213,7 @@
 /* IoT - internet of things */
 
 #define PKG_USING_WEBCLIENT
-#define WEBCLIENT_USING_SAL_TLS
+#define WEBCLIENT_USING_TLS
 #define PKG_USING_WEBCLIENT_LATEST_VERSION
 #define PKG_USING_CJSON
 #define PKG_USING_CJSON_LATEST_VERSION
@@ -276,7 +276,6 @@
 
 /* system packages */
 
-#define PKG_USING_SQLITE
 
 /* peripheral libraries and drivers */
 
