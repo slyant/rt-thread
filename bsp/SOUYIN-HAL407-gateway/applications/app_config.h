@@ -10,8 +10,21 @@
 #define POWER_CARD_MAX_COUNT	3		//授权卡最大数量
 #define EKEY_CARD_MAX_COUNT		50		//钥匙卡最大数量
 #define DRIVER_CARD_MAX_COUNT	65535	//司机卡最大数量
-#define NODE_MAX_COUNT			8		//节点最大数量
+#define GROUP_MAX_COUNT			8		//节点最大数量
 #define DOOR_MAX_COUNT			16		//门最大数量
+//柜门状态
+#define DOOR_STA_INIT       0   //初始
+#define DOOR_STA_LOCK       1   //上锁
+#define DOOR_STA_OPEN_1     2   //第1次开门
+#define DOOR_STA_CLOSE_1    3   //第1次关门
+#define DOOR_STA_OPEN_2     4   //第2次开门
+#define DOOR_STA_CLOSE_2    5   //第2次关门
+//根据组ID和柜门ID计算柜门全局ID
+#define GET_GLOBAL_ID(g,d)          ((g)*16+(d))
+//根据柜门全局ID计算柜组ID
+#define GET_GROUP_ID(id)            ((id)/16)
+//根据柜门全局ID计算柜门ID
+#define GET_DOOR_ID(id)             ((id)%16)
 
 #include <db_include.h>
 #include <rng_helper.h>
@@ -58,6 +71,7 @@ struct sys_status
 	void (*set_datetime)(struct calendar *);
     void (*set_door_group_sta)(rt_uint8_t, rt_uint16_t);
     rt_uint16_t (*get_door_group_sta)(rt_uint8_t);
+    rt_uint32_t card_num;
 };
 typedef struct sys_status *sys_status_t;
 

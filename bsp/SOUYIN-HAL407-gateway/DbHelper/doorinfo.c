@@ -103,7 +103,7 @@ void doorinfo_foreach(record_queue_t q, void(*foreach_handle)(doorinfo_t e))
 }
 
 //获取一条记录根据记录主键，返回查询到的记录数
-int doorinfo_get_by_id(doorinfo_t *e, int id)
+int doorinfo_get_by_id(doorinfo_t e, int id)
 {
 	int res = db_query_by_varpara("select * from doorinfo where id=?;", doorinfo_bind, e, "%d", id);
 	return res;
@@ -116,17 +116,26 @@ int doorinfo_get_all(record_queue_t q)
 }
 
 //添加一条记录，操作成功返回0
-int doorinfo_add(doorinfo_t * e)
+int doorinfo_add(doorinfo_t e)
 {
   return db_nonquery_operator("insert into doorinfo(id,status,card_num) values (?,?,?);",doorinfo_bind_for_insert,e);
 	//return db_nonquery_by_varpara("insert into doorinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
 }
 //更新一条记录，操作成功返回0
-int doorinfo_update(doorinfo_t * e)
+int doorinfo_update(doorinfo_t e)
 {
 	return db_nonquery_operator("update doorinfo set status=?,card_num=? where id=?;",doorinfo_bind_for_update,e);
 }
-
+//更新一条记录，操作成功返回0
+int doorinfo_update_by_query(rt_uint32_t id, rt_uint8_t status, rt_uint32_t card_num)
+{
+    return db_nonquery_by_varpara("update doorinfo set status=?,card_num=? where id=?;", "%d%d%d", status, card_num, id);
+}
+//更新一批记录，操作成功返回0
+int doorinfo_update_by_id(rt_uint32_t from_id, rt_uint32_t to_id, rt_uint8_t status, rt_uint32_t card_num)
+{
+    return db_nonquery_by_varpara("update doorinfo set status=?,card_num=? where id>=? and id<=?;", "%d%d%d%d", status, card_num, from_id, to_id);
+}
 //删除指定主键的记录，操作成功返回0
 int doorinfo_del(int id)
 {

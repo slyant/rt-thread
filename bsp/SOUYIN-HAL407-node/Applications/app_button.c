@@ -25,7 +25,7 @@ void button_callback(void *btn)
 			}
 			break; 
 			case LONG_RRESS_START: 
-				nrf_clear_reset();
+				nrf_option_clear();
 			break; 
 		}
 	}
@@ -46,7 +46,7 @@ int multi_button(void)
     rt_thread_t thread = RT_NULL;
     
     /* Create background ticks thread */
-    thread = rt_thread_create("tbtn", btn_thread_entry, RT_NULL, 1024, 10, 10);
+    thread = rt_thread_create("tbtn", btn_thread_entry, RT_NULL, 1024+64, 10, 10);
     if(thread == RT_NULL)
     {
         return RT_ERROR; 

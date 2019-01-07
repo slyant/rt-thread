@@ -87,10 +87,12 @@ static void nrfstatus(void)
 }
 MSH_CMD_EXPORT(nrfstatus, show nrf status);
 
-void nrfreset(void)
+void nrf_send_reset(void)
 {	
-	nrf_reset();
-    LOG("nrfreset\n");
+    payload_data_t payload_data = rt_calloc(1, sizeof(struct payload_data));
+    payload_data->cmd = CMD_NRF_RESET;
+    nrf_send_data_all_nodes(payload_data);
+    rt_free(payload_data);    
 }
 
 void nrf_send_net_pwd(void)

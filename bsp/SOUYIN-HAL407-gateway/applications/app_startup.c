@@ -1,14 +1,15 @@
 #include <app_config.h>
 #include <drv_pcf8563.h>
-#include <stm32f4xx_hal_cortex.h>
+#include <rtdevice.h>
 
 const char *INIT_SYS_TITLE = "System Title\0";
 const unsigned char INIT_SYS_KEY_A[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned char INIT_SYS_KEY_B[INIT_KEY_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 static rt_mutex_t group_sta_lock = RT_NULL;
+static rt_mutex_t door_update_lock = RT_NULL;
 static enum sys_workmodel workmodel;
-static rt_uint16_t door_sta[NODE_MAX_COUNT];
+static rt_uint16_t door_sta[GROUP_MAX_COUNT];
 struct sys_status sys_status;
 struct sys_config sys_config;
 
@@ -20,6 +21,8 @@ static rt_bool_t sys_reset(void)
 //系统重启
 static void sys_restart(void)
 {
+    nrf_send_reset();           //发送节点复位指令
+    rt_thread_mdelay(2000);
 	HAL_NVIC_SystemReset();
 }
 static void set_datetime(struct calendar *cal)
@@ -46,7 +49,7 @@ static rt_bool_t get_datetime(struct calendar **cal)
 static void set_door_group_sta(rt_uint8_t group_index, rt_uint16_t sta)
 {
     rt_mutex_take(group_sta_lock, RT_WAITING_FOREVER);
-    if(group_index < NODE_MAX_COUNT)
+    if(group_index < GROUP_MAX_COUNT)
     {
         door_sta[group_index] = sta;
     }
@@ -56,7 +59,7 @@ static rt_uint16_t get_door_group_sta(rt_uint8_t group_index)
 {
     rt_uint16_t result = 0;
     rt_mutex_take(group_sta_lock, RT_WAITING_FOREVER);
-    if(group_index < NODE_MAX_COUNT)
+    if(group_index < GROUP_MAX_COUNT)
     {
         result = door_sta[group_index];
     }
@@ -81,10 +84,12 @@ static void gps_update_hook(calendar_t cal)
 
 static void door_update_hook(rt_uint8_t group_index, rt_uint16_t sta)
 {
+    rt_mutex_take(door_update_lock, RT_WAITING_FOREVER);
     set_door_group_sta(group_index, sta);
     lcd_update_door_sta(group_index);
     lcd_wakeup();
     rt_kprintf("group_index:%d,door_sta:%04X\n", group_index, sta);
+    rt_mutex_release(door_update_lock);
 }
 
 static void load_datetime(void)
@@ -178,6 +183,8 @@ void app_startup(void)
 	rt_assert_set_hook(assert_hook);
     group_sta_lock = rt_mutex_create("gsta_lock", RT_IPC_FLAG_FIFO);
     RT_ASSERT(group_sta_lock != RT_NULL);
+    door_update_lock = rt_mutex_create("door_lock", RT_IPC_FLAG_FIFO);
+    RT_ASSERT(door_update_lock != RT_NULL);
     
     rt_memset(door_sta, 0x00, sizeof(door_sta));
     sys_config.get_group_addr = door_get_group_addr;

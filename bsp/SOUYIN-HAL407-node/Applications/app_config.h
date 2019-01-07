@@ -12,6 +12,4 @@
 #include <app_door.h>
 #include <app_nrf_node.h>
 
-
-
 #endif

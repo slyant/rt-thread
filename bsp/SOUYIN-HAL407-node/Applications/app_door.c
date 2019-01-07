@@ -5,7 +5,6 @@
 static rt_uint8_t  sw_pin[16] = {SW1,SW2,SW3,SW4,SW5,SW6,SW7,SW8,SW9,SW10,SW11,SW12,SW13,SW14,SW15,SW16};
 static rt_uint16_t door_sta;    //关门0，开门1
 static rt_uint8_t update_en = 0;
-static door_update_hook_t door_update_hook = RT_NULL;
 
 //设置本地单个柜门状态
 static void set_local_door_sta(rt_uint8_t door_index, rt_uint8_t sta)
@@ -85,21 +84,16 @@ rt_uint16_t door_get_group_sta(void)
     return door_sta;
 }
 
-void door_set_update_hook(door_update_hook_t hook)
-{
-    door_update_hook = hook;
-}
-
 rt_uint8_t door_get_group_addr(void)
 {
 	rt_uint8_t res;
 	res=0;
-	res |= rt_pin_read(ADD_SET1);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET2);
-	res<<=1;
-	res |= rt_pin_read(ADD_SET3);
-	res<<=1;
+//	res |= rt_pin_read(ADD_SET1);
+//	res<<=1;
+//	res |= rt_pin_read(ADD_SET2);
+//	res<<=1;
+//	res |= rt_pin_read(ADD_SET3);
+//	res<<=1;
 	res |= rt_pin_read(ADD_SET4);
 	res<<=1;
 	res |= rt_pin_read(ADD_SET5);
@@ -151,14 +145,14 @@ static void door_scan_thread(void *parameter)
             update_tag = 1;
             update_en = 0;
         }
-        if(update_tag && door_update_hook != RT_NULL)
+        if(update_tag)
         {            
-            door_update_hook(door_sta);
+            nrf_send_door_sta(door_sta);
         }
 		rt_thread_mdelay(100);
 	}
 }
-static int app_door_startup(void)
+int app_door_startup(void)
 {       
 	rt_thread_t thread = rt_thread_create("tdoor", door_scan_thread,
 											RT_NULL,1024,13,20);
@@ -166,4 +160,3 @@ static int app_door_startup(void)
 		rt_thread_startup(thread);
 	return 0;
 }
-INIT_APP_EXPORT(app_door_startup);

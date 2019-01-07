@@ -174,7 +174,6 @@ int cardinfo_update(cardinfo_t e)
 {
 	return db_nonquery_operator("update cardinfo set id=?,pwd=?,type=? where num=?;",cardinfo_bind_for_update,e);
 }
-
 //删除指定主键的记录，操作成功返回0
 int cardinfo_del(int num)
 {

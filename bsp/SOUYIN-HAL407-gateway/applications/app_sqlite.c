@@ -60,6 +60,7 @@ MSH_CMD_EXPORT(create_sqlite_db, create sqlite db);
 
 static int init_data(void)
 {
+    //初始化系统配置表
 	sysinfo_t e = rt_calloc(1, sizeof(struct sysinfo));
 	e->id = SYSINFO_KEY_ID;
 	rt_strncpy(e->sys_title, INIT_SYS_TITLE, rt_strlen(INIT_SYS_TITLE));
@@ -73,6 +74,16 @@ static int init_data(void)
 	rt_memcpy(sys_config.keyb, INIT_SYS_KEY_B, INIT_KEY_LEN);
 	sysinfo_add(e);
 	rt_free(e);
+    //初始化柜门表
+    doorinfo_t d = rt_calloc(1, sizeof(struct doorinfo));
+    for(int i = 0; i < (GROUP_MAX_COUNT * DOOR_MAX_COUNT); i++)
+    {
+        d->id = i;
+        d->card_num = 0;
+        d->status = 0;
+        doorinfo_add(d);
+    }
+    rt_free(d);
 	return RT_EOK;
 }
 MSH_CMD_EXPORT(init_data, init sqlite db data);

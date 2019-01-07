@@ -74,6 +74,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			c_id = bytes2uint32(card_id);
 			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_POWER, pwd)>0)
 			{//管理卡验证通过
+                sys_status.card_num = num;
 				sys_status.set_workmodel(WORK_MANAGE_MODEL);
 			}
 			else
@@ -90,6 +91,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
 			rt_kprintf("Pwd:%s\n", pwd);
+            sys_status.card_num = num;
 		}
 		break;
 	case CARD_APP_TYPE_DRIVER://司机卡
@@ -100,6 +102,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
 			rt_kprintf("Pwd:%s\n", pwd);
+            sys_status.card_num = num;
 		}
 		break;
 	case CARD_APP_TYPE_LOCKKEY://锁钥卡

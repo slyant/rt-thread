@@ -31,7 +31,7 @@ void lcd_set_open_door(void)
 	{
 		BatchSetVisible(control_index++, 1);
 	}
-	for(j = i; j < NODE_MAX_COUNT; j++)
+	for(j = i; j < GROUP_MAX_COUNT; j++)
 	{
 		BatchSetVisible(control_index++, 0);
 	}
@@ -314,8 +314,6 @@ static void sys_config_handle(unsigned short control_id)
 		lcd_set_screen_id(UI_OTHER_SETTING);
 		break;
 	case SYS_CFG_BTN_RESTART:		//退出重启
-        nrfreset();
-        rt_thread_mdelay(100);
 		sys_status.restart();
 		break;
     case SYS_CFG_BTN_PAIR:          //节点配对
@@ -630,6 +628,10 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
         if(btn_all_group_sta)
         {//按组开门
             door_group_open(control_id - OPEN_DOOR_BTN_A_GROUP);
+            rt_uint8_t status = DOOR_STA_INIT;
+            rt_uint32_t from_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, 0);
+            rt_uint32_t to_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, DOOR_MAX_COUNT-1);
+            doorinfo_update_by_id(from_id, to_id, status, sys_status.card_num); //批量更新柜门状态为:初始
         }
         else
         {           
@@ -644,6 +646,9 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
     else if(control_id >= OPEN_DOOR_BTN_1 && control_id <= OPEN_DOOR_BTN_16)
     {
         door_any_open(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
+        rt_uint32_t id = GET_GLOBAL_ID(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
+        rt_uint8_t status = DOOR_STA_INIT;
+        doorinfo_update_by_query(id, status, sys_status.card_num);  //更新柜门状态为:初始
     }
     else if(control_id == OPEN_DOOR_BTN_EXIT)
     {
@@ -655,7 +660,7 @@ static rt_bool_t save_other_setting(void)
 {
 	rt_bool_t result = RT_FALSE;
 	//验证数据合法性
-	if(temp_setting_info->node_count <= NODE_MAX_COUNT && temp_setting_info->door_count <= DOOR_MAX_COUNT)
+	if(temp_setting_info->node_count <= GROUP_MAX_COUNT && temp_setting_info->door_count <= DOOR_MAX_COUNT)
 	{
 		sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
 		RT_ASSERT(sysinfo != RT_NULL);

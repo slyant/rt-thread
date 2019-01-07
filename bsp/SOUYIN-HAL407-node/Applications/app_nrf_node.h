@@ -6,6 +6,7 @@
 #define CMD_DOOR_OPEN       1   //开柜门
 #define CMD_GROUP_OPEN      2   //开整组柜门
 #define CMD_DOOR_STA        3   //柜门状态
+#define CMD_NRF_RESET       4   //NRF复位
 
 union args
 {
@@ -30,10 +31,7 @@ struct nrf_net_option
 };
 typedef struct nrf_net_option *nrf_net_option_t;
 
-typedef void (*nrf_cmd_handle_hook_t)(payload_data_t payload_data);
-
-void nrf_clear_reset(void);
+void nrf_option_clear(void);
 void nrf_send_door_sta(rt_uint16_t sta);
-void nrf_set_cmd_handle_hook(nrf_cmd_handle_hook_t hook);
 
 #endif
