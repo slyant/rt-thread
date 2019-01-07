@@ -16,7 +16,7 @@
         "environment": [], //环境变量参数
         "externalConsole": true, //未知
         "MIMode": "gdb", //调试器类型
-        "miDebuggerPath": "H:/git/env/tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gdb.exe",
+        "miDebuggerPath": "F:/git/env/tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gdb.exe",
         //gdb的路径
         "setupCommands": [
             {
@@ -35,7 +35,7 @@
             },
             {
             "description": "load file to gdb",
-            "text": "file H:/git/rt-thread/bsp/qemu-vexpress-a9/rtthread.elf", //调试的elf文件
+            "text": "file F:/git/rt-thread/bsp/qemu-vexpress-a9/rtthread.elf", //调试的elf文件
             "ignoreFailures": false
             },
             {
