@@ -12,9 +12,11 @@ int main(void)
 	// extern void test_task(void);	
 	// test_task();
 
-	extern void test_workqueue(void);
-	test_workqueue();
+	// extern void test_workqueue(void);
+	// test_workqueue();
 	
+	extern void test_crc16(void);
+	test_crc16();
     return 0;
 }
 

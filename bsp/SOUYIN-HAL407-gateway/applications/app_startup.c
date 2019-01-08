@@ -121,7 +121,7 @@ static void set_workmodel(enum sys_workmodel model)
 		lcd_set_screen_id(UI_MAIN);
 		break;
 	case WORK_OFF_MODEL:
-		lcd_set_screen_id(UI_MAIN);
+		lcd_set_screen_id(UI_WAITE);
 		break;
 	default:
 		break;
@@ -250,4 +250,6 @@ void app_startup(void)
 	}
 	
 	lcd_wakeup();//唤醒屏幕
+    extern void sqlite_workqueue_startup(void);
+    sqlite_workqueue_startup();
 }

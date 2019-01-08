@@ -251,7 +251,7 @@ DB_NQ_EXEC_OK:
     return rc;
 }
 
-int db_nonquery_by_varpara(const char *sql,const char *fmt,...)
+int db_nonquery_by_varpara_ex(const char *sql, const char *fmt, va_list args)
 {
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
@@ -272,10 +272,7 @@ int db_nonquery_by_varpara(const char *sql,const char *fmt,...)
         goto DB_VA_EXEC_FAIL;
     }
     if(fmt){
-        va_list args;
-        va_start(args,fmt);
         rc = db_bind_by_var(stmt,fmt,args);
-        va_end(args);
         if(rc){
             goto DB_VA_EXEC_FAIL;
         }
@@ -293,6 +290,23 @@ DB_VA_EXEC_FAIL:
 DB_VA_EXEC_OK:
     sqlite3_close(db);
     DB_UNLOCK();
+    return rc;
+}
+
+int db_nonquery_by_varpara(const char *sql,const char *fmt,...)
+{
+    int rc;
+	va_list args;
+    if(fmt)
+	{        
+        va_start(args,fmt);
+        rc = db_nonquery_by_varpara_ex(sql,fmt,args);
+        va_end(args);        
+    }
+	else
+	{
+		rc = db_nonquery_by_varpara_ex(sql,fmt,args);
+	} 
     return rc;
 }
 

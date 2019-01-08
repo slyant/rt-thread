@@ -13,6 +13,7 @@ int db_create_database(const char* sqlstr);
 int db_nonquery_operator(const char *sqlstr,int (*bind)(sqlite3_stmt *,int index,void * arg),void *param);
 //执行没有返回的SQL语句的多值传参
 int db_nonquery_by_varpara(const char *sql,const char *fmt,...);
+int db_nonquery_by_varpara_ex(const char *sql, const char *fmt, va_list args);
 //执行没有返回的SQL语句
 int db_nonquery_transaction(int (*exec_sqls)(sqlite3 *db,void * arg),void *arg);
 //执行多值传参的查询语句

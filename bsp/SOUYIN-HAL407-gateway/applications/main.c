@@ -20,6 +20,7 @@ int main(void)
 	rt_kprintf("hello rt-thread!\n");
 	extern void app_startup(void);
 	app_startup();
+    
     return 0;
 }
 

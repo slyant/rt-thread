@@ -72,7 +72,11 @@ static int init_data(void)
 	rt_memcpy(e->key_b, INIT_SYS_KEY_B, INIT_KEY_LEN);
 	rt_memcpy(sys_config.keya, INIT_SYS_KEY_A, INIT_KEY_LEN);
 	rt_memcpy(sys_config.keyb, INIT_SYS_KEY_B, INIT_KEY_LEN);
-	sysinfo_add(e);
+	if(sysinfo_add(e) != 0)
+    {//仅调试
+        unlink(DB_NAME);
+        while(1) rt_thread_mdelay(500);
+    }
 	rt_free(e);
     //初始化柜门表
     doorinfo_t d = rt_calloc(1, sizeof(struct doorinfo));
