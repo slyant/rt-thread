@@ -176,7 +176,7 @@ static void door_scan_thread(void* parameter)
 		rt_thread_mdelay(100);
 	}
 }
-static int app_door_startup(void)
+void app_door_startup(void)
 {   
     nrf_set_remote_door_update_hook(remote_door_update_hook);
     
@@ -184,6 +184,4 @@ static int app_door_startup(void)
 											RT_NULL,1024,13,20);
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);
-	return 0;
 }
-INIT_APP_EXPORT(app_door_startup);

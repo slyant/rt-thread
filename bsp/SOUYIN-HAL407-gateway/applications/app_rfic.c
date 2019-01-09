@@ -18,7 +18,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 	cJSON *fileds = cJSON_GetObjectItem((cJSON*)root, "Fileds");
 	if(fileds == RT_NULL) return;
 
-	rt_uint32_t c_id;
+	rt_uint32_t c_id = bytes2uint32(card_id);
 	switch((int)type)
 	{
 	case CARD_APP_TYPE_ABKEY://密钥卡
@@ -51,9 +51,8 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			cJSON_item_get_number(fileds, "Num", &num);
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
-			rt_kprintf("Pwd:%s\n", pwd);
-			c_id = bytes2uint32(card_id);
-			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_CONFIG, pwd)>0)
+			rt_kprintf("Pwd:%s\n", pwd);			
+			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_CONFIG, pwd) > 0)
 			{//配置卡验证通过
 				sys_status.set_workmodel(CONFIG_MANAGE_MODEL);
 			}
@@ -71,8 +70,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
 			rt_kprintf("Pwd:%s\n", pwd);
-			c_id = bytes2uint32(card_id);
-			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_POWER, pwd)>0)
+			if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_POWER, pwd) > 0)
 			{//管理卡验证通过
                 sys_status.card_num = num;
 				sys_status.set_workmodel(WORK_MANAGE_MODEL);
@@ -90,8 +88,32 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			cJSON_item_get_number(fileds, "Num", &num);
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
-			rt_kprintf("Pwd:%s\n", pwd);
-            sys_status.card_num = num;
+			rt_kprintf("Pwd:%s\n", pwd);                       
+            if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_EKEY, pwd) > 0)
+            {
+                sys_status.card_num = num; 
+                doorinfo_t doorinfo = rt_calloc(1, sizeof(struct doorinfo));
+                /*
+                这里要注意：不能直接从数据库查询，因为更新工作在工作队列中，可能还未来得及执行，
+                那就等待工作队列中的任务全部执行完毕。
+                */
+                lcd_set_screen_id(UI_WAITE);
+                while(app_workqueue_get_length() > 0) rt_thread_mdelay(200);
+                if(doorinfo_get_by_card_num(doorinfo, num) > 0)
+                {//已刷过卡
+                    
+                }
+                else
+                {//未刷过卡
+                    
+                }
+                rt_free(doorinfo);
+                //lcd_set_screen_id(UI_DOOR_INFO);
+            }
+            else
+			{
+				beep_on(2);
+			}
 		}
 		break;
 	case CARD_APP_TYPE_DRIVER://司机卡

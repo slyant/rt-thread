@@ -109,6 +109,13 @@ int doorinfo_get_by_id(doorinfo_t e, int id)
 	return res;
 }
 
+//获取一条记录根据记录主键，返回查询到的记录数
+int doorinfo_get_by_card_num(doorinfo_t e, int card_num)
+{
+	int res = db_query_by_varpara("select * from doorinfo where card_num=?;", doorinfo_bind, e, "%d", card_num);
+	return res;
+}
+
 //返回查询到的记录数
 int doorinfo_get_all(record_queue_t q)
 {

@@ -23,7 +23,7 @@ static void app_dowork(struct rt_work *work, void *work_data)
 
 rt_uint16_t app_workqueue_get_length(void)
 {
-    rt_uint16_t size = 0;
+    rt_uint16_t length = 0;
     if(wq != RT_NULL)
     {
         struct rt_list_node *node, *next;
@@ -31,11 +31,11 @@ rt_uint16_t app_workqueue_get_length(void)
         for (node = wq->work_list.next; node != &(wq->work_list); node = next)
         {
             next = node->next;
-            size++;
+            length++;
         }      
         rt_exit_critical();        
     }
-    return size;
+    return length;
 }
 
 void app_workqueue_exe_void(void_dowork_t dowork)
@@ -85,7 +85,7 @@ void app_workqueue_update_door(rt_uint8_t group_index, rt_uint16_t sta)
                         doorinfo->status = doorinfo->status + 1;
                         //sql
                         char *sql = rt_calloc(1, 256);
-                        rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id=%d;", doorinfo->status, doorinfo->card_num, doorinfo->id);
+                        rt_sprintf(sql, "update doorinfo set status=%d where id=%d;", doorinfo->status, doorinfo->id);
                         app_workqueue_exe_sql(sql);       //更新柜门状态
                     }
                 }

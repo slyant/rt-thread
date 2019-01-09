@@ -34,6 +34,7 @@
 
 typedef void (*door_update_hook_t)(rt_uint8_t group_index, rt_uint16_t sta);
 
+void app_door_startup(void);
 rt_uint8_t door_get_group_addr(void);
 void door_update_set_hook(door_update_hook_t hook);
 void door_any_open(rt_uint8_t group_index, rt_uint8_t door_index);

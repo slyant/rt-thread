@@ -176,7 +176,6 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 	lcd_show_error(err);
 	rt_free(err);
 	while(1)rt_thread_mdelay(1000);
-	
 }
 
 void app_bat_work(void)
@@ -199,35 +198,28 @@ void app_bat_work(void)
     sys_status.get_door_group_sta = get_door_group_sta;
     sys_status.set_door_group_sta = set_door_group_sta;
 	sys_status.restart = sys_restart;
-	sys_status.set_workmodel(WORK_OFF_MODEL);
-    
+	sys_status.set_workmodel(WORK_OFF_MODEL);    
     gps_update_set_hook(gps_update_hook);
     door_update_set_hook(door_update_hook);
-	
+    lcd_wakeup();//唤醒屏幕    
 	load_datetime();
 
-	app_sqlite_init();	
-	app_lcd_startup();
-	app_rfic_startup();
-	app_nrf_gateway_startup();
+	app_sqlite_init();      //要先初始化sqlite数据库	
 
 	sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
 	RT_ASSERT(sysinfo_get_by_id(sysinfo, SYSINFO_KEY_ID)>0);
-
 	sys_config.en_driver_card = sysinfo->en_driver_card;
 	sys_config.door_count = sysinfo->door_count;
 	sys_config.node_count = sysinfo->node_count;
 	sys_config.open_timeout = sysinfo->open_timeout;
 	rt_memcpy(sys_config.keya, sysinfo->key_a, INIT_KEY_LEN);
 	rt_memcpy(sys_config.keyb, sysinfo->key_b, INIT_KEY_LEN);
-	sys_config.abkey_exist = sys_abkey_exist;
-	
+	sys_config.abkey_exist = sys_abkey_exist;	
+	lcd_set_sys_title(sysinfo->sys_title);//设置系统标题
 	rt_kprintf("\nen_driver_card:%d\nopen_timeout:%d\ndoor_count:%d\nnode_count:%d\n", sys_config.en_driver_card, sys_config.open_timeout, sysinfo->door_count, sys_config.node_count);
 	rt_kprintf("keya:%02X%02X%02X%02X%02X%02X\n", sys_config.keya[0], sys_config.keya[1], sys_config.keya[2], sys_config.keya[3], sys_config.keya[4], sys_config.keya[5]);
-	rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);
-		
-	lcd_set_sys_title(sysinfo->sys_title);//设置系统标题
-	rt_free(sysinfo);
+	rt_kprintf("keyb:%02X%02X%02X%02X%02X%02X\n", sys_config.keyb[0], sys_config.keyb[1], sys_config.keyb[2], sys_config.keyb[3], sys_config.keyb[4], sys_config.keyb[5]);		
+	rt_free(sysinfo);    
 	
 	if(sys_config.abkey_exist())
 	{		
@@ -244,8 +236,11 @@ void app_bat_work(void)
 	{
 		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
 	}    
-	
-	lcd_wakeup();//唤醒屏幕    
+    
+	app_lcd_startup();
+	app_rfic_startup();
+	app_nrf_gateway_startup();
+    app_door_startup();	
 }
 
 void app_startup(void)
