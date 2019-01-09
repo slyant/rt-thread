@@ -139,6 +139,7 @@ typedef struct temp_setting *temp_setting_t;
 #define MESSAGE_TEXT_MSGBOX     	4      //信息文本框
 /****************************************************************/
 
+void app_lcd_startup(void);
 void lcd_show_error(const char* err);
 void lcd_show_message(const char *title, const char *msg);
 void lcd_set_screen_id(rt_uint16_t screen_id);

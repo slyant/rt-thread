@@ -426,14 +426,14 @@
               <FilePath>Applications\app_startup.c</FilePath>
             </File>
             <File>
+              <FileName>app_workqueue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>Applications\app_workqueue.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>Applications\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>sqlite_workqueue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>Applications\sqlite_workqueue.c</FilePath>
             </File>
           </Files>
         </Group>

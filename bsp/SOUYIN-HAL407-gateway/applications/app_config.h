@@ -20,18 +20,20 @@
 #define DOOR_STA_OPEN_2     4   //第2次开门
 #define DOOR_STA_CLOSE_2    5   //第2次关门
 //根据组ID和柜门ID计算柜门全局ID
-#define GET_GLOBAL_ID(g,d)          ((g)*16+(d))
+#define GET_GLOBAL_ID(g,d)          ((g)*DOOR_MAX_COUNT+(d))
 //根据柜门全局ID计算柜组ID
-#define GET_GROUP_ID(id)            ((id)/16)
+#define GET_GROUP_ID(id)            ((id)/DOOR_MAX_COUNT)
 //根据柜门全局ID计算柜门ID
-#define GET_DOOR_ID(id)             ((id)%16)
+#define GET_DOOR_ID(id)             ((id)%DOOR_MAX_COUNT)
 
 #include <db_include.h>
 #include <rng_helper.h>
 #include <any_convert.h>
-#include <sqlite_workqueue.h>
+#include <app_sqlite.h>
+#include <app_workqueue.h>
 #include <app_beep.h>
 #include <app_gps.h>
+
 #include <app_rfic.h>
 #include <app_lcd.h>
 #include <app_door.h>
@@ -53,7 +55,6 @@ struct sys_config
 	rt_uint16_t open_timeout;
 	rt_uint8_t node_count;
 	rt_uint8_t door_count;
-    rt_uint8_t (*get_group_addr)(void);
 	rt_uint8_t keya[INIT_KEY_LEN];
 	rt_uint8_t keyb[INIT_KEY_LEN];  
 	rt_bool_t (*sys_reset)(void);	
@@ -71,7 +72,7 @@ struct sys_status
 	void (*set_datetime)(struct calendar *);
     void (*set_door_group_sta)(rt_uint8_t, rt_uint16_t);
     rt_uint16_t (*get_door_group_sta)(rt_uint8_t);
-    rt_uint32_t card_num;
+    rt_uint32_t card_num;    
 };
 typedef struct sys_status *sys_status_t;
 

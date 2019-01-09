@@ -89,6 +89,7 @@ static void door_update_hook(rt_uint8_t group_index, rt_uint16_t sta)
     lcd_update_door_sta(group_index);
     lcd_wakeup();
     rt_kprintf("group_index:%d,door_sta:%04X\n", group_index, sta);
+    app_workqueue_update_door(group_index, sta);
     rt_mutex_release(door_update_lock);
 }
 
@@ -174,23 +175,19 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 	rt_kprintf("%s", err);
 	lcd_show_error(err);
 	rt_free(err);
-	rt_thread_mdelay(1*60*1000);
-	while(1);
+	while(1)rt_thread_mdelay(1000);
+	
 }
 
-void app_startup(void)
+void app_bat_work(void)
 {
 	rt_assert_set_hook(assert_hook);
     group_sta_lock = rt_mutex_create("gsta_lock", RT_IPC_FLAG_FIFO);
     RT_ASSERT(group_sta_lock != RT_NULL);
     door_update_lock = rt_mutex_create("door_lock", RT_IPC_FLAG_FIFO);
-    RT_ASSERT(door_update_lock != RT_NULL);
+    RT_ASSERT(door_update_lock != RT_NULL);    
     
-    rt_memset(door_sta, 0x00, sizeof(door_sta));
-    sys_config.get_group_addr = door_get_group_addr;
-	gps_update_set_hook(gps_update_hook);
-    door_update_set_hook(door_update_hook);
-	
+    rt_memset(door_sta, 0x00, sizeof(door_sta));	
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
 	sys_status.get_workmodel = get_workmodel;
@@ -203,16 +200,15 @@ void app_startup(void)
     sys_status.set_door_group_sta = set_door_group_sta;
 	sys_status.restart = sys_restart;
 	sys_status.set_workmodel(WORK_OFF_MODEL);
+    
+    gps_update_set_hook(gps_update_hook);
+    door_update_set_hook(door_update_hook);
 	
 	load_datetime();
 
-	extern void app_sqlite_init(void);
 	app_sqlite_init();	
-	extern void app_lcd_startup(void);
 	app_lcd_startup();
-	extern void app_rfic_startup(void);
 	app_rfic_startup();
-	extern void app_nrf_gateway_startup(void);	
 	app_nrf_gateway_startup();
 
 	sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
@@ -247,9 +243,13 @@ void app_startup(void)
 	else
 	{
 		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
-	}
+	}    
 	
-	lcd_wakeup();//唤醒屏幕
-    extern void sqlite_workqueue_startup(void);
-    sqlite_workqueue_startup();
+	lcd_wakeup();//唤醒屏幕    
+}
+
+void app_startup(void)
+{
+    app_workqueue_startup();   
+    app_workqueue_exe_void(app_bat_work);
 }

@@ -25,9 +25,11 @@ typedef struct payload_data *payload_data_t;
 
 typedef void (*nrf_door_update_hook_t)(rt_uint8_t group_index, rt_uint16_t sta);
 
+void app_nrf_gateway_startup(void);
 void nrf_send_reset(void);
 void nrf_send_net_pwd(void);
 void nrf_send_door_open(rt_uint8_t group_index, rt_uint8_t door_index);
 void nrf_send_group_open(rt_uint8_t group_index);
 void nrf_set_remote_door_update_hook(nrf_door_update_hook_t hook);
+
 #endif

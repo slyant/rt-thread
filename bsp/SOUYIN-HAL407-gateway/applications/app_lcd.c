@@ -627,11 +627,17 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
     {
         if(btn_all_group_sta)
         {//按组开门
-            door_group_open(control_id - OPEN_DOOR_BTN_A_GROUP);
-            rt_uint8_t status = DOOR_STA_INIT;
-            rt_uint32_t from_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, 0);
-            rt_uint32_t to_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, DOOR_MAX_COUNT-1);
-            doorinfo_update_by_id(from_id, to_id, status, sys_status.card_num); //批量更新柜门状态为:初始
+            if(app_workqueue_get_length() < SQLITE_WORKQUEUE_MAX_LENGTH)
+            {
+                door_group_open(control_id - OPEN_DOOR_BTN_A_GROUP);
+                rt_uint8_t status = DOOR_STA_INIT;
+                rt_uint32_t from_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, 0);
+                rt_uint32_t to_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, DOOR_MAX_COUNT-1);
+                //sql
+                char *sql = rt_calloc(1, 256);
+                rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id>=%d and id<=%d;", status, sys_status.card_num, from_id, to_id);
+                app_workqueue_exe_sql(sql);       //批量更新柜门状态为:初始
+            }
         }
         else
         {           
@@ -645,10 +651,17 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
 	}
     else if(control_id >= OPEN_DOOR_BTN_1 && control_id <= OPEN_DOOR_BTN_16)
     {
-        door_any_open(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
-        rt_uint32_t id = GET_GLOBAL_ID(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
-        rt_uint8_t status = DOOR_STA_INIT;
-        doorinfo_update_by_query(id, status, sys_status.card_num);  //更新柜门状态为:初始
+        if(app_workqueue_get_length() < SQLITE_WORKQUEUE_MAX_LENGTH)
+        {
+            door_any_open(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
+            rt_uint32_t id = GET_GLOBAL_ID(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
+            rt_uint8_t status = DOOR_STA_INIT;
+            
+            //sql
+            char *sql = rt_calloc(1, 256);
+            rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id=%d;", status, sys_status.card_num, id);
+            app_workqueue_exe_sql(sql);        //更新柜门状态为:初始
+        }
     }
     else if(control_id == OPEN_DOOR_BTN_EXIT)
     {
@@ -715,28 +728,52 @@ static void lcd_notify_button(unsigned short screen_id, unsigned short control_i
     switch(screen_id)
     {
     case UI_ABKEY_CARD:		//密钥卡设置
-        abkey_card_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_ABKEY_MODEL)
+        {
+            abkey_card_handle(control_id);
+        }
         break;
 	case UI_SYS_CFG:		//系统配置
-		sys_config_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            sys_config_handle(control_id);
+        }
 		break;
     case UI_CFG_CARD:		//配置卡设置
-        cfg_card_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            cfg_card_handle(control_id);
+        }
         break;
     case UI_POWER_CARD:		//授权卡设置
-        power_card_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            power_card_handle(control_id);
+        }
         break;	
     case UI_EKEY_CARD:		//钥匙卡设置
-        ekey_card_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            ekey_card_handle(control_id);
+        }
         break;	
     case UI_DRIVER_CARD:	//司机卡设置
-        driver_card_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            driver_card_handle(control_id);
+        }
         break;	
 	case UI_OPEN_DOOR:		//开门UI
-		open_door_handle(control_id, state);
+        if(sys_status.get_workmodel() == WORK_MANAGE_MODEL)
+        {
+            open_door_handle(control_id, state);
+        }
 		break;
     case UI_OTHER_SETTING:	//其它设置
-        other_setting_handle(control_id);
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            other_setting_handle(control_id);
+        }
         break;		
     case UI_MESSAGE:		//提示信息
         if(control_id == MESSAGE_BTN_BACK)
