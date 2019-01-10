@@ -6,11 +6,29 @@
 #include <rng_helper.h>
 #include <app_config.h>
 
+static const char MSG_FAILED[] =  {0xB2, 0xD9, 0xD7, 0xF7, 0xCA, 0xA7, 0xB0, 0xDC, 0x00};	//操作失败
+static const char MSG_NOT_ENOUGH[] = {0xC3, 0xBB, 0xD3, 0xD0, 0xB8, 0xFC, 0xB6, 0xE0, 0xB5, 0xC4, 0xB9, 0xF1, 0xD7, 0xD3, 0xBF, 0xC9, 
+                                     0xB1, 0xBB, 0xB7, 0xD6, 0xC5, 0xE4, 0x21, 0x00};      //没有更多的柜子可被分配!
+static const char MSG_OPEN_1[] = {0xC8, 0xA1, 0xB3, 0xF6, 0xBF, 0xD5, 0xD5, 0xA2, 0xBA, 0xD0, 0xBA, 0xF3, 0x2C, 0xC7, 0xEB, 0xB9, 
+                                    0xD8, 0xBA, 0xC3, 0xC3, 0xC5, 0x00};  //取出空闸盒后,请关好门
+static const char MSG_OPEN_2[] = {0xB7, 0xC5, 0xC8, 0xEB, 0xCA, 0xB5, 0xD5, 0xA2, 0xBA, 0xD0, 
+                                    0xBA, 0xF3, 0x2C, 0xC7, 0xEB, 0xB9, 0xD8, 0xBA, 0xC3, 0xC3, 0xC5, 0x00};    //放入实闸盒后,请关好门
+static const char MSG_FINISH[] = {0xC4, 0xFA, 0xD2, 0xD1, 0xCD, 0xEA, 0xB3, 0xC9, 0xCA, 0xD5, 0xD2, 0xF8, 0x2C, 0xC7, 0xEB, 0xCE, 
+                                    0xF0, 0xD6, 0xD8, 0xB8, 0xB4, 0xCB, 0xA2, 0xBF, 0xA8, 0x00};    //您已完成收银,请勿重复刷卡
+    
 static struct rt_mutex mutex_rfic;
 #define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER)
 #define IC_UNLOCK()		rt_mutex_release(&mutex_rfic)
 #define IC_RESET()		rfic_scan_reset()
 
+static char* get_door_num_from_id(rt_uint8_t group_index, rt_uint8_t door_index)
+{
+    char *result = rt_calloc(1, 10);
+    result[0] = 'A' + group_index;
+    rt_sprintf(result + 1, "%d", door_index + 1);
+    return result;
+}    
+                                     
 //应用卡处理
 static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, const cJSON *root)
 {
@@ -74,6 +92,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			{//管理卡验证通过
                 sys_status.card_num = num;
 				sys_status.set_workmodel(WORK_MANAGE_MODEL);
+                sys_status.manage_display_start();
 			}
 			else
 			{
@@ -101,14 +120,50 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                 while(app_workqueue_get_length() > 0) rt_thread_mdelay(200);
                 if(doorinfo_get_by_card_num(doorinfo, num) > 0)
                 {//已刷过卡
-                    
+                    rt_uint8_t group_index = GET_GROUP_ID(doorinfo->id);
+                    rt_uint8_t door_index = GET_DOOR_ID(doorinfo->id);
+                    char *door_num_str = get_door_num_from_id(group_index, door_index); 
+                    if(doorinfo->status == DOOR_STA_OPEN_1 || doorinfo->status == DOOR_STA_CLOSE_1 || doorinfo->status == DOOR_STA_OPEN_2)
+                    {//首次刷卡开门后未关门，或首次关门后再次刷卡，都执行开门动作
+                        lcd_show_door_num(door_num_str, MSG_OPEN_2);
+                        door_any_open(group_index, door_index);
+                        if(doorinfo->status == DOOR_STA_CLOSE_1)
+                        {//首次关门后再次刷卡，更新柜门状态
+                            //sql
+                            char *sql = rt_calloc(1, 128);
+                            rt_sprintf(sql, "update doorinfo set status=%d where id=%d;", DOOR_STA_OPEN_2, doorinfo->id);
+                            app_workqueue_exe_sql(sql);        //更新柜门状态为:第2次开门     
+                        }
+                    }
+                    else                        
+                    {
+                        lcd_show_door_num(door_num_str, MSG_FINISH);                          
+                    }
+                    rt_free(door_num_str);
                 }
                 else
-                {//未刷过卡
-                    
+                {//未刷过卡,首次刷卡开门
+                    if(doorinfo_get_by_status(doorinfo, DOOR_STA_LOCK) > 0)
+                    {//自动分配得到可用柜门
+                        rt_uint8_t group_index = GET_GROUP_ID(doorinfo->id);
+                        rt_uint8_t door_index = GET_DOOR_ID(doorinfo->id);
+                        char *door_num_str = get_door_num_from_id(group_index, door_index);
+                        lcd_show_door_num(door_num_str, MSG_OPEN_1);
+                        rt_free(door_num_str);
+                        door_any_open(group_index, door_index);
+                        //更新柜门状态
+                        //sql
+                        char *sql = rt_calloc(1, 128);
+                        rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id=%d;", DOOR_STA_OPEN_1, num, doorinfo->id);
+                        app_workqueue_exe_sql(sql);        //更新柜门状态为:第1次开门                        
+                    }
+                    else
+                    {//无可用柜门
+                        lcd_show_message(MSG_FAILED, MSG_NOT_ENOUGH);
+                        sys_status.open_display_start();
+                    }                    
                 }
-                rt_free(doorinfo);
-                //lcd_set_screen_id(UI_DOOR_INFO);
+                rt_free(doorinfo);                
             }
             else
 			{

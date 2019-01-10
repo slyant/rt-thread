@@ -10,6 +10,8 @@ static rt_mutex_t group_sta_lock = RT_NULL;
 static rt_mutex_t door_update_lock = RT_NULL;
 static enum sys_workmodel workmodel;
 static rt_uint16_t door_sta[GROUP_MAX_COUNT];
+static struct rt_timer open_display_timer;
+static struct rt_timer manage_display_timer;
 struct sys_status sys_status;
 struct sys_config sys_config;
 
@@ -178,13 +180,44 @@ static void assert_hook(const char *ex, const char *func, rt_size_t line)
 	while(1)rt_thread_mdelay(1000);
 }
 
+static void timeout_handle(void *params)
+{
+    rt_timer_t timer = (rt_timer_t)params;
+    if(timer == &open_display_timer)
+    { 
+        if(sys_status.get_workmodel() == WORK_ON_MODEL)
+        {
+            lcd_set_screen_id(UI_MAIN);
+        }
+    }
+    else if(timer == &manage_display_timer)
+    {
+        if(sys_status.get_workmodel() == WORK_MANAGE_MODEL)
+        {
+            sys_status.set_workmodel(WORK_ON_MODEL);
+        }        
+    }
+}
+
+static void open_display_start(void)
+{
+    rt_timer_start(&open_display_timer);
+}
+
+static void manage_display_start(void)
+{
+    rt_timer_start(&manage_display_timer);
+}
+
 void app_bat_work(void)
 {
 	rt_assert_set_hook(assert_hook);
     group_sta_lock = rt_mutex_create("gsta_lock", RT_IPC_FLAG_FIFO);
     RT_ASSERT(group_sta_lock != RT_NULL);
     door_update_lock = rt_mutex_create("door_lock", RT_IPC_FLAG_FIFO);
-    RT_ASSERT(door_update_lock != RT_NULL);    
+    RT_ASSERT(door_update_lock != RT_NULL); 
+    rt_timer_init(&open_display_timer, "tod", timeout_handle, &open_display_timer, rt_tick_from_millisecond(OPEN_DISPLAY_TIME), RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);    
+    rt_timer_init(&manage_display_timer, "tmd", timeout_handle, &manage_display_timer, rt_tick_from_millisecond(MANAGE_DISPLAY_TIME), RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);    
     
     rt_memset(door_sta, 0x00, sizeof(door_sta));	
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
@@ -193,6 +226,8 @@ void app_bat_work(void)
 	sys_status.set_workmodel = set_workmodel;
 	sys_config.update_sys_key = update_sys_key;
 	sys_config.sys_reset = sys_reset;
+    sys_status.open_display_start = open_display_start;
+    sys_status.manage_display_start = manage_display_start;
 	sys_status.get_datetime = get_datetime;
 	sys_status.set_datetime = set_datetime;
     sys_status.get_door_group_sta = get_door_group_sta;
@@ -205,6 +240,10 @@ void app_bat_work(void)
 	load_datetime();
 
 	app_sqlite_init();      //要先初始化sqlite数据库	
+    app_door_startup();    
+	app_lcd_startup();
+	app_rfic_startup();
+	app_nrf_gateway_startup();    
 
 	sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
 	RT_ASSERT(sysinfo_get_by_id(sysinfo, SYSINFO_KEY_ID)>0);
@@ -235,12 +274,7 @@ void app_bat_work(void)
 	else
 	{
 		sys_status.set_workmodel(CONFIG_ABKEY_MODEL);
-	}    
-    
-	app_lcd_startup();
-	app_rfic_startup();
-	app_nrf_gateway_startup();
-    app_door_startup();	
+	}  
 }
 
 void app_startup(void)

@@ -175,6 +175,15 @@ void lcd_set_screen_back(void)
 	screen_id_list[3] = screen_id_list[4];
 	screen_id_list[4] = UI_MAIN;	
 }
+
+void lcd_show_door_num(const char *num, const char *msg)
+{    
+    SetTextValue(UI_DOOR, DOOR_TEXT_NUM, (unsigned char *)num);
+    SetTextValue(UI_DOOR, DOOR_TEXT_MSG, (unsigned char *)msg);
+    lcd_set_screen_id(UI_DOOR);
+    sys_status.open_display_start();
+}
+
 void lcd_show_error(const char *err)
 {
 	GUI_CleanScreen();
@@ -630,12 +639,11 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
             if(app_workqueue_get_length() < SQLITE_WORKQUEUE_MAX_LENGTH)
             {
                 door_group_open(control_id - OPEN_DOOR_BTN_A_GROUP);
-                rt_uint8_t status = DOOR_STA_INIT;
                 rt_uint32_t from_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, 0);
                 rt_uint32_t to_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, DOOR_MAX_COUNT-1);
                 //sql
-                char *sql = rt_calloc(1, 256);
-                rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id>=%d and id<=%d;", status, sys_status.card_num, from_id, to_id);
+                char *sql = rt_calloc(1, 128);
+                rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id>=%d and id<=%d;", DOOR_STA_INIT, 0, from_id, to_id);
                 app_workqueue_exe_sql(sql);       //批量更新柜门状态为:初始
             }
         }
@@ -654,12 +662,10 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
         if(app_workqueue_get_length() < SQLITE_WORKQUEUE_MAX_LENGTH)
         {
             door_any_open(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
-            rt_uint32_t id = GET_GLOBAL_ID(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
-            rt_uint8_t status = DOOR_STA_INIT;
-            
+            rt_uint32_t id = GET_GLOBAL_ID(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);            
             //sql
-            char *sql = rt_calloc(1, 256);
-            rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id=%d;", status, sys_status.card_num, id);
+            char *sql = rt_calloc(1, 128);
+            rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id=%d;", DOOR_STA_INIT, 0, id);
             app_workqueue_exe_sql(sql);        //更新柜门状态为:初始
         }
     }
@@ -767,6 +773,7 @@ static void lcd_notify_button(unsigned short screen_id, unsigned short control_i
         if(sys_status.get_workmodel() == WORK_MANAGE_MODEL)
         {
             open_door_handle(control_id, state);
+            sys_status.manage_display_start();
         }
 		break;
     case UI_OTHER_SETTING:	//其它设置

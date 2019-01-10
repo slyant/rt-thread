@@ -14,6 +14,7 @@
         <page name="error" id="11" />
         <page name="message" id="12" />
         <page name="waite" id="13" />
+        <page name="door" id="14" />
     </pages>
     <images>
         <image id="0" url="h:\git\rt-thread\bsp\souyin-hal407-gateway\usart_tft\Images\shbj.jpg" width="800" height="480" crop="0" effect_left="0" effect_top="0" effect_width="800" effect_height="480" size="768000" />

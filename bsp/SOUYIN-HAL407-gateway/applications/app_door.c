@@ -66,7 +66,7 @@ static void local_door_open(rt_uint8_t door_index)
     rt_uint16_t dat = 0x0001;
     dat <<= door_index; 
     d595_write(~dat);
-    rt_thread_mdelay(30);
+    rt_thread_mdelay(50);
     d595_write(0xFFFF);
 }
 
@@ -92,7 +92,6 @@ void door_group_open(rt_uint8_t group_index)
         for(int i = 0; i < DOOR_MAX_COUNT; i++)
         {
             local_door_open(i);
-            rt_thread_mdelay(10);
         }
         rt_kprintf("local door group open=>group:%d\n", group_index);
     }
@@ -181,7 +180,7 @@ void app_door_startup(void)
     nrf_set_remote_door_update_hook(remote_door_update_hook);
     
 	rt_thread_t thread = rt_thread_create("tdoor", door_scan_thread,
-											RT_NULL,1024,13,20);
+											RT_NULL,2048,13,20);
 	if(thread != RT_NULL)
 		rt_thread_startup(thread);
 }

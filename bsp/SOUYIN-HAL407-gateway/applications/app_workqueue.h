@@ -7,6 +7,13 @@
 
 typedef void (*void_dowork_t)(void);
 
+struct update_door_sta
+{
+    rt_uint8_t group_index;
+    rt_uint16_t sta;
+};
+typedef struct update_door_sta *update_door_sta_t;
+
 void app_workqueue_startup(void);
 void app_workqueue_exe_void(void_dowork_t dowork);
 void app_workqueue_exe_sql(char *sql);

@@ -12,6 +12,7 @@ struct doorinfo{
 typedef struct doorinfo *doorinfo_t;
 
 int doorinfo_get_by_id(doorinfo_t e, int id);
+int doorinfo_get_by_status(doorinfo_t e, int status);
 int doorinfo_get_by_card_num(doorinfo_t e, int card_num);
 int doorinfo_get_all(record_queue_t q);
 int doorinfo_add(doorinfo_t e);

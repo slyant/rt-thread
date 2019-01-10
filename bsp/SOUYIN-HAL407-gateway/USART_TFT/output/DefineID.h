@@ -40,6 +40,9 @@
 //创建画面waite的命令索引ID
 #define  _SCREEN_WAITE                                                        13
 
+//创建画面door的命令索引ID
+#define  _SCREEN_DOOR                                                         14
+
 //画面main的背景图片
 #define  _IMG_MAIN                                                             0
 
@@ -492,4 +495,7 @@
 
 //画面waite的背景图片
 #define  _IMG_WAITE                                                            2
+
+//画面door的背景图片
+#define  _IMG_DOOR                                                             2
 

@@ -116,6 +116,13 @@ int doorinfo_get_by_card_num(doorinfo_t e, int card_num)
 	return res;
 }
 
+//获取一条记录根据status，返回查询到的记录数
+int doorinfo_get_by_status(doorinfo_t e, int status)
+{
+	int res = db_query_by_varpara("select * from doorinfo where status=?;", doorinfo_bind, e, "%d", status);
+	return res;
+}
+
 //返回查询到的记录数
 int doorinfo_get_all(record_queue_t q)
 {

@@ -39,6 +39,7 @@ typedef struct temp_setting *temp_setting_t;
 #define UI_ERROR			11      //错误信息
 #define UI_MESSAGE			12      //信息提示
 #define UI_WAITE			13		//请稍候
+#define UI_DOOR             14      //柜门编号
 /****************************************************************/
 
 /*************************  UI_MAIN 控件ID  ******************/
@@ -133,6 +134,11 @@ typedef struct temp_setting *temp_setting_t;
 #define OPEN_DOOR_BTN_16					916		//16
 /****************************************************************/
 
+/***************************  UI_DOOR 控件ID  *******************/
+#define DOOR_TEXT_NUM              			1		//柜门编号
+#define DOOR_TEXT_MSG                       2       //提示信息
+/****************************************************************/
+
 /*************************  UI_MESSAGE 控件ID  ******************/
 #define MESSAGE_BTN_BACK    		6      //返回
 #define MESSAGE_TEXT_TITLE          1      //信息标题
@@ -141,6 +147,7 @@ typedef struct temp_setting *temp_setting_t;
 
 void app_lcd_startup(void);
 void lcd_show_error(const char* err);
+void lcd_show_door_num(const char *num, const char *msg);
 void lcd_show_message(const char *title, const char *msg);
 void lcd_set_screen_id(rt_uint16_t screen_id);
 rt_uint16_t lcd_get_screen_id(void);
