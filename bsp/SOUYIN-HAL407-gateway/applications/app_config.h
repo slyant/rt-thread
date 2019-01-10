@@ -72,8 +72,8 @@ struct sys_status
     void (*manage_display_start)(void);
 	void (*set_workmodel)(enum sys_workmodel);
 	enum sys_workmodel(*get_workmodel)(void);	
-	rt_bool_t (*get_datetime)(struct calendar **);
-	void (*set_datetime)(struct calendar *);
+	rt_bool_t (*get_datetime)(calendar_t);
+	void (*set_datetime)(calendar_t);
     void (*set_door_group_sta)(rt_uint8_t, rt_uint16_t);
     rt_uint16_t (*get_door_group_sta)(rt_uint8_t);
     rt_uint32_t card_num;    

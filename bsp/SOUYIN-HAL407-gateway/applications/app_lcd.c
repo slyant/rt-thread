@@ -17,6 +17,23 @@ static rt_uint8_t btn_gropu_index;
 static temp_card_t temp_card_info = RT_NULL;
 static temp_setting_t temp_setting_info = RT_NULL;									  
 
+                                      
+#define GET_DOOR_STA(sta,idx)   ((sta & (((rt_uint16_t)0x0001)<<(idx)))>0?1:0)
+
+void lcd_update_door_sta(rt_uint8_t group_index)
+{
+    if(sys_status.get_workmodel() == WORK_MANAGE_MODEL && ! btn_all_group_sta && group_index == btn_gropu_index)
+    {
+        rt_uint16_t sta = sys_status.get_door_group_sta(group_index);
+        BatchBegin(UI_OPEN_DOOR);
+        for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
+        {                
+            BatchSetButtonValue(i, GET_DOOR_STA(sta, i - OPEN_DOOR_BTN_1));
+        }
+        BatchEnd();
+    }
+}
+
 void lcd_set_open_door(void)
 {
 	rt_uint8_t i, j;
@@ -38,7 +55,7 @@ void lcd_set_open_door(void)
     //设置组按钮初始状态
 	for(i = 0; i < sys_config.node_count; i++)
 	{
-        if(!btn_all_group_sta && i == btn_gropu_index)
+        if(! btn_all_group_sta && i == btn_gropu_index)
         {
             BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + i, 1);
         }
@@ -51,30 +68,16 @@ void lcd_set_open_door(void)
 	control_index = OPEN_DOOR_BTN_1;
 	for(i = 0; i < sys_config.door_count; i++)
 	{
-		BatchSetVisible(control_index++, !btn_all_group_sta);
+		BatchSetVisible(control_index++, ! btn_all_group_sta);
 	}
 	for(j = i; j < DOOR_MAX_COUNT; j++)
 	{
 		BatchSetVisible(control_index++, 0);
 	}
 	BatchEnd();
+    if(! btn_all_group_sta)
+        lcd_update_door_sta(btn_gropu_index);
 }		
-
-#define GET_DOOR_STA(sta,idx)   ((sta & (((rt_uint16_t)0x0001)<<(idx)))>0?1:0)
-
-void lcd_update_door_sta(rt_uint8_t group_index)
-{
-    if(sys_status.get_workmodel() == WORK_MANAGE_MODEL && ! btn_all_group_sta && group_index == btn_gropu_index)
-    {
-        rt_uint16_t sta = sys_status.get_door_group_sta(group_index);
-        BatchBegin(UI_OPEN_DOOR);
-        for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
-        {                
-            BatchSetButtonValue(i, GET_DOOR_STA(sta, i - OPEN_DOOR_BTN_1));
-        }
-        BatchEnd();
-    }
-}
 									  
 void lcd_wakeup(void)
 {
@@ -606,7 +609,7 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
 	if(control_id == OPEN_DOOR_BTN_ALL_GROUP)
     {
         //设置分组按钮状态
-        btn_all_group_sta = !btn_all_group_sta;
+        btn_all_group_sta = ! btn_all_group_sta;
         SetButtonValue(UI_OPEN_DOOR, OPEN_DOOR_BTN_ALL_GROUP, btn_all_group_sta);
         if(btn_all_group_sta)
         {            

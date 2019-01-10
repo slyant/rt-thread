@@ -27,23 +27,23 @@ static void sys_restart(void)
     rt_thread_mdelay(2000);
 	HAL_NVIC_SystemReset();
 }
-static void set_datetime(struct calendar *cal)
+static void set_datetime(calendar_t cal)
 {	
 	rtc_set_time(cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
 	lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 }
-static rt_bool_t get_datetime(struct calendar **cal)
+static rt_bool_t get_datetime(calendar_t cal)
 {
 	int year, month, mday, wday, hour, min, sec;	
 	if(rtc_get_time(&year, &month, &mday, &wday, &hour, &min, &sec))
 	{		
-		(*cal)->year = year;
-		(*cal)->month = month;
-		(*cal)->mday = mday;
-		(*cal)->wday = wday;
-		(*cal)->hour = hour;
-		(*cal)->min = min;
-		(*cal)->sec = sec;	
+		cal->year = year;
+		cal->month = month;
+		cal->mday = mday;
+		cal->wday = wday;
+		cal->hour = hour;
+		cal->min = min;
+		cal->sec = sec;	
 		return RT_TRUE;
 	}		
 	return RT_FALSE;
@@ -72,7 +72,7 @@ static rt_uint16_t get_door_group_sta(rt_uint8_t group_index)
 static void gps_update_hook(calendar_t cal)
 {
 	static int count = 0;
-	if(count == 0)
+	if(count == 1)
 	{
 		set_datetime(cal);
 		rt_kprintf("datetime:%04d-%02d-%02d %02d:%02d:%02d\n", cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
@@ -98,7 +98,7 @@ static void door_update_hook(rt_uint8_t group_index, rt_uint16_t sta)
 static void load_datetime(void)
 {
 	calendar_t cal = rt_calloc(1, sizeof(struct calendar));
-	if(get_datetime(&cal))
+	if(get_datetime(cal))
 	{
 		lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 	}
