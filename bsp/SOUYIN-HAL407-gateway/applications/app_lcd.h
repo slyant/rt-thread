@@ -157,5 +157,6 @@ void lcd_set_sys_title(char *title);
 void lcd_wakeup(void);
 void lcd_set_open_door(void);
 void lcd_update_door_sta(rt_uint8_t group_index);
+void lcd_set_buzzer(rt_uint8_t ms);
 
 #endif

@@ -4,16 +4,16 @@
 #include <rng_helper.h>
 #include <ic_card_protocol.h>
 
-const unsigned char factory_signature[SIGNATURE_LENGTH] = {0x61, 0x6D, 0x50, 0x75, 0x38, 0x39, 0x52, 0x33, 0x47, 0x44, 0x77, 0x78, 0x21, 0x7E, 0x6A, 0x23};
-const unsigned char factory_key_a[KEY_LENGTH] = {0x25, 0xFD, 0xC4, 0x96, 0xAA, 0x06};
-const unsigned char factory_key_b[KEY_LENGTH] = {0xA5, 0xF2, 0x3D, 0x90, 0xF7, 0x43};
-const unsigned char default_data_block[BLOCK_SIZE] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
-const unsigned char default_data_ctrl[BLOCK_SIZE] = {0xff,0xff,0xff,0xff,0xff,0xff,0x08,0x77,0x8f,0x69,0xff,0xff,0xff,0xff,0xff,0xff};
-const unsigned char default_money_bag_enable[BLOCK_SIZE] = {0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x00};
-const unsigned char default_money_bag_disable[BLOCK_SIZE] = {0x00,0x00,0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x00};
-const unsigned char default_money_bag_value[BLOCK_SIZE] = {0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x21,0xDE,0x21,0xDE};
-const unsigned char default_key[KEY_LENGTH] = {0xff,0xff,0xff,0xff,0xff,0xff};
-const unsigned char card_inf_blocks[CARD_INF_BLOCK_COUNT] = {4,5,6,8,9,10,12,13,14,16,17,18,20,21,22,24,25,26};//,28,29,30,32,33,34,36,37,38,40,41,42,44,45,46,48,49,50,52,53,54,56,57,58,60,61,62
+static const unsigned char factory_signature[SIGNATURE_LENGTH] = {0x61, 0x6D, 0x50, 0x75, 0x38, 0x39, 0x52, 0x33, 0x47, 0x44, 0x77, 0x78, 0x21, 0x7E, 0x6A, 0x23};
+static const unsigned char factory_key_a[KEY_LENGTH] = {0x25, 0xFD, 0xC4, 0x96, 0xAA, 0x06};
+static const unsigned char factory_key_b[KEY_LENGTH] = {0xA5, 0xF2, 0x3D, 0x90, 0xF7, 0x43};
+static const unsigned char default_data_block[BLOCK_SIZE] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
+static const unsigned char default_data_ctrl[BLOCK_SIZE] = {0xff,0xff,0xff,0xff,0xff,0xff,0x08,0x77,0x8f,0x69,0xff,0xff,0xff,0xff,0xff,0xff};
+static const unsigned char default_money_bag_enable[BLOCK_SIZE] = {0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x00};
+static const unsigned char default_money_bag_disable[BLOCK_SIZE] = {0x00,0x00,0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x00};
+static const unsigned char default_money_bag_value[BLOCK_SIZE] = {0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0x21,0xDE,0x21,0xDE};
+static const unsigned char default_key[KEY_LENGTH] = {0xff,0xff,0xff,0xff,0xff,0xff};
+static const unsigned char card_inf_blocks[CARD_INF_BLOCK_COUNT] = {4,5,6,8,9,10,12,13,14,16,17,18,20,21,22,24,25,26};//,28,29,30,32,33,34,36,37,38,40,41,42,44,45,46,48,49,50,52,53,54,56,57,58,60,61,62
 
 static rt_uint8_t find_tag;
     
@@ -544,7 +544,7 @@ rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, 
 				{
 					temp_buf[6 + i] = ~temp_buf[6 + i];
 				}
-				rt_uint8_t check_tag = rt_memcmp(temp_buf + 6, temp_buf + 11, 5);
+				rt_uint8_t check_tag = ! rt_memcmp(temp_buf + 6, temp_buf + 11, 5);
 				if(rt_memcmp(temp_buf, default_money_bag_disable, 6) == 0 && check_tag)
 				{//电子钱包禁用
 					*out_stat = RT_FALSE;
@@ -568,8 +568,10 @@ rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, 
 						{
 							temp_buf[4 + i] = ~temp_buf[4 + i];
 						}
-						if(rt_memcmp(temp_buf, temp_buf + 4, 4) == 0 && rt_memcmp(temp_buf, temp_buf + 8, 4) == 0 && rt_memcmp(temp_buf + 13, temp_buf + 4, 4) == 0
-						&& temp_buf[12] == ~temp_buf[13] && temp_buf[12] == temp_buf[14] && temp_buf[12] == ~temp_buf[15])
+                        temp_buf[13] = ~temp_buf[13];
+                        temp_buf[15] = ~temp_buf[15];
+						if(rt_memcmp(temp_buf, temp_buf + 4, 4) == 0 && rt_memcmp(temp_buf, temp_buf + 8, 4) == 0 
+                            && temp_buf[12] == temp_buf[13] && temp_buf[12] == temp_buf[14] && temp_buf[12] == temp_buf[15])
 						{//通过校验
 							*out_value = temp_buf[3]; (*out_value) <<= 8; (*out_value) |= temp_buf[2]; 
 							(*out_value) <<= 8; (*out_value) |= temp_buf[1]; (*out_value) <<= 8; (*out_value) |= temp_buf[0];							
@@ -603,7 +605,7 @@ rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value)
 			if(pcd_select_ex(card_id)==MI_OK)
 			{				
 				//处理电子钱包
-				if(pcd_auth_state_ex(PICC_AUTHENT1A, MONEY_BAG_ENABLE, (unsigned char*)in_key_b, card_id) != MI_OK)
+				if(pcd_auth_state_ex(PICC_AUTHENT1B, MONEY_BAG_ENABLE, (unsigned char*)in_key_b, card_id) != MI_OK)
 				{
 					goto _EXIT;
 				}
@@ -616,7 +618,7 @@ rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value)
 				{
 					temp_buf[6 + i] = ~temp_buf[6 + i];
 				}
-				rt_uint8_t check_tag = rt_memcmp(temp_buf + 6, temp_buf + 11, 5);
+				rt_uint8_t check_tag = ! rt_memcmp(temp_buf + 6, temp_buf + 11, 5);
 				if(rt_memcmp(temp_buf, default_money_bag_disable, 6) == 0 && check_tag)
 				{//电子钱包禁用
 					goto _EXIT;

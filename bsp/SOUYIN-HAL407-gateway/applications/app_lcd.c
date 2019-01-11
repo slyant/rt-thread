@@ -34,6 +34,10 @@ void lcd_update_door_sta(rt_uint8_t group_index)
     }
 }
 
+void lcd_set_buzzer(rt_uint8_t ms)
+{
+    SetBuzzer(ms);
+}
 void lcd_set_open_door(void)
 {
 	rt_uint8_t i, j;

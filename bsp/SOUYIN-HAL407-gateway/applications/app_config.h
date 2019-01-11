@@ -8,7 +8,7 @@
 #define SYSINFO_KEY_ID			1   	//系统信息主键ID
 #define CONFIG_CARD_MAX_COUNT	3		//配置卡最大数量
 #define POWER_CARD_MAX_COUNT	3		//授权卡最大数量
-#define EKEY_CARD_MAX_COUNT		50		//钥匙卡最大数量
+#define EKEY_CARD_MAX_COUNT		65535	//钥匙卡最大数量
 #define DRIVER_CARD_MAX_COUNT	65535	//司机卡最大数量
 #define GROUP_MAX_COUNT			8		//节点最大数量
 #define DOOR_MAX_COUNT			16		//门最大数量
@@ -66,7 +66,7 @@ struct sys_config
 typedef struct sys_config *sys_config_t;
 
 struct sys_status
-{		
+{
 	void (*restart)(void);
     void (*open_display_start)(void);
     void (*manage_display_start)(void);

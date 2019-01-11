@@ -119,7 +119,7 @@ int doorinfo_get_by_card_num(doorinfo_t e, int card_num)
 //获取一条记录根据status，返回查询到的记录数
 int doorinfo_get_by_status(doorinfo_t e, int status)
 {
-	int res = db_query_by_varpara("select * from doorinfo where status=?;", doorinfo_bind, e, "%d", status);
+	int res = db_query_by_varpara("select * from doorinfo where status=? order by id asc limit 1;", doorinfo_bind, e, "%d", status);
 	return res;
 }
 
