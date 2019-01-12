@@ -203,8 +203,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                     rt_uint8_t door_index = GET_DOOR_ID(doorinfo->id);
                     char *door_num_str = get_door_num_from_id(group_index, door_index); 
                     if(doorinfo->status == DOOR_STA_OPEN_1 || doorinfo->status == DOOR_STA_CLOSE_1 || doorinfo->status == DOOR_STA_OPEN_2)
-                    {//首次刷卡开门后未关门，或首次关门后再次刷卡，都执行开门动作
-                        lcd_show_door_num(door_num_str, MSG_OPEN_2);
+                    {//首次刷卡开门后未关门，或首次关门后再次刷卡，都执行开门动作                        
                         door_any_open(group_index, door_index);
                         if(doorinfo->status == DOOR_STA_CLOSE_1)
                         {//首次关门后再次刷卡，更新柜门状态
@@ -212,6 +211,14 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                             char *sql = rt_calloc(1, 128);
                             rt_sprintf(sql, "update doorinfo set status=%d where id=%d;", DOOR_STA_OPEN_2, doorinfo->id);
                             app_workqueue_exe_sql(sql);        //更新柜门状态为:第2次开门     
+                        }
+                        if(doorinfo->status == DOOR_STA_OPEN_1)
+                        {
+                            lcd_show_door_num(door_num_str, MSG_OPEN_1);
+                        }
+                        else
+                        {
+                            lcd_show_door_num(door_num_str, MSG_OPEN_2);
                         }
                         beep_on(1);lcd_set_buzzer(10);
                     }
@@ -243,14 +250,14 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                                         {
                                             pass = RT_TRUE;
                                         }
-                                        else if(rfic_money_write(sys_config.keyb, value - 1))
+                                        else if(rfic_money_write(sys_config.keyb, value - 1) == 1)
                                         {
                                             pass = RT_TRUE;
                                         }
                                     }
                                     else
                                     {//充值
-                                        if(rfic_money_write(sys_config.keyb, 1))
+                                        if(rfic_money_write(sys_config.keyb, 1) == 1)
                                         {
                                             pass = RT_TRUE;
                                         }
@@ -418,7 +425,7 @@ rt_bool_t init_card_key(void)
 		return result;	
 	
 	IC_LOCK();IC_RESET();
-	if(rfic_card_init(CARD_TYPE_KEY, RT_FALSE, RT_NULL, RT_NULL))
+	if(rfic_card_init(CARD_TYPE_KEY, RT_FALSE, RT_FALSE, RT_NULL, RT_NULL))
 	{
 		rt_kprintf("init_card_key ok!\n");
 		result = RT_TRUE;
@@ -651,14 +658,14 @@ rt_bool_t restore_card_key(void)
 }
 
 //初始化应用卡
-rt_bool_t init_card_app(rt_bool_t use_money_bag)
+rt_bool_t init_card_app(rt_bool_t use_elock, rt_bool_t use_money_bag)
 {
 	rt_bool_t result = RT_FALSE;
 	if(sys_status.get_workmodel() != CONFIG_MANAGE_MODEL)
 		return result;
 	
 	IC_LOCK();IC_RESET();
-	if(rfic_card_init(CARD_TYPE_APP, use_money_bag, sys_config.keya, sys_config.keyb))
+	if(rfic_card_init(CARD_TYPE_APP, use_elock, use_money_bag, sys_config.keya, sys_config.keyb))
 	{
 		rt_kprintf("init_card_app ok!\n");
 		result = RT_TRUE;
@@ -802,7 +809,6 @@ rt_bool_t create_card_app(enum card_app_type type, rt_uint16_t num, char *pwd)
 	IC_UNLOCK();
 	return result;
 }	
-
 
 void app_rfic_startup(void)
 {

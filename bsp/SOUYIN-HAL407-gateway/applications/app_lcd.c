@@ -346,7 +346,7 @@ static void cfg_card_handle(unsigned short control_id)
     {
     case CFG_CARD_BTN_INIT:         //初始化
 		lcd_set_screen_id(UI_WAITE);
-		if(init_card_app(RT_FALSE))
+		if(init_card_app(RT_FALSE, RT_FALSE))
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
 		}
@@ -413,7 +413,7 @@ static void power_card_handle(unsigned short control_id)
     {
     case POWER_CARD_BTN_INIT:         //初始化
 		lcd_set_screen_id(UI_WAITE);
-		if(init_card_app(RT_FALSE))
+		if(init_card_app(RT_FALSE, RT_FALSE))
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
 		}
@@ -480,7 +480,7 @@ static void ekey_card_handle(unsigned short control_id)
     {
     case EKEY_CARD_BTN_INIT:         //初始化
 		lcd_set_screen_id(UI_WAITE);
-		if(init_card_app(RT_FALSE))
+		if(init_card_app(RT_TRUE, RT_FALSE))
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
 		}
@@ -547,7 +547,7 @@ static void driver_card_handle(unsigned short control_id)
     {
     case DRIVER_CARD_BTN_INIT:			//初始化
 		lcd_set_screen_id(UI_WAITE);
-		if(init_card_app(sys_config.en_driver_card > 0 ? RT_TRUE:RT_FALSE))	//启用电子钱包
+		if(init_card_app(RT_TRUE, sys_config.en_driver_card > 0 ? RT_TRUE:RT_FALSE))	//启用电子钱包
 		{
 			lcd_show_message(MSG_RESULT, MSG_SUCCESS);
 		}
@@ -776,6 +776,12 @@ static void lcd_notify_button(unsigned short screen_id, unsigned short control_i
             driver_card_handle(control_id);
         }
         break;	
+    case UI_LOCK_ABKEY_CARD:    //锁钥卡设置
+        if(sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
+        {
+            
+        }
+        break;        
 	case UI_OPEN_DOOR:		//开门UI
         if(sys_status.get_workmodel() == WORK_MANAGE_MODEL)
         {
@@ -832,7 +838,7 @@ static void lcd_notify_text(unsigned short screen_id, unsigned short control_id,
 			break;
 		case OTHER_SETTING_TEXT_EN_DRIVER_CARD:
 			temp_setting_info->en_driver_card = str2int32(str);
-		break;		
+            break;		
 		default:
 			break;
 		}

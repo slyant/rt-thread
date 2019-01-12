@@ -33,7 +33,7 @@ typedef struct temp_setting *temp_setting_t;
 #define UI_POWER_CARD		5       //授权卡设置
 #define UI_EKEY_CARD		6       //钥匙卡设置
 #define UI_DRIVER_CARD		7       //司机卡设置
-#define UI_LOCK_ABKEY_CARD	8       //锁钥卡设置
+#define UI_LOCK_ABKEY_CARD	8       //锁密钥卡设置
 #define UI_OTHER_SETTING    9       //其它设置
 #define UI_OPEN_DOOR		10      //柜门开门管理
 #define UI_ERROR			11      //错误信息
@@ -108,9 +108,6 @@ typedef struct temp_setting *temp_setting_t;
 /*********************  UI_LOCK_ABKEY_CARD 控件ID  **************/
 #define LOCK_ABKEY_CARD_BTN_INIT    	15      //初始化
 #define LOCK_ABKEY_CARD_BTN_RESET     	13      //重置
-#define LOCK_ABKEY_CARD_BTN_CLEAR	    14      //清空卡记录
-#define LOCK_ABKEY_CARD_TEXT_NUMBER     2      	//卡编号
-#define LOCK_ABKEY_CARD_BTN_CREATE     	16      //制卡
 #define LOCK_ABKEY_CARD_BTN_BACK     	17      //返回
 /****************************************************************/
 

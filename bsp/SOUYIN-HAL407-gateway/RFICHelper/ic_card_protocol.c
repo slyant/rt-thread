@@ -55,10 +55,41 @@ static rt_bool_t rfic_money_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_
 	{
 		goto _EXIT;
 	}
-	if(pcd_write_ex(MONEY_BAG_CTRL, ctrl_buffer) != MI_OK)
+	if(pcd_write_ex(MONEY_BAG_CTRL_BLOCK, ctrl_buffer) != MI_OK)
 	{
 		goto _EXIT;
 	}
+	result = RT_TRUE;
+_EXIT:
+	return result;
+}    
+
+//初始化锁钥
+static rt_bool_t rfic_elock_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *ctrl_buffer)
+{
+	rt_bool_t result = RT_FALSE;
+
+	if(pcd_auth_state_ex(PICC_AUTHENT1B, MONEY_BAG_ENABLE, in_key_b, card_id) != MI_OK)
+	{
+		goto _EXIT;
+	}
+    if(pcd_write_ex(ELOCK_CHECK_BLOCK, (unsigned char*)default_data_block) != MI_OK)
+    {
+        goto _EXIT;
+    }
+    if(pcd_write_ex(ELOCK_KEY_BLOCK, (unsigned char*)default_data_block) != MI_OK)
+    {
+        goto _EXIT;
+    }
+    if(pcd_write_ex(ELOCK_ARGS_BLOCK, (unsigned char*)default_data_block) != MI_OK)
+    {
+        goto _EXIT;
+    }    
+    if(pcd_write_ex(CARD_CTRL_BLOCK, ctrl_buffer) != MI_OK)
+    {
+        goto _EXIT;
+    }
+    
 	result = RT_TRUE;
 _EXIT:
 	return result;
@@ -242,7 +273,7 @@ _EXIT:
 }
 
 //初始化卡
-rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_money_bag, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH])
+rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_elock, rt_bool_t use_money_bag, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH])
 {
 	rt_uint8_t status, card_id[4], result = RT_FALSE;
 	rt_uint16_t i;
@@ -316,6 +347,13 @@ rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_money_bag, rt_u
 				}
 				if(type == CARD_TYPE_APP)
 				{//应用卡
+                    if(use_elock)
+                    {//处理锁钥
+                        if(! rfic_elock_init(card_id, (rt_uint8_t*)default_key, temp_buf))
+                        {
+                            goto _EXIT;
+                        }
+                    }
 					//处理电子钱包
 					if(! rfic_money_init(card_id, (rt_uint8_t*)default_key, temp_buf, use_money_bag))
 					{
@@ -399,8 +437,29 @@ rt_bool_t rfic_card_reset(enum card_base_type type, rt_uint8_t in_key_b[KEY_LENG
 						goto _EXIT;
 					}
 				}
+                //处理锁钥扇区
+				if(pcd_auth_state_ex(PICC_AUTHENT1B, ELOCK_CHECK_BLOCK, auth_key, card_id) != MI_OK)
+				{//认证未通过，则忽略此扇区
+					goto _MEMONY;
+				}
+				if(pcd_write_ex(ELOCK_CHECK_BLOCK, (unsigned char*)default_data_block) != MI_OK)
+				{
+					goto _EXIT;
+				}
+				if(pcd_write_ex(ELOCK_KEY_BLOCK, (unsigned char*)default_data_block) != MI_OK)
+				{
+					goto _EXIT;
+				}
+				if(pcd_write_ex(ELOCK_ARGS_BLOCK, (unsigned char*)default_data_block) != MI_OK)
+				{
+					goto _EXIT;
+				}
+				if(pcd_write_ex(ELOCK_CTRL_BLOCK, (unsigned char*)default_data_ctrl) != MI_OK)
+				{
+					goto _EXIT;
+				}                
 				//处理电子钱包扇区
-				if(pcd_auth_state_ex(PICC_AUTHENT1B, MONEY_BAG_ENABLE, auth_key, card_id) != MI_OK)
+_MEMONY:		if(pcd_auth_state_ex(PICC_AUTHENT1B, MONEY_BAG_ENABLE, auth_key, card_id) != MI_OK)
 				{//认证未通过，则忽略此扇区
 					result = RT_TRUE;
 					goto _EXIT;
@@ -417,10 +476,11 @@ rt_bool_t rfic_card_reset(enum card_base_type type, rt_uint8_t in_key_b[KEY_LENG
 				{
 					goto _EXIT;
 				}
-				if(pcd_write_ex(MONEY_BAG_CTRL, (unsigned char*)default_data_ctrl) != MI_OK)
+				if(pcd_write_ex(MONEY_BAG_CTRL_BLOCK, (unsigned char*)default_data_ctrl) != MI_OK)
 				{
 					goto _EXIT;
 				}
+                
 				result = RT_TRUE;
 			}
 		}
@@ -589,10 +649,11 @@ rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, 
 _EXIT:
 	return result;	
 }
-//value>0:充值 value<0:扣款
-rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value)
+//value>0:充值 value<0:扣款,充值扣款成功返回1，操作失败返回0，余额不足返回-1
+int rfic_money_write(rt_uint8_t in_key_ab[KEY_LENGTH], rt_int32_t value)
 {
-	rt_uint8_t status, card_id[4], result = RT_FALSE;
+    int result = 0;
+	rt_uint8_t status, card_id[4];
 	rt_uint16_t i;
 	rt_uint8_t temp_buf[BLOCK_SIZE];
 
@@ -605,7 +666,7 @@ rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value)
 			if(pcd_select_ex(card_id)==MI_OK)
 			{				
 				//处理电子钱包
-				if(pcd_auth_state_ex(PICC_AUTHENT1B, MONEY_BAG_ENABLE, (unsigned char*)in_key_b, card_id) != MI_OK)
+				if(pcd_auth_state_ex(value < 0 ? PICC_AUTHENT1A:PICC_AUTHENT1B, MONEY_BAG_ENABLE, (unsigned char*)in_key_ab, card_id) != MI_OK)
 				{
 					goto _EXIT;
 				}
@@ -625,24 +686,62 @@ rt_bool_t rfic_money_write(rt_uint8_t in_key_b[KEY_LENGTH], rt_int32_t value)
 				}
 				else
 				{//电子钱包启用
-					rt_int32_t v;
+					rt_int32_t bag_value;                    
+                    //先读校验，如果正确，则操作前先备份，备份成功才进行充值扣款操作
+                    if(pcd_read_ex(MONEY_BAG_VALUE, temp_buf) != MI_OK)
+                    {
+                        goto _EXIT;
+                    }
+                    //校验
+                    for(i=0; i<4; i++)
+                    {
+                        temp_buf[4 + i] = ~temp_buf[4 + i];
+                    }
+                    temp_buf[13] = ~temp_buf[13];
+                    temp_buf[15] = ~temp_buf[15];
+                    if(rt_memcmp(temp_buf, temp_buf + 4, 4) == 0 && rt_memcmp(temp_buf, temp_buf + 8, 4) == 0 
+                        && temp_buf[12] == temp_buf[13] && temp_buf[12] == temp_buf[14] && temp_buf[12] == temp_buf[15])
+                    {//通过校验,获取余额,备份钱包
+                        bag_value = temp_buf[3]; bag_value <<= 8; bag_value |= temp_buf[2]; 
+                        bag_value <<= 8; bag_value |= temp_buf[1]; bag_value <<= 8; bag_value |= temp_buf[0];							
+                        //备份钱包
+                        if(pcd_bak_value_ex(MONEY_BAG_VALUE, MONEY_BAG_BF) != MI_OK)
+                        {
+                            goto _EXIT;
+                        }
+                    }
+                    else
+                    {//未通过校验,恢复备份
+                        //恢复钱包
+                        if(pcd_bak_value_ex(MONEY_BAG_BF, MONEY_BAG_VALUE) != MI_OK)
+                        {
+                            goto _EXIT;
+                        }
+                    }                    
 					if(value>0)
-					{//充值
-						v = value;
-						if(pcd_value_ex(PICC_INCREMENT, MONEY_BAG_VALUE, (rt_uint8_t*)&v) != MI_OK)
+					{//充值                        
+						bag_value = value;
+						if(pcd_value_ex(PICC_INCREMENT, MONEY_BAG_VALUE, (rt_uint8_t*)&bag_value) != MI_OK)
 						{//充值失败
 							goto _EXIT;
 						}
-						result = RT_TRUE;
+						result = 1;
 					}
 					else if(value<0)
 					{//扣款
-						v = -value;
-						if(pcd_value_ex(PICC_DECREMENT, MONEY_BAG_VALUE, (rt_uint8_t*)&v) != MI_OK)
-						{//充值失败
-							goto _EXIT;
-						}
-						result = RT_TRUE;
+                        if(bag_value + value >= 0)
+                        {
+                            bag_value = -value;
+                            if(pcd_value_ex(PICC_DECREMENT, MONEY_BAG_VALUE, (rt_uint8_t*)&bag_value) != MI_OK)
+                            {//扣款失败
+                                goto _EXIT;
+                            }
+                            result = 1;
+                        }
+                        else
+                        {//余额不足
+                            result = -1;
+                        }
 					}
 				}
 			}

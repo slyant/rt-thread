@@ -211,17 +211,17 @@
 //按钮Button1的控件ID
 #define  _BTN_LOCK_ABKEY_CARD_BUTTON1                                         13
 
-//按钮Button2的控件ID
-#define  _BTN_LOCK_ABKEY_CARD_BUTTON2                                         14
-
 //按钮Button3的控件ID
 #define  _BTN_LOCK_ABKEY_CARD_BUTTON3                                         15
 
-//按钮Button4的控件ID
-#define  _BTN_LOCK_ABKEY_CARD_BUTTON4                                         16
+//按钮Button2的控件ID
+#define  _BTN_LOCK_ABKEY_CARD_BUTTON2                                         17
 
-//按钮Button5的控件ID
-#define  _BTN_LOCK_ABKEY_CARD_BUTTON5                                         17
+//画面lock_abkey_card中按钮Button2弹起时的图片
+#define  _IMG_LOCK_ABKEY_CARD_BUTTON2_UP                                       5
+
+//画面lock_abkey_card中按钮Button2按下时的图片
+#define  _IMG_LOCK_ABKEY_CARD_BUTTON2_DOWN                                     6
 
 //画面other_setting的背景图片
 #define  _IMG_OTHER_SETTING                                                    2

@@ -66,7 +66,7 @@ static void local_door_open(rt_uint8_t door_index)
     rt_uint16_t dat = 0x0001;
     dat <<= door_index; 
     d595_write(~dat);
-    rt_thread_mdelay(50);
+    rt_thread_mdelay(40);
     d595_write(0xFFFF);
 }
 
@@ -92,6 +92,7 @@ void door_group_open(rt_uint8_t group_index)
         for(int i = 0; i < DOOR_MAX_COUNT; i++)
         {
             local_door_open(i);
+            rt_thread_mdelay(10);
         }
         rt_kprintf("local door group open=>group:%d\n", group_index);
     }

@@ -22,7 +22,7 @@ rt_bool_t backup_card_key(void);
 rt_bool_t restore_card_key(void);
 
 void app_rfic_startup(void);
-rt_bool_t init_card_app(rt_bool_t use_money_bag);
+rt_bool_t init_card_app(rt_bool_t use_elock, rt_bool_t use_money_bag);
 rt_bool_t reset_card_app(void);
 rt_bool_t create_card_app(enum card_app_type type, rt_uint16_t num, char *pwd);
 #endif
