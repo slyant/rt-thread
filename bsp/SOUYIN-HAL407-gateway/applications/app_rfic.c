@@ -46,7 +46,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			char *akey_str = (char*)cJSON_item_get_string(fileds, "AKey");
 			char *bkey_str = (char*)cJSON_item_get_string(fileds, "BKey");
 			rt_kprintf("AKey:%s\n", akey_str);
-			rt_kprintf("BKey:%s\n", akey_str);
+			rt_kprintf("BKey:%s\n", bkey_str);
 			rt_uint8_t *akey = rt_calloc(1, KEY_LENGTH);
 			rt_uint8_t *bkey = rt_calloc(1, KEY_LENGTH);
 			hex2bytes(akey_str, KEY_LENGTH*2, akey);
@@ -252,7 +252,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                                         {
                                             pass = RT_TRUE;
                                         }
-                                        else if(rfic_money_write(sys_config.keyb, value - 1) == 1)
+                                        else if(rfic_money_write(sys_config.keyb, -(value - 1)) == 1)
                                         {
                                             pass = RT_TRUE;
                                         }
