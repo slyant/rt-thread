@@ -111,15 +111,16 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			cJSON_item_get_number(fileds, "Num", &num);
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
-			rt_kprintf("Pwd:%s\n", pwd);                       
+			rt_kprintf("Pwd:%s\n", pwd);    
+/*            
             if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_EKEY, pwd) > 0)
             {
                 sys_status.card_num = num; 
                 doorinfo_t doorinfo = rt_calloc(1, sizeof(struct doorinfo));
-                /*
-                这里要注意：不能直接从数据库查询，因为更新工作在工作队列中，可能还未来得及执行，
-                那就等待工作队列中的任务全部执行完毕。
-                */
+                
+                //这里要注意：不能直接从数据库查询，因为更新工作在工作队列中，可能还未来得及执行，
+                //那就等待工作队列中的任务全部执行完毕。
+                //
                 lcd_set_screen_id(UI_WAITE);
                 while(app_workqueue_get_length() > 0) rt_thread_mdelay(200);
                 if(doorinfo_get_by_card_num(doorinfo, num) > 0)
@@ -177,6 +178,7 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			{
 				beep_on(3);
 			}
+*/
 		}
 		break;
 	case CARD_APP_TYPE_DRIVER://司机卡
@@ -728,7 +730,19 @@ static rt_bool_t write_card_app_info(enum card_app_type type, rt_uint16_t num, c
     buf_len = create_card_app_info(type, num, pwd, &buffer);   
 	if(buf_len > 0 && buffer != RT_NULL)
 	{
-		if(rfic_card_write(CARD_TYPE_APP, sys_config.keya, sys_config.keyb, buffer, buf_len) == RT_TRUE)
+        if(type == CARD_APP_TYPE_EKEY || type == CARD_APP_TYPE_DRIVER)
+        {//钥匙卡和司机卡特殊处理
+            if(rfic_card_write_for_ekey(CARD_TYPE_APP, sys_config.keya, sys_config.keyb, buffer, buf_len) == RT_TRUE)
+            {//写卡成功
+                rt_kprintf("rfic_card_write ok:\n%s\n", buffer);
+                result = RT_TRUE;
+            }
+            else
+            {
+                rt_kprintf("rfic_card_write error:\n%s\n", buffer);
+            }            
+        }
+		else if(rfic_card_write(CARD_TYPE_APP, sys_config.keya, sys_config.keyb, buffer, buf_len) == RT_TRUE)
 		{//写卡成功
 			rt_kprintf("rfic_card_write ok:\n%s\n", buffer);
 			result = RT_TRUE;

@@ -64,12 +64,12 @@ _EXIT:
 	return result;
 }    
 
-//初始化锁钥
+//初始化锁钥区
 static rt_bool_t rfic_elock_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *ctrl_buffer)
 {
 	rt_bool_t result = RT_FALSE;
 
-	if(pcd_auth_state_ex(PICC_AUTHENT1B, MONEY_BAG_ENABLE, in_key_b, card_id) != MI_OK)
+	if(pcd_auth_state_ex(PICC_AUTHENT1B, ELOCK_CHECK_BLOCK, in_key_b, card_id) != MI_OK)
 	{
 		goto _EXIT;
 	}
@@ -85,7 +85,7 @@ static rt_bool_t rfic_elock_init(rt_uint8_t card_id[4], rt_uint8_t in_key_b[KEY_
     {
         goto _EXIT;
     }    
-    if(pcd_write_ex(CARD_CTRL_BLOCK, ctrl_buffer) != MI_OK)
+    if(pcd_write_ex(ELOCK_CTRL_BLOCK, ctrl_buffer) != MI_OK)
     {
         goto _EXIT;
     }
@@ -348,7 +348,7 @@ rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_elock, rt_bool_
 				if(type == CARD_TYPE_APP)
 				{//应用卡
                     if(use_elock)
-                    {//处理锁钥
+                    {//处理锁钥区
                         if(! rfic_elock_init(card_id, (rt_uint8_t*)default_key, temp_buf))
                         {
                             goto _EXIT;
@@ -567,6 +567,123 @@ rt_bool_t rfic_card_write(enum card_base_type type, rt_uint8_t in_key_a[KEY_LENG
 				{
 					goto _EXIT;
 				}			
+				result = RT_TRUE;
+			}
+		}
+	}
+_EXIT:
+	if(check_all != RT_NULL) rt_free(check_all);		
+	return result;
+}
+
+//写钥匙卡或司机卡
+rt_bool_t rfic_card_write_for_ekey(enum card_base_type type, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *buffer, rt_uint16_t buf_length)
+{
+	rt_uint8_t status, card_id[4], result = RT_FALSE;
+	rt_uint16_t i, block_count;
+	rt_uint8_t auth_akey[KEY_LENGTH], auth_bkey[KEY_LENGTH], check_md5[BLOCK_SIZE];
+	rt_uint8_t *check_all = RT_NULL;
+
+	if(buf_length>CARD_INF_MAX_LEN)
+		goto _EXIT;
+
+	if((status = pcd_request_ex(PICC_REQALL, card_id)) != MI_OK)
+		status = pcd_request_ex(PICC_REQALL, card_id);
+	if(status == MI_OK)
+	{
+		if(pcd_anticoll_ex(card_id) == MI_OK)
+		{
+			if(pcd_select_ex(card_id)==MI_OK)
+			{				
+				if(type == CARD_TYPE_KEY)
+				{//密钥卡
+					rt_memcpy(auth_akey, factory_key_a, KEY_LENGTH);
+					rt_memcpy(auth_bkey, factory_key_b, KEY_LENGTH);
+				}
+				else if(type == CARD_TYPE_APP)
+				{//应用卡
+					RT_ASSERT(in_key_a != RT_NULL && in_key_b != RT_NULL);
+					rt_memcpy(auth_akey, in_key_a, KEY_LENGTH);
+					rt_memcpy(auth_bkey, in_key_b, KEY_LENGTH);
+				}
+				else
+				{
+					goto _EXIT;
+				}			
+				block_count = buf_length / BLOCK_SIZE + (buf_length % BLOCK_SIZE ? 1:0);
+				//处理其它扇区
+				for(i=0; i<block_count; i++)
+				{
+					if(i % 3 == 0)
+					{
+						if(pcd_auth_state_ex(PICC_AUTHENT1B, card_inf_blocks[i], auth_bkey, card_id) != MI_OK)
+						{
+							goto _EXIT;
+						}
+					}					
+					if(pcd_write_ex(card_inf_blocks[i], buffer + (i * BLOCK_SIZE)) != MI_OK)
+					{
+						goto _EXIT;
+					}
+				}
+				//处理第1个扇区
+				if(pcd_auth_state_ex(PICC_AUTHENT1B, CARD_CHECK_BLOCK, auth_bkey, card_id) != MI_OK)
+				{
+					goto _EXIT;
+				}
+				//
+				check_all = rt_malloc(buf_length + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH);
+				if(check_all == RT_NULL)
+				{
+					goto _EXIT;
+				}
+
+				rt_memcpy(check_all, buffer, buf_length);
+				rt_memcpy(check_all + buf_length, auth_akey, KEY_LENGTH);
+				rt_memcpy(check_all + buf_length + KEY_LENGTH, auth_bkey, KEY_LENGTH);
+				rt_memcpy(check_all + buf_length + KEY_LENGTH + KEY_LENGTH, factory_signature, SIGNATURE_LENGTH);
+
+				tiny_md5(check_all, buf_length + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH, check_md5);
+				if(pcd_write_ex(CARD_CHECK_BLOCK, check_md5) != MI_OK)
+				{
+					goto _EXIT;
+				}
+				check_md5[0] = (rt_uint8_t)(buf_length>>8);		//保存信息长度高位
+				check_md5[1] = (rt_uint8_t)(buf_length&0xff);	//保存信息长度低位
+				if(pcd_write_ex(CARD_LEN_BLOCK, check_md5) != MI_OK)
+				{
+					goto _EXIT;
+				}		
+
+                //处理钥匙卡区
+                {
+                    rt_uint8_t lock_key[] = {0xD4, 0x98, 0xA5, 0x34, 0xF4, 0xD8, 0x09, 0x76, 0x34, 0x56, 0x34, 0x55, 0xBF, 0xDD, 0x9D, 0xEF};
+                    rt_uint8_t lock_args[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+                    if(pcd_auth_state_ex(PICC_AUTHENT1B, ELOCK_CHECK_BLOCK, auth_bkey, card_id) != MI_OK)
+                    {
+                        goto _EXIT;
+                    }
+                    if(pcd_write_ex(ELOCK_KEY_BLOCK, lock_key) != MI_OK)
+                    {
+                        goto _EXIT;
+                    }
+                    if(pcd_write_ex(ELOCK_ARGS_BLOCK, lock_args) != MI_OK)
+                    {
+                        goto _EXIT;
+                    }                    
+                    rt_memcpy(check_all, lock_key, 16);
+                    rt_memcpy(check_all + 16, lock_args, 16);
+                    rt_memcpy(check_all + 32, auth_akey, KEY_LENGTH);
+                    rt_memcpy(check_all + 32 + KEY_LENGTH, auth_bkey, KEY_LENGTH);
+                    rt_memcpy(check_all + 32 + KEY_LENGTH + KEY_LENGTH, factory_signature, SIGNATURE_LENGTH);
+                    
+                    tiny_md5(check_all, 32 + KEY_LENGTH + KEY_LENGTH + SIGNATURE_LENGTH, check_md5);
+                    if(pcd_write_ex(ELOCK_CHECK_BLOCK, check_md5) != MI_OK)
+                    {
+                        goto _EXIT;
+                    }
+                }
+                
 				result = RT_TRUE;
 			}
 		}

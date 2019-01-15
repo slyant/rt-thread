@@ -49,6 +49,7 @@ enum card_base_type rfic_scan_handle(rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t
 rt_bool_t rfic_card_init(enum card_base_type type, rt_bool_t use_elock, rt_bool_t use_money_bag, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH]);
 rt_bool_t rfic_card_reset(enum card_base_type type, rt_uint8_t in_key_b[KEY_LENGTH]);
 rt_bool_t rfic_card_write(enum card_base_type type, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *buffer, rt_uint16_t buf_length);
+rt_bool_t rfic_card_write_for_ekey(enum card_base_type type, rt_uint8_t in_key_a[KEY_LENGTH], rt_uint8_t in_key_b[KEY_LENGTH], rt_uint8_t *buffer, rt_uint16_t buf_length);
 rt_bool_t rfic_money_read(rt_uint8_t in_key_a[KEY_LENGTH], rt_bool_t *out_stat, rt_uint32_t *out_value);
 rt_bool_t rfic_money_write(rt_uint8_t in_key_ab[KEY_LENGTH], rt_int32_t value);
 
