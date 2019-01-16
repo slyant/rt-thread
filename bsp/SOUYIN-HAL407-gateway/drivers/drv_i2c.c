@@ -29,12 +29,12 @@
 #include <board.h>
 
 /*user should change this to adapt specific board*/
-#define I2C_SCL_PIN                 GPIO_PIN_4
-#define I2C_SCL_PORT                GPIOH
-#define I2C_SCL_PORT_CLK_ENABLE     __HAL_RCC_GPIOH_CLK_ENABLE
-#define I2C_SDA_PIN                 GPIO_PIN_5
-#define I2C_SDA_PORT                GPIOH
-#define I2C_SDA_PORT_CLK_ENABLE     __HAL_RCC_GPIOH_CLK_ENABLE
+#define I2C_SCL_PIN                 GPIO_PIN_6
+#define I2C_SCL_PORT                GPIOB
+#define I2C_SCL_PORT_CLK_ENABLE     __HAL_RCC_GPIOB_CLK_ENABLE
+#define I2C_SDA_PIN                 GPIO_PIN_7
+#define I2C_SDA_PORT                GPIOB
+#define I2C_SDA_PORT_CLK_ENABLE     __HAL_RCC_GPIOB_CLK_ENABLE
 
 static void drv_i2c_gpio_init()
 {

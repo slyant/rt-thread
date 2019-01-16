@@ -97,12 +97,12 @@ static void door_update_hook(rt_uint8_t group_index, rt_uint16_t sta)
 
 static void load_datetime(void)
 {
-//	calendar_t cal = rt_calloc(1, sizeof(struct calendar));
-//	if(get_datetime(cal))
-//	{
-//		lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
-//	}
-//	rt_free(cal);
+	calendar_t cal = rt_calloc(1, sizeof(struct calendar));
+	if(get_datetime(cal))
+	{
+		lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
+	}
+	rt_free(cal);
 }
 
 static void set_workmodel(enum sys_workmodel model)

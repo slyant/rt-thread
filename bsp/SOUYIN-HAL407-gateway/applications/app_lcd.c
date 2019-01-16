@@ -741,7 +741,7 @@ static void lcd_notify_button(unsigned short screen_id, unsigned short control_i
     switch(screen_id)
     {
     case UI_ABKEY_CARD:		//密钥卡设置
-        if(sys_status.get_workmodel() == CONFIG_ABKEY_MODEL)
+        if(sys_status.get_workmodel() == CONFIG_ABKEY_MODEL || sys_status.get_workmodel() == CONFIG_MANAGE_MODEL)
         {
             abkey_card_handle(control_id);
         }
