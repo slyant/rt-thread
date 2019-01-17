@@ -3,13 +3,11 @@
 #include <app_gps.h>
 
 #define  GPS_RX_EVENT  (1<<0)
-
-static struct rt_event gps_evt;                   //事件控制块
-static rt_device_t uart_gps_dev = RT_NULL;        //串口设备句柄
-static struct calendar cal;
 #define BUF_LEN		128
-static char gps_buf[BUF_LEN]={0};
 
+static rt_sem_t gps_rx_sem = RT_NULL;
+static rt_device_t uart_gps_dev = RT_NULL;        //串口设备句柄
+static char gps_buf[BUF_LEN]={0};
 static gps_update_hook_t gps_update_hook = RT_NULL;
 
 void gps_update_set_hook(gps_update_hook_t hook)
@@ -20,20 +18,23 @@ void gps_update_set_hook(gps_update_hook_t hook)
 /* 回调函数 */
 static rt_err_t uart_gps_rev(rt_device_t dev, rt_size_t size)
 {
-    rt_event_send(&gps_evt, GPS_RX_EVENT);       //接收事件 
+    if(dev == uart_gps_dev && size > 0)
+    {
+        rt_sem_release(gps_rx_sem);
+    }
     return RT_EOK;
 }
 
-static uint8_t gps_getchar(void)
+static rt_err_t gps_getchar(rt_uint8_t *ch)
 {
-	rt_uint32_t es;
-	uint8_t revd;
-	while(rt_device_read(uart_gps_dev,0,&revd,1)!=1)
+	rt_err_t result = RT_EOK;
+	while(rt_device_read(uart_gps_dev, 0, ch, 1) == 0)
 	{
-		rt_event_recv(&gps_evt,GPS_RX_EVENT,RT_EVENT_FLAG_AND |
-                      RT_EVENT_FLAG_CLEAR,RT_WAITING_FOREVER, &es);
+		result = rt_sem_take(gps_rx_sem, RT_WAITING_FOREVER);
+        if(result != RT_EOK)
+            break;
 	}
-	return revd;
+	return result;
 }
 
 static int gps_init(void)
@@ -49,10 +50,11 @@ static int gps_init(void)
 			rt_kprintf("set %s rx indicate error.%d\n", UART_GPS_UART_NAME, res);
 			return -RT_ERROR;
 		}
+        /* 创建串口接收中断信号量 */
+        gps_rx_sem = rt_sem_create("gps_sem", 0, RT_IPC_FLAG_FIFO);
+        RT_ASSERT(gps_rx_sem != RT_NULL);
 		/* 打开设备，以可读写、中断方式 */
         res = rt_device_open(uart_gps_dev, RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX );
-		 /* 初始化事件对象 */
-        rt_event_init(&gps_evt, "gps_rx", RT_IPC_FLAG_FIFO);
 		if(res == RT_EOK)
 		{
 			rt_kprintf("gps init on %s done ! \n", UART_GPS_UART_NAME);
@@ -79,9 +81,10 @@ static void gps_data_parse(rt_uint8_t len)
 	}
 	if(gps_buf[ds[1]] == 'A')
 	{
+        struct calendar cal;
 		t = ds[0];
 		cal.hour =   (gps_buf[t]-'0')*10;   t++;
-		cal.hour +=  (gps_buf[t]-'0')+8;    t++;
+		cal.hour +=  (gps_buf[t]-'0');      t++;
 		cal.min  =   (gps_buf[t]-'0')*10;   t++;
 		cal.min  +=  (gps_buf[t]-'0');      t++;
 		cal.sec  =   (gps_buf[t]-'0')*10;   t++;
@@ -95,6 +98,10 @@ static void gps_data_parse(rt_uint8_t len)
 		cal.year   =  (gps_buf[t]-'0')*10;   t++;
 		cal.year  +=  (gps_buf[t]-'0')+2000;
 		
+        rt_uint32_t seccount = rtc_make_time(&cal);
+        seccount += (8 * 60 * 60);  //+8时区
+        rtc_local_time(seccount, &cal);
+        
 		if(gps_update_hook)
 			gps_update_hook(&cal);
 	}
@@ -102,11 +109,12 @@ static void gps_data_parse(rt_uint8_t len)
 
 static void uart_handle_entry(void* param)
 {
-	uint8_t gps_rx;
-	static uint8_t gps_index = 0;
+	rt_uint8_t gps_rx;
+	static rt_uint8_t gps_index = 0;
 	while(1)
 	{
-		gps_rx = gps_getchar();
+		if(gps_getchar(&gps_rx) != RT_EOK)
+            continue;
 		if(gps_rx == '$') 
 		{ 
 			gps_buf[0] = gps_rx; 

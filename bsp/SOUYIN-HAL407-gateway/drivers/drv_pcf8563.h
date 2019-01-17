@@ -2,9 +2,9 @@
 #define __DRV_PCF8563_H__
 
 #include <rtthread.h>
+#include <rtc_calendar.h>
 
-rt_uint8_t rtc_set_time(int year, int month, int mday, int hour, int min, int sec);
-rt_uint8_t rtc_get_time(int *year, int *month, int *mday, int *wday, int *hour, int *min, int *sec);
-rt_uint8_t ymd_to_wday(int year, int month, int mday);
+rt_err_t rtc_set_time(calendar_t cal);
+rt_err_t rtc_get_time(calendar_t cal);
 
 #endif

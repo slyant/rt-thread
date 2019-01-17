@@ -35,16 +35,13 @@ static rt_err_t uart_lcd_rx_ind(rt_device_t dev, rt_size_t size)
 static rt_err_t get_char(rt_uint8_t *ch)
 {
     rt_err_t result = RT_EOK;
-
     while (rt_device_read(lcd_device.uart_device, 0, ch, 1) == 0)
     {
         result = rt_sem_take(lcd_device.rx_notice, RT_WAITING_FOREVER);
         if (result != RT_EOK)
-        {
-            return result;
-        }
+            break;
     }
-    return RT_EOK;
+    return result;
 }
 
 static void uart_lcd_rx_handle_entry(void* param)
@@ -53,13 +50,15 @@ static void uart_lcd_rx_handle_entry(void* param)
 	queue_reset();
 	while(1)
 	{		
-		get_char(&ch);
-		queue_push(ch);
-		qsize size = queue_find_cmd(lcd_device.cmd_buffer,lcd_device.cmd_bufsize); 		//从缓冲区中获取一条指令 
-		if(size>0)
-		{          
-			ProcessMessage(lcd_device.cmd_buffer, size); 
-		}
+		if(get_char(&ch) == RT_EOK)
+        {
+            queue_push(ch);
+            qsize size = queue_find_cmd(lcd_device.cmd_buffer,lcd_device.cmd_bufsize); 		//从缓冲区中获取一条指令 
+            if(size>0)
+            {          
+                ProcessMessage(lcd_device.cmd_buffer, size); 
+            }
+        }
 	}
 }
 

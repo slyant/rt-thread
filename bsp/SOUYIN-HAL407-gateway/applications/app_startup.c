@@ -29,21 +29,13 @@ static void sys_restart(void)
 }
 static void set_datetime(calendar_t cal)
 {	
-	rtc_set_time(cal->year, cal->month, cal->mday, cal->hour, cal->min, cal->sec);
+	rtc_set_time(cal);
 	lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 }
 static rt_bool_t get_datetime(calendar_t cal)
 {
-	int year, month, mday, wday, hour, min, sec;	
-	if(rtc_get_time(&year, &month, &mday, &wday, &hour, &min, &sec))
+	if(rtc_get_time(cal) == RT_EOK)
 	{		
-		cal->year = year;
-		cal->month = month;
-		cal->mday = mday;
-		cal->wday = wday;
-		cal->hour = hour;
-		cal->min = min;
-		cal->sec = sec;	
 		return RT_TRUE;
 	}		
 	return RT_FALSE;

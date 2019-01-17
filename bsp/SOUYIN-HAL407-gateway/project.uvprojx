@@ -465,6 +465,11 @@
               <FileType>1</FileType>
               <FilePath>Commons\st_mcuid.c</FilePath>
             </File>
+            <File>
+              <FileName>rtc_calendar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Commons\rtc_calendar.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
