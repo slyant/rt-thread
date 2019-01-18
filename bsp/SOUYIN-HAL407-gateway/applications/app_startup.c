@@ -40,6 +40,20 @@ static rt_bool_t get_datetime(calendar_t cal)
 	}		
 	return RT_FALSE;
 }
+static void datetime(void)
+{
+    struct calendar cal;
+    if(get_datetime(&cal))
+    {
+        rt_kprintf("system datetime:%04d-%02d-%02d %02d:%02d:%02d\n", cal.year, cal.month, cal.mday, cal.hour, cal.min, cal.sec);
+    }
+    else
+    {
+        rt_kprintf("read datetime error!\n");
+    }
+}
+MSH_CMD_EXPORT(datetime, display system datetime);
+
 static void set_door_group_sta(rt_uint8_t group_index, rt_uint16_t sta)
 {
     rt_mutex_take(group_sta_lock, RT_WAITING_FOREVER);

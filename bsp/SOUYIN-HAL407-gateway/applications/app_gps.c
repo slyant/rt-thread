@@ -2,7 +2,6 @@
 #include <drv_usart.h>
 #include <app_gps.h>
 
-#define  GPS_RX_EVENT  (1<<0)
 #define BUF_LEN		128
 
 static rt_sem_t gps_rx_sem = RT_NULL;

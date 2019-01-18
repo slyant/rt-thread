@@ -27,7 +27,6 @@ struct calendar
     int     month;  //months of the year, 1 to 12
     int     year;   //years, START_YEAR to START_YEAR+135
     int     wday;   //days since Sunday, 0 to 6
-    int     yday;   //days of the year, 1 to 366
 };
 typedef struct calendar *calendar_t;
 

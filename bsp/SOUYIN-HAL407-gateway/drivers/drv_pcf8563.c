@@ -3,10 +3,7 @@
 #include <drv_pcf8563.h>
 
 #define  PCF_ADDR  (0xA2>>1)
-
-static rt_uint8_t *time_buf = RT_NULL;  //用于保存时间,[0]秒，[1]分，[2]时，[3]日，[4]星期，[5]月，[6]年
-static const rt_uint8_t tab_week[12]={0,3,3,6,1,4,6,2,5,0,3,5}; //月修正数据表
-
+static rt_uint8_t time_buf[7];  //用于保存时间,[0]秒，[1]分，[2]时，[3]日，[4]星期，[5]月，[6]年
 static struct rt_i2c_bus_device  *pcf_bus;
 static struct rt_mutex mutex_dt;
 
@@ -27,7 +24,7 @@ static rt_err_t pcf8563_get_time(rt_uint8_t * buf)
 {
 	rt_uint8_t i,ts,rbuf[7];
 	rbuf[0] = 2;
-	ts = rt_i2c_master_send(pcf_bus,PCF_ADDR,0,&rbuf[0],1);
+	ts = rt_i2c_master_send(pcf_bus,PCF_ADDR,0,rbuf,1);
 	if(ts==1)
 	{
 		ts = rt_i2c_master_recv(pcf_bus,PCF_ADDR,0,rbuf,7);
@@ -47,7 +44,6 @@ rt_err_t rtc_set_time(calendar_t cal)
 {
 	rt_err_t result;
 	rt_mutex_take(&mutex_dt,RT_WAITING_FOREVER);	
-    time_buf = rt_calloc(1, 7);
 	time_buf[0] = cal->sec/10;		//秒
 	time_buf[0] <<= 4;
 	time_buf[0] |= (cal->sec % 10);
@@ -72,7 +68,6 @@ rt_err_t rtc_set_time(calendar_t cal)
 	time_buf[6] |= (cal->year % 100) % 10;	
 	
 	result = pcf8563_set_time(time_buf);
-    rt_free(time_buf);
 	rt_mutex_release(&mutex_dt);
 	return result;
 }
@@ -81,7 +76,6 @@ rt_err_t rtc_get_time(calendar_t cal)
 {
 	rt_err_t result;
 	rt_mutex_take(&mutex_dt,RT_WAITING_FOREVER);
-    time_buf = rt_calloc(1, 7);
 	result = pcf8563_get_time(time_buf);
 	rt_mutex_release(&mutex_dt);
 	if(result == RT_EOK)
@@ -100,7 +94,6 @@ rt_err_t rtc_get_time(calendar_t cal)
         if(cal->sec<0 || cal->sec>59)cal->sec = 0;
         cal->wday = ymd2wday(cal->year, cal->month, cal->mday);
     }
-    rt_free(time_buf);
 	return result;
 }
 
