@@ -12,8 +12,8 @@
 #define DRIVER_CARD_MAX_COUNT	65535	//司机卡最大数量
 #define GROUP_MAX_COUNT			8		//节点最大数量
 #define DOOR_MAX_COUNT			16		//门最大数量
-#define OPEN_DISPLAY_TIME       5000    //柜门编号显示时间ms
-#define MANAGE_DISPLAY_TIME     10000   //管理界面显示时间ms
+#define OPEN_DISPLAY_TIME       120000  //柜门编号显示时间ms
+#define MANAGE_DISPLAY_TIME     20000   //管理界面显示时间ms
 //柜门状态
 #define DOOR_STA_INIT       0   //初始
 #define DOOR_STA_LOCK       1   //上锁
@@ -72,7 +72,7 @@ struct sys_status
     void (*manage_display_start)(void);
 	void (*set_workmodel)(enum sys_workmodel);
 	enum sys_workmodel(*get_workmodel)(void);	
-	rt_bool_t (*get_datetime)(calendar_t);
+	rt_uint32_t (*get_datetime)(calendar_t);
 	void (*set_datetime)(calendar_t);
     void (*set_door_group_sta)(rt_uint8_t, rt_uint16_t);
     rt_uint16_t (*get_door_group_sta)(rt_uint8_t);

@@ -140,7 +140,7 @@ static void uart_handle_entry(void* param)
 static int gps_handle(void)
 {
 	rt_thread_t gps_thread = rt_thread_create("tgps",uart_handle_entry,
-											RT_NULL,1024,12,50);
+											RT_NULL,1024,16,50);
 	if(gps_thread!=RT_NULL)
 		rt_thread_startup(gps_thread);
 	return 0;

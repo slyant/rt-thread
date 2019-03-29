@@ -28,7 +28,8 @@ static int create_sqlite_db(void)
 		const char *doorinfo_sql = "CREATE TABLE doorinfo(		\
 				id int PRIMARY KEY NOT NULL,		\
 				status int,							\
-				card_num int);";
+				card_num int,                       \
+                time_stamp int);";
 		const char *loginfo_sql = "CREATE TABLE loginfo(		\
 				id int PRIMARY KEY NOT NULL,		\
 				date_time int,						\
@@ -65,7 +66,7 @@ static int init_data(void)
 	e->id = SYSINFO_KEY_ID;
 	rt_strncpy(e->sys_title, INIT_SYS_TITLE, rt_strlen(INIT_SYS_TITLE));
 	e->en_driver_card = 1;
-	e->open_timeout = 60;
+	e->open_timeout = 300;
 	e->node_count = 3;
 	e->door_count = 8;
 	rt_memcpy(e->key_a, INIT_SYS_KEY_A, INIT_KEY_LEN);
@@ -85,6 +86,7 @@ static int init_data(void)
         d->id = i;
         d->card_num = 0;
         d->status = 0;
+        d->time_stamp = 0;
         doorinfo_add(d);
     }
     rt_free(d);

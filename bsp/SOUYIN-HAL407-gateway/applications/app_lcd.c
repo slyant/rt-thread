@@ -15,8 +15,9 @@ static rt_uint8_t btn_all_group_sta;
 static rt_uint8_t btn_gropu_index;								  
 
 static temp_card_t temp_card_info = RT_NULL;
-static temp_setting_t temp_setting_info = RT_NULL;									  
+static temp_setting_t temp_setting_info = RT_NULL;	
 
+static rt_mutex_t lcd_set_lock = RT_NULL;
                                       
 #define GET_DOOR_STA(sta,idx)   ((sta & (((rt_uint16_t)0x0001)<<(idx)))>0?1:0)
 
@@ -25,24 +26,29 @@ void lcd_update_door_sta(rt_uint8_t group_index)
     if(sys_status.get_workmodel() == WORK_MANAGE_MODEL && ! btn_all_group_sta && group_index == btn_gropu_index)
     {
         rt_uint16_t sta = sys_status.get_door_group_sta(group_index);
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
         BatchBegin(UI_OPEN_DOOR);
         for(int i = OPEN_DOOR_BTN_1; i < OPEN_DOOR_BTN_1 + sys_config.door_count; i++)
         {                
             BatchSetButtonValue(i, GET_DOOR_STA(sta, i - OPEN_DOOR_BTN_1));
         }
         BatchEnd();
+        rt_mutex_release(lcd_set_lock);
     }
 }
 
 void lcd_set_buzzer(rt_uint8_t ms)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
     SetBuzzer(ms);
+    rt_mutex_release(lcd_set_lock);
 }
 void lcd_set_open_door(void)
 {
 	rt_uint8_t i, j;
 	int control_index;
 	
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	BatchBegin(UI_OPEN_DOOR);
     //设置分组控制按钮初始状态
     BatchSetButtonValue(OPEN_DOOR_BTN_ALL_GROUP, btn_all_group_sta);
@@ -79,13 +85,16 @@ void lcd_set_open_door(void)
 		BatchSetVisible(control_index++, 0);
 	}
 	BatchEnd();
+    rt_mutex_release(lcd_set_lock);
     if(! btn_all_group_sta)
         lcd_update_door_sta(btn_gropu_index);
 }		
 									  
 void lcd_wakeup(void)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	SetBackLight(LCD_BACK_LIGHT);
+    rt_mutex_release(lcd_set_lock);
 }
 
 static void auto_temp_card_info(void)
@@ -147,18 +156,24 @@ static void dispose_temp_stting_info(void)
 }
 void lcd_set_datetime(int year, int month, int mday, int wday, int hour, int min, int sec)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	SetRtc(year, month, mday, wday,	hour, min, sec);
+    rt_mutex_release(lcd_set_lock);
 }
 
 void lcd_set_sys_title(char *title)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	SetTextValue(UI_MAIN, MAIN_TEXT_TITLE, (unsigned char*)title);
 	SetTextValue(UI_OPEN_DOOR, OPEN_DOOR_TEXT_SYS_TITLE, (unsigned char*)title);
+    rt_mutex_release(lcd_set_lock);
 }
 
 void lcd_set_screen_id(rt_uint16_t id)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	SetScreen(id);
+    rt_mutex_release(lcd_set_lock);
 	if(id == UI_WAITE) return;
 	
     screen_id_list[4] = screen_id_list[3];
@@ -175,7 +190,9 @@ rt_uint16_t lcd_get_screen_id(void)
 
 void lcd_set_screen_back(void)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	SetScreen(screen_id_list[1]);
+    rt_mutex_release(lcd_set_lock);
 	screen_id_list[0] = screen_id_list[1];
 	screen_id_list[1] = screen_id_list[2];
 	screen_id_list[2] = screen_id_list[3];
@@ -183,28 +200,49 @@ void lcd_set_screen_back(void)
 	screen_id_list[4] = UI_MAIN;	
 }
 
-void lcd_show_door_num(const char *num, const char *msg)
+void lcd_show_door_num(const char *num, const char *msg1, const char *msg2, const char *msg_time, const unsigned long count_down)
 {    
-    SetTextValue(UI_DOOR, DOOR_TEXT_NUM, (unsigned char *)num);
-    SetTextValue(UI_DOOR, DOOR_TEXT_MSG, (unsigned char *)msg);
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
+    BatchBegin(UI_DOOR);
+    if(num) BatchSetText(DOOR_TEXT_NUM, (unsigned char *)num);
+    if(msg1) BatchSetText(DOOR_TEXT_MSG1, (unsigned char *)msg1);
+    if(msg2) BatchSetText(DOOR_TEXT_MSG2, (unsigned char *)msg2);
+    if(msg_time) BatchSetText(DOOR_TEXT_TIME, (unsigned char *)msg_time);         
+    BatchEnd();
+    if(count_down > 0)
+        SetTextInt32(UI_DOOR, DOOR_TEXT_COUNT_DOWN, count_down, 0, 0);
+    else
+        SetTextValue(UI_DOOR, DOOR_TEXT_COUNT_DOWN, (unsigned char*)" ");
+    rt_mutex_release(lcd_set_lock);
     lcd_set_screen_id(UI_DOOR);
     sys_status.open_display_start();
 }
 
+void lcd_update_count_down(const unsigned long count_down)
+{
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
+    SetTextInt32(UI_DOOR, DOOR_TEXT_COUNT_DOWN, count_down, 0, 0);
+    rt_mutex_release(lcd_set_lock);
+}
+
 void lcd_show_error(const char *err)
 {
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 	GUI_CleanScreen();
-	SetFcolor(COLOR_WHITE);
-    lcd_set_screen_id(UI_ERROR);
+	SetFcolor(COLOR_WHITE);    
 	show_string(UI_ERROR, 5, 10, 0, 6, (unsigned char *)SYS_ERR);
     show_string(UI_ERROR, 5, 50, 0, 6, (unsigned char *)err);
+    rt_mutex_release(lcd_set_lock);
+    lcd_set_screen_id(UI_ERROR);
 }
 
 void lcd_show_message(const char *title, const char *msg)
-{
-    lcd_set_screen_id(UI_MESSAGE);
+{    
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);    
     SetTextValue(UI_MESSAGE, MESSAGE_TEXT_TITLE, (unsigned char *)title);
     SetTextValue(UI_MESSAGE, MESSAGE_TEXT_MSGBOX, (unsigned char *)msg);
+    rt_mutex_release(lcd_set_lock);
+    lcd_set_screen_id(UI_MESSAGE);
 }
 
 //密钥卡设置
@@ -289,7 +327,7 @@ static void abkey_card_handle(unsigned short control_id)
 
 //系统配置
 static void sys_config_handle(unsigned short control_id)
-{
+{    
 	switch(control_id)
     {
     case SYS_CFG_BTN_ABKEY_CARD:	//密钥卡设置
@@ -297,36 +335,46 @@ static void sys_config_handle(unsigned short control_id)
 		break;
 	case SYS_CFG_BTN_CFG_CARD:		//配置卡设置
 		init_temp_card_info();
-		auto_temp_card_info();
+		auto_temp_card_info();   
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);    
 		SetTextInt32(UI_CFG_CARD, CFG_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
         lcd_set_screen_id(UI_CFG_CARD);		
 		break;
 	case SYS_CFG_BTN_POWER_CARD:	//授权卡设置
 		init_temp_card_info();
 		auto_temp_card_info();
-		SetTextInt32(UI_POWER_CARD, POWER_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);    
+		SetTextInt32(UI_POWER_CARD, POWER_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);        
+        rt_mutex_release(lcd_set_lock);
         lcd_set_screen_id(UI_POWER_CARD);			
 		break;
 	case SYS_CFG_BTN_KEY_CARD:		//钥匙卡设置
 		init_temp_card_info();
 		auto_temp_card_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextInt32(UI_EKEY_CARD, EKEY_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
         lcd_set_screen_id(UI_EKEY_CARD);			
 		break;	
 	case SYS_CFG_BTN_DRIVER_CARD:	//司机卡设置
 		init_temp_card_info();
 		auto_temp_card_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextInt32(UI_DRIVER_CARD, DRIVER_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
         lcd_set_screen_id(UI_DRIVER_CARD);
 		break;	
 	case SYS_CFG_BTN_OTHER_SETTING:	//其它设置
 		init_temp_stting_info();
 		auto_temp_setting_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextValue(UI_OTHER_SETTING, OTHER_SETTING_TEXT_SYS_TITLE, (unsigned char*)temp_setting_info->sys_title);
 		SetTextInt32(UI_OTHER_SETTING, OTHER_SETTING_TEXT_EN_DRIVER_CARD, temp_setting_info->en_driver_card, 0, 0);
 		SetTextInt32(UI_OTHER_SETTING, OTHER_SETTING_TEXT_NODE_COUNT, temp_setting_info->node_count, 0, 0);
 		SetTextInt32(UI_OTHER_SETTING, OTHER_SETTING_TEXT_DOOR_COUNT, temp_setting_info->door_count, 0, 0);
 		SetTextInt32(UI_OTHER_SETTING, OTHER_SETTING_TEXT_OPEN_TIMEROUT, temp_setting_info->open_timeout, 0, 0);
+        rt_mutex_release(lcd_set_lock);
 		lcd_set_screen_id(UI_OTHER_SETTING);
 		break;
 	case SYS_CFG_BTN_RESTART:		//退出重启
@@ -396,7 +444,9 @@ static void cfg_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_OUT_FAILED);
 		}
 		auto_temp_card_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextInt32(UI_CFG_CARD, CFG_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
 		break;    
 	case CFG_CARD_BTN_BACK:			//返回
 		dispose_temp_card_info();
@@ -463,7 +513,9 @@ static void power_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_OUT_FAILED);
 		}
 		auto_temp_card_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextInt32(UI_POWER_CARD, POWER_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
 		break;    
 	case POWER_CARD_BTN_BACK:		//返回
 		dispose_temp_card_info();
@@ -530,7 +582,9 @@ static void ekey_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_OUT_FAILED);
 		}
 		auto_temp_card_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextInt32(UI_EKEY_CARD, EKEY_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
 		break;    
 	case EKEY_CARD_BTN_BACK:		//返回
 		dispose_temp_card_info();
@@ -597,7 +651,9 @@ static void driver_card_handle(unsigned short control_id)
 			lcd_show_message(MSG_RESULT, MSG_OUT_FAILED);
 		}
 		auto_temp_card_info();
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
 		SetTextInt32(UI_DRIVER_CARD, DRIVER_CARD_TEXT_NUMBER, temp_card_info->num, 0, 0);
+        rt_mutex_release(lcd_set_lock);
 		break;    
 	case DRIVER_CARD_BTN_BACK:		//返回
 		dispose_temp_card_info();
@@ -614,6 +670,7 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
     {
         //设置分组按钮状态
         btn_all_group_sta = ! btn_all_group_sta;
+        rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
         SetButtonValue(UI_OPEN_DOOR, OPEN_DOOR_BTN_ALL_GROUP, btn_all_group_sta);
         if(btn_all_group_sta)
         {            
@@ -624,7 +681,8 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
             {                
                 BatchSetVisible(i, 0);
             }
-            BatchEnd();            
+            BatchEnd();  
+            rt_mutex_release(lcd_set_lock);            
         }
         else
         {            
@@ -636,6 +694,7 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
                 BatchSetVisible(i, 1);
             }
             BatchEnd();
+            rt_mutex_release(lcd_set_lock);
             lcd_update_door_sta(btn_gropu_index);
         }
     }
@@ -655,12 +714,14 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
             }
         }
         else
-        {           
+        {          
+            rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
             BatchBegin(UI_OPEN_DOOR);
             BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 0);//设置之前的分组按钮弹起
             btn_gropu_index = control_id - OPEN_DOOR_BTN_A_GROUP;
             BatchSetButtonValue(OPEN_DOOR_BTN_A_GROUP + btn_gropu_index, 1);//设置新的分组按钮按下                 
             BatchEnd();
+            rt_mutex_release(lcd_set_lock);
             lcd_update_door_sta(btn_gropu_index); 
         }
 	}
@@ -845,7 +906,11 @@ static void lcd_notify_text(unsigned short screen_id, unsigned short control_id,
 	}
 	else
 	{
-		if(control_id == CFG_CARD_TEXT_NUMBER)
+		if(control_id == CFG_CARD_TEXT_NUMBER 
+        || control_id == POWER_CARD_TEXT_NUMBER 
+        || control_id == EKEY_CARD_TEXT_NUMBER 
+        || control_id == DRIVER_CARD_TEXT_NUMBER 
+        )
 		{
 			temp_card_info->num = str2int32(str);
 		}
@@ -854,6 +919,8 @@ static void lcd_notify_text(unsigned short screen_id, unsigned short control_id,
 
 void app_lcd_startup(void)
 {	
+    lcd_set_lock = rt_mutex_create("lck_lock", RT_IPC_FLAG_FIFO);
+    RT_ASSERT(lcd_set_lock != RT_NULL);
     btn_all_group_sta = 1;
     btn_gropu_index = 0;
 	uart_lcd_set_button_notify_hook(lcd_notify_button);

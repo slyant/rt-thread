@@ -180,7 +180,7 @@ int cardinfo_del(int num)
 	return db_nonquery_by_varpara("delete from cardinfo where num=?;", "%d", num);
 }
 FINSH_FUNCTION_EXPORT(cardinfo_del, cardinfo del);
-//删除指定卡类型的记录
+//删除指定卡类型的记录，操作成功返回0
 int cardinfo_del_by_type(int type)
 {
 	return db_nonquery_by_varpara("delete from cardinfo where type=?;", "%d", type);

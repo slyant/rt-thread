@@ -14,6 +14,7 @@ static int doorinfo_bind_for_insert(sqlite3_stmt *stmt,int index,void *arg)
 	sqlite3_bind_int(stmt,1,e->id);
 	sqlite3_bind_int(stmt,2,e->status);
 	sqlite3_bind_int(stmt,3,e->card_num);
+    sqlite3_bind_int(stmt,4,e->time_stamp);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE)
 		return rc;
@@ -24,9 +25,10 @@ static int doorinfo_bind_for_update(sqlite3_stmt *stmt,int index,void *arg)
 {
 	int rc;
 	doorinfo_t e = arg;	
-	sqlite3_bind_int(stmt,1,e->id);
-	sqlite3_bind_int(stmt,2,e->status);
-	sqlite3_bind_int(stmt,3,e->card_num);
+	sqlite3_bind_int(stmt,1,e->status);
+	sqlite3_bind_int(stmt,2,e->card_num);
+    sqlite3_bind_int(stmt,3,e->time_stamp);
+	sqlite3_bind_int(stmt,4,e->id);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE)
 		return rc;
@@ -46,6 +48,7 @@ int doorinfo_bind(sqlite3_stmt *stmt,void *arg)
 		e->id = db_stmt_get_int(stmt,0);
 		e->status = db_stmt_get_int(stmt,1);
 		e->card_num = db_stmt_get_int(stmt,2);
+        e->time_stamp = db_stmt_get_int(stmt,3);
 	}
 	return ret;
 }
@@ -73,6 +76,7 @@ int doorinfo_queue_bind(sqlite3_stmt *stmt,void *arg)
 		e->id = db_stmt_get_int(stmt,0);
 		e->status = db_stmt_get_int(stmt,1);
 		e->card_num = db_stmt_get_int(stmt,2);
+        e->time_stamp = db_stmt_get_int(stmt,3);
 		
 		rc_queue_insert_tail(q,&(e->queue));
 		count ++;
@@ -89,7 +93,7 @@ void doorinfo_print_queue(record_queue_t q)
 	doorinfo_t e = NULL;
 	rc_queue_foreach(e,q,struct doorinfo,queue)
 	{
-		rt_kprintf("id:%d\nstatus:%d\ncard_num:%d\n",e->id, e->status, e->card_num);
+		rt_kprintf("id:%d\nstatus:%d\ncard_num:%d\ntime_stamp:%d\n",e->id, e->status, e->card_num, e->time_stamp);
 	}
 }
 //遍历队列，自定义处理方法（注意处理完成后释放队列及队列变量，使用doorinfo_free_queue(q)和rt_free(q)）
@@ -132,24 +136,15 @@ int doorinfo_get_all(record_queue_t q)
 //添加一条记录，操作成功返回0
 int doorinfo_add(doorinfo_t e)
 {
-  return db_nonquery_operator("insert into doorinfo(id,status,card_num) values (?,?,?);",doorinfo_bind_for_insert,e);
+  return db_nonquery_operator("insert into doorinfo(id,status,card_num,time_stamp) values (?,?,?,?);",doorinfo_bind_for_insert,e);
 	//return db_nonquery_by_varpara("insert into doorinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
 }
 //更新一条记录，操作成功返回0
 int doorinfo_update(doorinfo_t e)
 {
-	return db_nonquery_operator("update doorinfo set status=?,card_num=? where id=?;",doorinfo_bind_for_update,e);
+	return db_nonquery_operator("update doorinfo set status=?,card_num=?,time_stamp=? where id=?;",doorinfo_bind_for_update,e);
 }
-//更新一条记录，操作成功返回0
-int doorinfo_update_by_query(rt_uint32_t id, rt_uint8_t status, rt_uint32_t card_num)
-{
-    return db_nonquery_by_varpara("update doorinfo set status=?,card_num=? where id=?;", "%d%d%d", status, card_num, id);
-}
-//更新一批记录，操作成功返回0
-int doorinfo_update_by_id(rt_uint32_t from_id, rt_uint32_t to_id, rt_uint8_t status, rt_uint32_t card_num)
-{
-    return db_nonquery_by_varpara("update doorinfo set status=?,card_num=? where id>=? and id<=?;", "%d%d%d%d", status, card_num, from_id, to_id);
-}
+
 //删除指定主键的记录，操作成功返回0
 int doorinfo_del(int id)
 {

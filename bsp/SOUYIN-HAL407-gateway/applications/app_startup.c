@@ -32,13 +32,24 @@ static void set_datetime(calendar_t cal)
 	rtc_set_time(cal);
 	lcd_set_datetime(cal->year, cal->month, cal->mday, cal->wday, cal->hour, cal->min, cal->sec);
 }
-static rt_bool_t get_datetime(calendar_t cal)
+//参数cal为空时，仅返回当前时间戳
+static rt_uint32_t get_datetime(calendar_t cal)
 {
-	if(rtc_get_time(cal) == RT_EOK)
+    rt_uint32_t stamp = 0;
+    if(cal==RT_NULL)
+    {
+        calendar_t cal = rt_calloc(1, sizeof(struct calendar));
+        if(rtc_get_time(cal) == RT_EOK)
+        {
+            stamp = rtc_make_time(cal);
+        }
+        rt_free(cal);
+    }
+	else if(rtc_get_time(cal) == RT_EOK)
 	{		
-		return RT_TRUE;
+		stamp = rtc_make_time(cal);
 	}		
-	return RT_FALSE;
+	return stamp;
 }
 static void datetime(void)
 {
@@ -217,7 +228,10 @@ static void manage_display_start(void)
 
 void app_bat_work(void)
 {
-	rt_assert_set_hook(assert_hook);
+    app_lcd_startup();    
+    lcd_wakeup();//唤醒屏幕
+    
+	rt_assert_set_hook(assert_hook);    
     group_sta_lock = rt_mutex_create("gsta_lock", RT_IPC_FLAG_FIFO);
     RT_ASSERT(group_sta_lock != RT_NULL);
     door_update_lock = rt_mutex_create("door_lock", RT_IPC_FLAG_FIFO);
@@ -228,8 +242,6 @@ void app_bat_work(void)
     rt_memset(door_sta, 0x00, sizeof(door_sta));	
 	rt_memset((rt_uint8_t*)&sys_config, 0x00, sizeof(struct sys_config));
 	rt_memset((rt_uint8_t*)&sys_status, 0x00, sizeof(struct sys_status));
-	sys_status.get_workmodel = get_workmodel;
-	sys_status.set_workmodel = set_workmodel;
 	sys_config.update_sys_key = update_sys_key;
 	sys_config.sys_reset = sys_reset;
     sys_status.open_display_start = open_display_start;
@@ -238,18 +250,18 @@ void app_bat_work(void)
 	sys_status.set_datetime = set_datetime;
     sys_status.get_door_group_sta = get_door_group_sta;
     sys_status.set_door_group_sta = set_door_group_sta;
-	sys_status.restart = sys_restart;
-	sys_status.set_workmodel(WORK_OFF_MODEL);    
+	sys_status.restart = sys_restart;	   
     gps_update_set_hook(gps_update_hook);
-    door_update_set_hook(door_update_hook);
-    lcd_wakeup();//唤醒屏幕    
-	load_datetime();
-
+    door_update_set_hook(door_update_hook);    
+	load_datetime();  
+	sys_status.get_workmodel = get_workmodel;
+	sys_status.set_workmodel = set_workmodel;
+    sys_status.set_workmodel(WORK_OFF_MODEL);      
+        
 	app_sqlite_init();      //要先初始化sqlite数据库	
-    app_door_startup();    
-	app_lcd_startup();
-	app_rfic_startup();
-	app_nrf_gateway_startup();    
+    app_door_startup();
+	app_rfic_startup();    	
+	app_nrf_gateway_startup();     
 
 	sysinfo_t sysinfo = rt_calloc(1, sizeof(struct sysinfo));
 	RT_ASSERT(sysinfo_get_by_id(sysinfo, SYSINFO_KEY_ID)>0);

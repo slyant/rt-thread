@@ -17,11 +17,6 @@
 
 static nrf_door_update_hook_t nrf_door_update_hook = RT_NULL;
 
-static void nrf_send_session_key(rt_uint8_t node)
-{
-    
-}
-
 static void on_conn_cb(void* args)
 {
 	uint8_t node = *(uint8_t*)args;
