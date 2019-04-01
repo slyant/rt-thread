@@ -200,28 +200,46 @@ void lcd_set_screen_back(void)
 	screen_id_list[4] = UI_MAIN;	
 }
 
-void lcd_show_door_num(const char *num, const char *msg1, const char *msg2, const char *msg_time, const unsigned long count_down)
+void lcd_show_door_num(const char *num, const char *msg1, const char *msg2, const char *msg_time, const char *count_down_format, unsigned long count_down)
 {    
     rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
     BatchBegin(UI_DOOR);
     if(num) BatchSetText(DOOR_TEXT_NUM, (unsigned char *)num);
     if(msg1) BatchSetText(DOOR_TEXT_MSG1, (unsigned char *)msg1);
     if(msg2) BatchSetText(DOOR_TEXT_MSG2, (unsigned char *)msg2);
-    if(msg_time) BatchSetText(DOOR_TEXT_TIME, (unsigned char *)msg_time);         
-    BatchEnd();
+    if(msg_time) BatchSetText(DOOR_TEXT_TIME, (unsigned char *)msg_time);
     if(count_down > 0)
-        SetTextInt32(UI_DOOR, DOOR_TEXT_COUNT_DOWN, count_down, 0, 0);
+    {
+        char *temp = rt_calloc(1, 128);
+        rt_sprintf(temp, count_down_format, count_down/60, count_down%60);
+        BatchSetText(DOOR_TEXT_COUNT_DOWN, (unsigned char*)temp);
+        rt_free(temp);
+    }
     else
-        SetTextValue(UI_DOOR, DOOR_TEXT_COUNT_DOWN, (unsigned char*)" ");
+    {
+        BatchSetText(DOOR_TEXT_COUNT_DOWN, (unsigned char*)" ");
+    }
+    BatchEnd();
+        
     rt_mutex_release(lcd_set_lock);
     lcd_set_screen_id(UI_DOOR);
     sys_status.open_display_start();
 }
 
-void lcd_update_count_down(const unsigned long count_down)
+void lcd_update_count_down(const char *count_down_format, unsigned long count_down)
 {
-    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);
-    SetTextInt32(UI_DOOR, DOOR_TEXT_COUNT_DOWN, count_down, 0, 0);
+    rt_mutex_take(lcd_set_lock, RT_WAITING_FOREVER);    
+    if(count_down_format)
+    {
+        char *temp = rt_calloc(1, 128);
+        rt_sprintf(temp, count_down_format, count_down/60, count_down%60);
+        SetTextValue(UI_DOOR, DOOR_TEXT_COUNT_DOWN, (unsigned char*)temp);
+        rt_free(temp);
+    }
+    else
+    {
+        SetTextValue(UI_DOOR, DOOR_TEXT_COUNT_DOWN, (unsigned char*)" ");
+    }    
     rt_mutex_release(lcd_set_lock);
 }
 
@@ -666,6 +684,7 @@ static void driver_card_handle(unsigned short control_id)
 //开门处理
 static void open_door_handle(unsigned short control_id, unsigned char state)
 {
+    rt_uint32_t init_stamp = sys_status.get_datetime(RT_NULL);
 	if(control_id == OPEN_DOOR_BTN_ALL_GROUP)
     {
         //设置分组按钮状态
@@ -708,8 +727,9 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
                 rt_uint32_t from_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, 0);
                 rt_uint32_t to_id = GET_GLOBAL_ID(control_id - OPEN_DOOR_BTN_A_GROUP, DOOR_MAX_COUNT-1);
                 //sql
-                char *sql = rt_calloc(1, 128);
-                rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id>=%d and id<=%d;", DOOR_STA_INIT, 0, from_id, to_id);
+                char *sql = rt_calloc(1, 256);
+                rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d,init_stamp=%d,lock_stamp=%d,open1_stamp=%d,close1_stamp=%d,open2_stamp=%d,close2_stamp=%d,help_card_num=%d where id>=%d and id<=%d;",
+                                DOOR_STA_INIT, 0, init_stamp, 0, 0, 0, 0, 0, 0, from_id, to_id);
                 app_workqueue_exe_sql(sql);       //批量更新柜门状态为:初始
             }
         }
@@ -732,8 +752,10 @@ static void open_door_handle(unsigned short control_id, unsigned char state)
             door_any_open(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);
             rt_uint32_t id = GET_GLOBAL_ID(btn_gropu_index, control_id - OPEN_DOOR_BTN_1);            
             //sql
-            char *sql = rt_calloc(1, 128);
-            rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d where id=%d;", DOOR_STA_INIT, 0, id);
+            char *sql = rt_calloc(1, 256);
+            rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d,init_stamp=%d,lock_stamp=%d,open1_stamp=%d,close1_stamp=%d,open2_stamp=%d,close2_stamp=%d,help_card_num=%d where id=%d;",
+                            DOOR_STA_INIT, 0, init_stamp, 0, 0, 0, 0, 0, 0, id);
+            
             app_workqueue_exe_sql(sql);        //更新柜门状态为:初始
         }
     }

@@ -59,7 +59,18 @@ static void update_door_dowork(struct rt_work *work, void *work_data)
                         doorinfo->status = doorinfo->status + 1;
                         //sql
                         char *sql = rt_calloc(1, 128);
-                        rt_sprintf(sql, "update doorinfo set status=%d where id=%d;", doorinfo->status, doorinfo->id);
+                        if(doorinfo->status == DOOR_STA_LOCK)
+                        { 
+                            rt_sprintf(sql, "update doorinfo set status=%d,lock_stamp=%d where id=%d;", doorinfo->status, update_door_sta->stamp, doorinfo->id);
+                        }
+                        else if(doorinfo->status == DOOR_STA_CLOSE_1)
+                        {
+                            rt_sprintf(sql, "update doorinfo set status=%d,close1_stamp=%d where id=%d;", doorinfo->status, update_door_sta->stamp, doorinfo->id);                            
+                        }
+                        else// if(doorinfo->status == DOOR_STA_CLOSE_2)
+                        {
+                            rt_sprintf(sql, "update doorinfo set status=%d,close2_stamp=%d where id=%d;", doorinfo->status, update_door_sta->stamp, doorinfo->id);                            
+                        }
                         int rc = db_nonquery_by_varpara(sql, RT_NULL);
                         rt_kprintf("update_door_dowork(rc=%d):%s\n", rc, sql);
                         rt_free(sql);       //更新柜门状态
@@ -78,10 +89,13 @@ void app_workqueue_exe_sql(char *sql)
 {
     if(wq != RT_NULL)
     {
+        char *temp = rt_calloc(1, rt_strlen(sql) + 1);  //释放多余长度的字符串空间
+        rt_strncpy(temp, sql, rt_strlen(sql));
+        rt_free(sql);
         if(app_workqueue_get_length() < SQLITE_WORKQUEUE_MAX_LENGTH)
         {
             struct rt_work *work = rt_calloc(1, sizeof(struct rt_work));
-            rt_work_init(work, sqlite_dowork, (void*)sql);
+            rt_work_init(work, sqlite_dowork, (void*)temp);
             rt_workqueue_dowork(wq, work);    
         }
     }
@@ -110,6 +124,7 @@ void app_workqueue_update_door(rt_uint8_t group_index, rt_uint16_t sta)
             update_door_sta_t update_door_sta = rt_calloc(1, sizeof(struct update_door_sta));
             update_door_sta->group_index = group_index;
             update_door_sta->sta = sta;
+            update_door_sta->stamp = sys_status.get_datetime(RT_NULL);
             rt_work_init(work, update_door_dowork, (void*)update_door_sta);
             rt_workqueue_dowork(wq, work);    
         }

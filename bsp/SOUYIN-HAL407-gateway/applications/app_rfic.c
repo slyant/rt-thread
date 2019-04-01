@@ -23,18 +23,18 @@ static const char MSG_OPEN_TIPS1[] = {0xC7, 0xEB, 0xD4, 0xDA, 0xCF, 0xDE, 0xB6, 
                                             0xC3, 0xC5, 0x00};   //请在限定时间内，再次刷卡开门，并存入实闸盒，关好门
 static const char MSG_OPEN_TIPS2[] = {0xC8, 0xF4, 0xB3, 0xAC, 0xCA, 0xB1, 0xA3, 0xAC, 0xC7, 0xEB, 0xC1, 0xAA, 0xCF, 0xB5, 0xB9, 0xDC, 
                                             0xC0, 0xED, 0xD4, 0xB1, 0xA3, 0xAC, 0xB2, 0xA2, 0xD4, 0xDA, 0xCB, 0xA2, 0xBF, 0xA8, 0xBA, 0xF3, 
-                                            0x33, 0xC3, 0xEB, 0xC4, 0xDA, 0xCB, 0xA2, 0xB9, 0xDC, 0xC0, 0xED, 0xBF, 0xA8, 0xBF, 0xAA, 0xC3, 
-                                            0xC5, 0x00};   //若超时，请联系管理员，并在刷卡后3秒内刷管理卡开门
+                                            0x25, 0x64, 0xC3, 0xEB, 0xC4, 0xDA, 0xCB, 0xA2, 0xB9, 0xDC, 0xC0, 0xED, 0xBF, 0xA8, 0xBF, 0xAA, 
+                                            0xC3, 0xC5, 0x00};   //若超时，请联系管理员，并在刷卡后%d秒内刷管理卡开门
 static const char MSG_FINISH[] = {0xC4, 0xFA, 0xD2, 0xD1, 0xCD, 0xEA, 0xB3, 0xC9, 0xCA, 0xD5, 0xD2, 0xF8, 0x2C, 0xD0, 0xBB, 0xD0, 
                                         0xBB, 0xA3, 0xA1, 0x00};    //您已完成收银,谢谢！
-static const char MSG_OPEN_TIPS3_1[] = {0xB1, 0xE0, 0xBA, 0xC5, 0x00};    //编号  
-static const char MSG_OPEN_TIPS3_2[] = {0xA3, 0xAC, 0xC4, 0xFA, 0xB1, 0xBE, 0xB4, 0xCE, 0xCA, 0xD5, 0xD2, 0xF8, 0xD2, 0xBB, 0xB9, 0xB2, 
-                                            0xD3, 0xC3, 0xCA, 0xB1, 0x00};  //，您本次收银一共用时
-static const char MSG_OPEN_TIPS3_3[] = {0xC3, 0xEB, 0x00};  //秒
+static const char MSG_OPEN_TIPS3[] = {0xB1, 0xE0, 0xBA, 0xC5, 0x25, 0x64, 0xA3, 0xAC, 0xC4, 0xFA, 0xB1, 0xBE, 0xB4, 0xCE, 0xCA, 0xD5, 
+                                            0xD2, 0xF8, 0xD2, 0xBB, 0xB9, 0xB2, 0xD3, 0xC3, 0xCA, 0xB1, 0x25, 0x64, 0xB7, 0xD6, 0x25, 0x64, 
+                                            0xC3, 0xEB, 0x00};  //编号%d，您本次收银一共用时%d分%d秒
+static const char MSG_OPEN_DELAY[] = {0xB1, 0xE0, 0xBA, 0xC5, 0x25, 0x6C, 0x64, 0xA3, 0xAC, 0xC4, 0xFA, 0xB1, 0xBE, 0xB4, 0xCE, 0xB2, 
+                                            0xD9, 0xD7, 0xF7, 0xB3, 0xAC, 0xCA, 0xB1, 0x25, 0x64, 0xB7, 0xD6, 0x25, 0x64, 0xC3, 0xEB, 0x00};    //编号%ld，您本次操作超时%d分%d秒
     
-static const char MSG_COUNT_DOWN[] = {0xB5, 0xB9, 0xBC, 0xC6, 0xCA, 0xB1, 0x28, 0xC3, 0xEB, 0x29, 0x00};    //倒计时(秒)
-//static const char MSG_TIME_OUT[] = {0xB3, 0xAC, 0xCA, 0xB1, 0x28, 0xC3, 0xEB, 0x29, 0x00};      //超时(秒)
-//static const char MSG_FISISH_TIME[] = {0xD2, 0xD1, 0xCD, 0xEA, 0xB3, 0xC9, 0x28, 0xC3, 0xEB, 0x29, 0x00}; //已完成(秒)
+static const char MSG_COUNT_DOWN[] = {0xB5, 0xB9, 0xBC, 0xC6, 0xCA, 0xB1, 0x00};    //倒计时
+static const char MSG_COUNT_DOWN_F[] = {0x25, 0x64, 0xB7, 0xD6, 0x25, 0x64, 0xC3, 0xEB, 0x00};      //%d分%d秒
     
 static struct rt_mutex mutex_rfic;
 #define IC_LOCK()		rt_mutex_take(&mutex_rfic,RT_WAITING_FOREVER)
@@ -53,23 +53,18 @@ static char* get_door_num_from_id(rt_uint8_t group_index, rt_uint8_t door_index)
     return result;
 }    
      
-static rt_bool_t parse_power_card(const char* buffer, rt_uint32_t length)
-{
-    
-}
-
-//管理卡处理超时司机卡
+//管理卡处理超时的司机卡
 static rt_bool_t power_card_open_help(rt_uint32_t timeout)
 {	
 	rt_bool_t result = RT_FALSE;
-	if(sys_status.get_workmodel() != CONFIG_ABKEY_MODEL)
+	if(sys_status.get_workmodel() != WORK_ON_MODEL)
 		return result;
 	
     rt_mailbox_t sub_scan_mb = rt_mb_create("sub_scan", 1, RT_IPC_FLAG_FIFO);
     RT_ASSERT(sub_scan_mb != RT_NULL);   
     
     //扫描卡子线程
-    IC_LOCK();IC_RESET();
+    IC_LOCK();
     rt_thread_t thread = rt_thread_create("sub_scan", sub_scan_thread_entry, sub_scan_mb, 
                                             1*1024, 5, 20);
     if(thread != RT_NULL)
@@ -84,10 +79,31 @@ static rt_bool_t power_card_open_help(rt_uint32_t timeout)
             rfic_scan_info_t scan_info = (rfic_scan_info_t)p;
             if(scan_info->buf_len > 0 && *scan_info->buffer != RT_NULL)
             {					
-                //解析密钥卡
-                if(parse_power_card((char*)*scan_info->buffer, scan_info->buf_len))
-                {//解析成功
-                    
+                //解析卡信息
+                if(scan_info->base_type == CARD_TYPE_APP)   //是应用卡
+                {
+                    cJSON *root = cJSON_Parse((char*)*scan_info->buffer);
+                    if(root != RT_NULL)
+                    {
+                        int type ;
+                        int ret = cJSON_item_get_number(root, "Type", &type);
+                        if(ret == 0 && type == CARD_APP_TYPE_POWER) //是管理卡
+                        {
+                            cJSON *fileds = cJSON_GetObjectItem((cJSON*)root, "Fileds");
+                            if(fileds != RT_NULL)
+                            {
+                                int num;
+                                cJSON_item_get_number(fileds, "Num", &num);
+                                rt_uint32_t c_id = bytes2uint32(scan_info->card_id);
+                                char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
+                                if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_POWER, pwd) > 0)
+                                {//管理卡验证通过
+                                    result = RT_TRUE;
+                                }
+                            }                            
+                        }
+                        cJSON_Delete(root);
+                    }
                 }
             }
             if(*scan_info->buffer != RT_NULL)
@@ -264,6 +280,14 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
 			char *pwd = (char*)cJSON_item_get_string(fileds, "Pwd");
 			rt_kprintf("Num:%d\n", num);
 			rt_kprintf("Pwd:%s\n", pwd);
+            rt_uint32_t stamp = sys_status.get_datetime(RT_NULL);//获取系统时间
+            if(stamp <= 0)
+            {//系统时间读取错误
+                lcd_show_message(MSG_FAILED, MSG_SYS_TIME_ERR);
+                sys_status.open_display_start();
+                beep_on(3);
+                break;
+            }            
             if(cardinfo_count_by_any(num, c_id, CARD_APP_TYPE_DRIVER, pwd) > 0)
             {
                 sys_status.card_num = num; 
@@ -277,21 +301,38 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                 if(doorinfo_get_by_card_num(doorinfo, num) > 0)
                 {//已刷过卡
                     rt_uint32_t stamp = sys_status.get_datetime(RT_NULL);//获取系统时间
-                    rt_uint32_t end_stamp = doorinfo->time_stamp + sys_config.open_timeout;//计算超时时间
+                    rt_uint32_t end_stamp = doorinfo->open1_stamp + sys_config.open_timeout;//计算超时时间
                     rt_uint8_t group_index = GET_GROUP_ID(doorinfo->id);
                     rt_uint8_t door_index = GET_DOOR_ID(doorinfo->id);
                     char *door_num_str = get_door_num_from_id(group_index, door_index); 
                     if(doorinfo->status == DOOR_STA_OPEN_1 || doorinfo->status == DOOR_STA_CLOSE_1 || doorinfo->status == DOOR_STA_OPEN_2)
                     {//首次刷卡开门后未关门，或首次关门后再次刷卡，都执行开门动作                        
                         //判断是否超时                        
-                        if(stamp >= end_stamp)
+                        if(stamp > end_stamp)
                         {//超时
-                            lcd_show_door_num(door_num_str, MSG_OPEN_TIMEOUT, MSG_OPEN_TIPS2, " ", 0);
+                            //发邮件更新倒计时
+                            rt_mb_send_wait(mb_count_down, (rt_ubase_t)(0), RT_WAITING_FOREVER);                             
+                            char *temp = rt_calloc(1, 128);
+                            rt_sprintf(temp, MSG_OPEN_TIPS2, MANAGE_HELP_TIMEOUT/1000);
+                            lcd_show_door_num(door_num_str, MSG_OPEN_TIMEOUT, temp, " ", MSG_COUNT_DOWN_F, 0);
+                            rt_free(temp);
                             beep_on(3);
-                            if(power_card_open_help(rt_tick_from_millisecond(3000)))
+                            if(power_card_open_help(rt_tick_from_millisecond(MANAGE_HELP_TIMEOUT)))
                             {
-                                
-                            }
+                                door_any_open(group_index, door_index);
+                                if(doorinfo->status == DOOR_STA_CLOSE_1)
+                                {//首次关门后再次刷卡，更新柜门状态
+                                    //sql
+                                    char *sql = rt_calloc(1, 128);
+                                    rt_sprintf(sql, "update doorinfo set status=%d,open2_stamp=%d where id=%d;", DOOR_STA_OPEN_2, stamp, doorinfo->id);
+                                    app_workqueue_exe_sql(sql);        //更新柜门状态为:第2次开门     
+                                }
+                                char *msg = rt_calloc(1, 128);
+                                rt_sprintf(msg, MSG_OPEN_DELAY, num, (stamp-end_stamp)/60, (stamp-end_stamp)%60);                               
+                                lcd_show_door_num(door_num_str, MSG_OPEN_TIMEOUT, msg, " ", MSG_COUNT_DOWN_F, 0);
+                                rt_free(msg);
+                                beep_on(1);lcd_set_buzzer(10);
+                            }                            
                         }
                         else
                         {//未超时
@@ -300,28 +341,37 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                             {//首次关门后再次刷卡，更新柜门状态
                                 //sql
                                 char *sql = rt_calloc(1, 128);
-                                rt_sprintf(sql, "update doorinfo set status=%d where id=%d;", DOOR_STA_OPEN_2, doorinfo->id);
+                                rt_sprintf(sql, "update doorinfo set status=%d,open2_stamp=%d where id=%d;", DOOR_STA_OPEN_2, stamp, doorinfo->id);
                                 app_workqueue_exe_sql(sql);        //更新柜门状态为:第2次开门     
                             }
+                            char *temp = rt_calloc(1, 128);
+                            rt_sprintf(temp, MSG_OPEN_TIPS2, MANAGE_HELP_TIMEOUT/1000);                            
                             if(doorinfo->status == DOOR_STA_OPEN_1)
                             {
-                                lcd_show_door_num(door_num_str, MSG_OPEN_1, MSG_OPEN_TIPS2, MSG_COUNT_DOWN, end_stamp-stamp);
+                                lcd_show_door_num(door_num_str, MSG_OPEN_1, temp, MSG_COUNT_DOWN, MSG_COUNT_DOWN_F, end_stamp-stamp);                                
+                                
                             }
                             else
-                            {
-                                lcd_show_door_num(door_num_str, MSG_OPEN_2, MSG_OPEN_TIPS2, MSG_COUNT_DOWN, end_stamp-stamp);
+                            {                                
+                                lcd_show_door_num(door_num_str, MSG_OPEN_2, temp, MSG_COUNT_DOWN, MSG_COUNT_DOWN_F, end_stamp-stamp);
                             }
-                            beep_on(1);lcd_set_buzzer(10);                            
+                            rt_free(temp);
+                            beep_on(1);lcd_set_buzzer(10); 
+                            //发邮件更新倒计时
+                            rt_mb_send_wait(mb_count_down, (rt_ubase_t)(end_stamp-stamp), RT_WAITING_FOREVER);                            
                         }
                     }
                     else                        
                     {
-                        lcd_show_door_num(door_num_str, MSG_FINISH, MSG_OPEN_TIPS3_2, " ", 0);
-                        beep_on(3);                        
+                        //发邮件更新倒计时
+                        rt_mb_send_wait(mb_count_down, (rt_ubase_t)(0), RT_WAITING_FOREVER);                         
+                        char *temp = rt_calloc(1, 128);
+                        rt_sprintf(temp, MSG_OPEN_TIPS3, num, (doorinfo->close2_stamp - doorinfo->open1_stamp)/60, (doorinfo->close2_stamp - doorinfo->open1_stamp)%60);
+                        lcd_show_door_num(door_num_str, MSG_FINISH, temp, " ", MSG_COUNT_DOWN_F, 0);
+                        rt_free(temp);
+                        beep_on(3);  
                     }
-                    rt_free(door_num_str);
-                    //发邮件更新倒计时
-                    rt_mb_send_wait(mb_count_down, (rt_ubase_t)(end_stamp-stamp), RT_WAITING_FOREVER);
+                    rt_free(door_num_str);                    
                 }
                 else
                 {//未刷过卡,首次刷卡开门                    
@@ -364,31 +414,21 @@ static void card_app_handle(rt_uint8_t card_id[4], enum card_app_type type, cons
                             pass = RT_TRUE;
                         }
                         if(pass)
-                        {//通过验证                            
-                            rt_uint32_t stamp = sys_status.get_datetime(RT_NULL);//获取系统时间
-                            if(stamp > 0)
-                            {
-                                rt_uint8_t group_index = GET_GROUP_ID(doorinfo->id);
-                                rt_uint8_t door_index = GET_DOOR_ID(doorinfo->id);
-                                char *door_num_str = get_door_num_from_id(group_index, door_index);
-                                lcd_show_door_num(door_num_str, MSG_OPEN_1, MSG_OPEN_TIPS1, MSG_COUNT_DOWN, sys_config.open_timeout);
-                                rt_free(door_num_str);                            
-                                door_any_open(group_index, door_index);
-                                //更新柜门状态                            
-                                //sql
-                                char *sql = rt_calloc(1, 128);
-                                rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d,time_stamp=%d where id=%d;", DOOR_STA_OPEN_1, num, stamp, doorinfo->id);
-                                app_workqueue_exe_sql(sql);        //更新柜门状态为:第1次开门  
-                                beep_on(1);lcd_set_buzzer(10);
-                                //发邮件更新倒计时
-                                rt_mb_send_wait(mb_count_down, (rt_ubase_t)sys_config.open_timeout, RT_WAITING_FOREVER);
-                            }
-                            else
-                            {//系统时间读取错误
-                                lcd_show_message(MSG_FAILED, MSG_SYS_TIME_ERR);
-                                sys_status.open_display_start();
-                                beep_on(3);
-                            }
+                        {//通过验证 
+                            rt_uint8_t group_index = GET_GROUP_ID(doorinfo->id);
+                            rt_uint8_t door_index = GET_DOOR_ID(doorinfo->id);
+                            char *door_num_str = get_door_num_from_id(group_index, door_index);
+                            lcd_show_door_num(door_num_str, MSG_OPEN_1, MSG_OPEN_TIPS1, MSG_COUNT_DOWN, MSG_COUNT_DOWN_F, sys_config.open_timeout);
+                            rt_free(door_num_str);                            
+                            door_any_open(group_index, door_index);
+                            //更新柜门状态                            
+                            //sql
+                            char *sql = rt_calloc(1, 128);
+                            rt_sprintf(sql, "update doorinfo set status=%d,card_num=%d,open1_stamp=%d where id=%d;", DOOR_STA_OPEN_1, num, stamp, doorinfo->id);
+                            app_workqueue_exe_sql(sql);        //更新柜门状态为:第1次开门  
+                            beep_on(1);lcd_set_buzzer(10);
+                            //发邮件更新倒计时
+                            rt_mb_send_wait(mb_count_down, (rt_ubase_t)sys_config.open_timeout, RT_WAITING_FOREVER);
                         }
                         else
                         {//读卡验证失败
@@ -952,7 +992,11 @@ void update_count_down_thread_entry(void* param)
             {
                 if(count_down >= 0)
                 {                   
-                    lcd_update_count_down(count_down);
+                    lcd_update_count_down(MSG_COUNT_DOWN_F, count_down);
+                }
+                else if(count_down == -1)
+                {
+                    lcd_update_count_down(RT_NULL, 0);
                 }
             }
             i = 0;

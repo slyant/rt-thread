@@ -147,8 +147,8 @@ typedef struct temp_setting *temp_setting_t;
 
 void app_lcd_startup(void);
 void lcd_show_error(const char* err);
-void lcd_show_door_num(const char *num, const char *msg1, const char *msg2, const char *msg_time, const unsigned long count_down);
-void lcd_update_count_down(const unsigned long count_down);
+void lcd_show_door_num(const char *num, const char *msg1, const char *msg2, const char *msg_time, const char *count_down_format, unsigned long count_down);
+void lcd_update_count_down(const char *count_down_format, unsigned long count_down);
 void lcd_show_message(const char *title, const char *msg);
 void lcd_set_screen_id(rt_uint16_t screen_id);
 rt_uint16_t lcd_get_screen_id(void);

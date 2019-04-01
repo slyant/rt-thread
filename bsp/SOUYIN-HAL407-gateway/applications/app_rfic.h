@@ -8,7 +8,7 @@ enum card_app_type
 {
 	CARD_APP_TYPE_ABKEY = 0,	//密钥卡
 	CARD_APP_TYPE_CONFIG,		//配置卡
-	CARD_APP_TYPE_POWER,        //授权卡
+	CARD_APP_TYPE_POWER,        //授权卡/管理卡
 	CARD_APP_TYPE_EKEY,			//钥匙卡
 	CARD_APP_TYPE_DRIVER,		//司机卡
 	CARD_APP_TYPE_LOCKKEY,		//锁钥卡

@@ -902,7 +902,7 @@ void BatchSetText(unsigned short control_id,unsigned char *strings)
 void BatchSetValueInt32(unsigned short control_id,long value)
 {
     char buffer[12] = {0};
-	rt_kprintf(buffer,"%ld",value);
+	rt_sprintf(buffer,"%ld",value);
 	TX_16(control_id);
 	TX_16(GetStringLen((unsigned char*)buffer));
 	SendStrings((unsigned char*)buffer);

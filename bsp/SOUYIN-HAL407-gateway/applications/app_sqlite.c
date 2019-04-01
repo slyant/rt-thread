@@ -29,7 +29,13 @@ static int create_sqlite_db(void)
 				id int PRIMARY KEY NOT NULL,		\
 				status int,							\
 				card_num int,                       \
-                time_stamp int);";
+                init_stamp int,                     \
+                lock_stamp int,                     \
+                open1_stamp int,                    \
+                close1_stamp int,                   \
+                open2_stamp int,                    \
+                close2_stamp int,                   \
+                help_card_num int);";
 		const char *loginfo_sql = "CREATE TABLE loginfo(		\
 				id int PRIMARY KEY NOT NULL,		\
 				date_time int,						\
@@ -84,9 +90,15 @@ static int init_data(void)
     for(int i = 0; i < (GROUP_MAX_COUNT * DOOR_MAX_COUNT); i++)
     {
         d->id = i;
-        d->card_num = 0;
         d->status = 0;
-        d->time_stamp = 0;
+        d->card_num = 0;
+        d->init_stamp = 0;
+        d->lock_stamp = 0;
+        d->open1_stamp = 0;
+        d->close1_stamp = 0;
+        d->open2_stamp = 0;
+        d->close2_stamp = 0;
+        d->help_card_num = 0;
         doorinfo_add(d);
     }
     rt_free(d);

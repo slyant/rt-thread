@@ -14,7 +14,13 @@ static int doorinfo_bind_for_insert(sqlite3_stmt *stmt,int index,void *arg)
 	sqlite3_bind_int(stmt,1,e->id);
 	sqlite3_bind_int(stmt,2,e->status);
 	sqlite3_bind_int(stmt,3,e->card_num);
-    sqlite3_bind_int(stmt,4,e->time_stamp);
+    sqlite3_bind_int(stmt,4,e->init_stamp);
+    sqlite3_bind_int(stmt,5,e->lock_stamp);    
+    sqlite3_bind_int(stmt,6,e->open1_stamp);
+    sqlite3_bind_int(stmt,7,e->close1_stamp);
+    sqlite3_bind_int(stmt,8,e->open2_stamp);
+    sqlite3_bind_int(stmt,9,e->close2_stamp);
+    sqlite3_bind_int(stmt,10,e->help_card_num);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE)
 		return rc;
@@ -27,8 +33,14 @@ static int doorinfo_bind_for_update(sqlite3_stmt *stmt,int index,void *arg)
 	doorinfo_t e = arg;	
 	sqlite3_bind_int(stmt,1,e->status);
 	sqlite3_bind_int(stmt,2,e->card_num);
-    sqlite3_bind_int(stmt,3,e->time_stamp);
-	sqlite3_bind_int(stmt,4,e->id);
+    sqlite3_bind_int(stmt,3,e->init_stamp);
+    sqlite3_bind_int(stmt,4,e->lock_stamp);    
+    sqlite3_bind_int(stmt,5,e->open1_stamp);
+    sqlite3_bind_int(stmt,6,e->close1_stamp);
+    sqlite3_bind_int(stmt,7,e->open2_stamp);
+    sqlite3_bind_int(stmt,8,e->close2_stamp);
+    sqlite3_bind_int(stmt,9,e->help_card_num);   
+	sqlite3_bind_int(stmt,10,e->id);
 	rc = sqlite3_step(stmt);
 	if (rc != SQLITE_DONE)
 		return rc;
@@ -48,7 +60,13 @@ int doorinfo_bind(sqlite3_stmt *stmt,void *arg)
 		e->id = db_stmt_get_int(stmt,0);
 		e->status = db_stmt_get_int(stmt,1);
 		e->card_num = db_stmt_get_int(stmt,2);
-        e->time_stamp = db_stmt_get_int(stmt,3);
+        e->init_stamp = db_stmt_get_int(stmt,3);
+        e->lock_stamp = db_stmt_get_int(stmt,4);
+        e->open1_stamp = db_stmt_get_int(stmt,5);
+        e->close1_stamp = db_stmt_get_int(stmt,6);
+        e->open2_stamp = db_stmt_get_int(stmt,7);
+        e->close2_stamp = db_stmt_get_int(stmt,8);
+        e->help_card_num = db_stmt_get_int(stmt,9);
 	}
 	return ret;
 }
@@ -76,7 +94,13 @@ int doorinfo_queue_bind(sqlite3_stmt *stmt,void *arg)
 		e->id = db_stmt_get_int(stmt,0);
 		e->status = db_stmt_get_int(stmt,1);
 		e->card_num = db_stmt_get_int(stmt,2);
-        e->time_stamp = db_stmt_get_int(stmt,3);
+        e->init_stamp = db_stmt_get_int(stmt,3);
+        e->lock_stamp = db_stmt_get_int(stmt,4);
+        e->open1_stamp = db_stmt_get_int(stmt,5);
+        e->close1_stamp = db_stmt_get_int(stmt,6);
+        e->open2_stamp = db_stmt_get_int(stmt,7);
+        e->close2_stamp = db_stmt_get_int(stmt,8);
+        e->help_card_num = db_stmt_get_int(stmt,9);
 		
 		rc_queue_insert_tail(q,&(e->queue));
 		count ++;
@@ -93,7 +117,7 @@ void doorinfo_print_queue(record_queue_t q)
 	doorinfo_t e = NULL;
 	rc_queue_foreach(e,q,struct doorinfo,queue)
 	{
-		rt_kprintf("id:%d\nstatus:%d\ncard_num:%d\ntime_stamp:%d\n",e->id, e->status, e->card_num, e->time_stamp);
+		rt_kprintf("id:%d\nstatus:%d\ncard_num:%d\n",e->id, e->status, e->card_num);
 	}
 }
 //遍历队列，自定义处理方法（注意处理完成后释放队列及队列变量，使用doorinfo_free_queue(q)和rt_free(q)）
@@ -136,13 +160,13 @@ int doorinfo_get_all(record_queue_t q)
 //添加一条记录，操作成功返回0
 int doorinfo_add(doorinfo_t e)
 {
-  return db_nonquery_operator("insert into doorinfo(id,status,card_num,time_stamp) values (?,?,?,?);",doorinfo_bind_for_insert,e);
+  return db_nonquery_operator("insert into doorinfo(id,status,card_num,init_stamp,lock_stamp,open1_stamp,close1_stamp,open2_stamp,close2_stamp,help_card_num) values (?,?,?,?,?,?,?,?,?,?);",doorinfo_bind_for_insert,e);
 	//return db_nonquery_by_varpara("insert into doorinfo(userid,username) values (?,?);", "%d%s", e->userid, e->username);
 }
 //更新一条记录，操作成功返回0
 int doorinfo_update(doorinfo_t e)
 {
-	return db_nonquery_operator("update doorinfo set status=?,card_num=?,time_stamp=? where id=?;",doorinfo_bind_for_update,e);
+	return db_nonquery_operator("update doorinfo set status=?,card_num=?,init_stamp=?,lock_stamp=?,open1_stamp=?,close1_stamp=?,open2_stamp=?,close2_stamp=?,help_card_num=? where id=?;",doorinfo_bind_for_update,e);
 }
 
 //删除指定主键的记录，操作成功返回0

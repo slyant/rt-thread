@@ -12,8 +12,9 @@
 #define DRIVER_CARD_MAX_COUNT	65535	//司机卡最大数量
 #define GROUP_MAX_COUNT			8		//节点最大数量
 #define DOOR_MAX_COUNT			16		//门最大数量
-#define OPEN_DISPLAY_TIME       120000  //柜门编号显示时间ms
+#define OPEN_DISPLAY_TIME       15000   //柜门编号显示时间ms
 #define MANAGE_DISPLAY_TIME     20000   //管理界面显示时间ms
+#define MANAGE_HELP_TIMEOUT     3000    //管理卡处理超时卡刷卡超时间
 //柜门状态
 #define DOOR_STA_INIT       0   //初始
 #define DOOR_STA_LOCK       1   //上锁
